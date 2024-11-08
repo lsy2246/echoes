@@ -1,0 +1,14 @@
+[package]
+name = "echoes"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rocket = { version = "0.5", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8.19"
+tokio = { version = "1", features = ["full"] }
+tokio-postgres = "0.7.12"
+once_cell = "1.20.2"
+async-trait = "0.1.83"
