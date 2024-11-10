@@ -1,53 +1,57 @@
+// mod.rs
 mod postgresql;
-use std::fs;
-use tokio_postgres::{Error, Row};
+use std::{collections::HashMap, fs};
 use toml;
 use crate::config::Config;
 use async_trait::async_trait;
+use std::error::Error;
+use std::sync::Arc;
 
-// 所有数据库类型
 #[async_trait]
-pub trait Database: Send + Sync {
-     async fn query(&self,
-             query: &str,
-             params: &[&(dyn tokio_postgres::types::ToSql + Sync)])
-             -> Result<Vec<Row>, Error>;
-    async fn execute(
-        &self,
-        data: &str,
-        params: &[&(dyn tokio_postgres::types::ToSql + Sync)],
-    )
-        -> Result<u64, Error>;
+pub trait Databasetrait: Send + Sync {
+    async fn connect(
+        address: String,
+        port: u32,
+        user: String,
+        password: String,
+        dbname: String,
+    ) -> Result<Self, Box<dyn Error>> where Self: Sized;
+    async fn query<'a>(&'a self, query: String) -> Result<Vec<HashMap<String, String>>, Box<dyn Error + 'a>>;
+}
+#[derive(Clone)]
+pub struct Database {
+    pub db: Arc<Box<dyn Databasetrait>>,
+}
+
+impl Database {
+    pub fn get_db(&self) -> &Box<dyn Databasetrait> {
+        &self.db
+    }
 }
 
 
-// 加载对应数据库
-pub async fn loading() -> Option<Box<dyn Database>> {
-    let config_string = fs::read_to_string("./src/config.toml")
-        .expect("Could not load config file");
-    let config: Config = toml::de::from_str(config_string.as_str()).expect("Could not parse config");
-    let address = config.database.address;
-    let port = config.database.prot;
-    let user = config.database.user;
-    let password = config.database.password;
-    let dbname = config.database.dbname;
-    let sql_instance: Box<dyn Database>;
 
-    match config.database.ilk.as_str() {
-        "postgresql" => {
-            let sql = postgresql::connect(address, port, user, password, dbname).await;
-            match sql {
-                Ok(conn) => {
-                    sql_instance = Box::new(conn);
-                }
-                Err(e) => {
-                    println!("Database connection failed {}", e);
-                    return None;
-                }
+impl Database {
+    pub async fn init() -> Result<Database, Box<dyn Error>> {
+        let config_string = fs::read_to_string("./src/config.toml")
+            .map_err(|e| Box::new(e) as Box<dyn Error>)?;
+        let config: Config = toml::from_str(&config_string)
+            .map_err(|e| Box::new(e) as Box<dyn Error>)?;
+
+        match config.database.db_type.as_str() {
+            "postgresql" => {
+                let db = postgresql::Postgresql::connect(
+                    config.database.address,
+                    config.database.prot,
+                    config.database.user,
+                    config.database.password,
+                    config.database.db_name,
+                ).await?;
+                Ok(Database {
+                    db: Arc::new(Box::new(db))
+                })
             }
-
+            _ => Err(anyhow::anyhow!("unknown database type").into()),
         }
-        _ => { return None }
-    };
-    Some(sql_instance)
+    }
 }

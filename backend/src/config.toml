@@ -2,9 +2,9 @@
 install = false
 
 [database]
-ilk = "postgresql"
+db_type = "postgresql"
 address = "localhost"
 prot = 5432
 user = "postgres"
 password = "postgres"
-dbname = "echoes"
+db_name = "echoes"

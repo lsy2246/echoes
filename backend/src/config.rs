@@ -13,10 +13,10 @@ pub struct Info {
 
 #[derive(Deserialize)]
 pub struct Database {
-    pub ilk : String,
+    pub db_type : String,
     pub address : String,
     pub prot : u32,
     pub user : String,
     pub password : String,
-    pub dbname : String,
+    pub db_name : String,
 }
