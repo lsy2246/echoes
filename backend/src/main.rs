@@ -1,68 +1,66 @@
 // main.rs
-mod sql;
 mod config;
-use rocket::{ get, launch, routes};
-use rocket::serde::json::Json; // Added import for Json
-use once_cell::sync::Lazy;
-use rocket::http::Status;
-use rocket::response::status;
-use std::sync::Arc; // Added import for Arc and Mutex
-use tokio::sync::Mutex;
+mod sql;
 use crate::sql::Database;
+use once_cell::sync::Lazy;
+use rocket::{get, http::Status, launch, response::status, routes, serde::json::Json};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
-// 修改全局变量的类型定义
-static GLOBAL_SQL: Lazy<Arc<Mutex<Option<Database>>>> = Lazy::new(|| {
-    Arc::new(Mutex::new(None))
-});
+/* 修改全局变量的类型定义 */
+static DB: Lazy<Arc<Mutex<Option<Database>>>> = Lazy::new(|| Arc::new(Mutex::new(None)));
 
-// 修改数据库连接函数
-async fn connect_database() -> Result<(), Box<dyn std::error::Error>> {
-    let database = sql::Database::init().await?;
-    let mut lock = GLOBAL_SQL.lock().await;
-    *lock = Some(database);
+/* 数据库连接函数 */
+async fn init_db(database: config::Database) -> Result<(), Box<dyn std::error::Error>> {
+    let database = Database::init(database).await?;
+    *DB.lock().await = Some(database);
     Ok(())
 }
-
+/* 获取数据库的引用 */
 async fn get_db() -> Result<Database, Box<dyn std::error::Error>> {
-    let lock = GLOBAL_SQL.lock().await;
-    match &*lock {
-        Some(db) => Ok(db.clone()),
-        None => Err("Database not initialized".into())
-    }
+    DB.lock()
+        .await
+        .clone()
+        .ok_or_else(|| "Database not initialized".into())
 }
-
-
+/* 用于测试数据库 */
 #[get("/sql")]
-async fn ssql() -> Result<Json<Vec<std::collections::HashMap<String, String>>>, status::Custom<String>> {
+async fn ssql(
+) -> Result<Json<Vec<std::collections::HashMap<String, String>>>, status::Custom<String>> {
     let db = get_db().await.map_err(|e| {
-        eprintln!("Database error: {}", e);
-        status::Custom(Status::InternalServerError, format!("Database error: {}", e))
+        status::Custom(
+            Status::InternalServerError,
+            format!("Database error: {}", e),
+        )
     })?;
 
-    let query_result = db.get_db()
-        .query("SELECT * FROM info".to_string())  // 确保这里是正确的表名
+    let query_result = db
+        .get_db()
+        .query("SELECT * FROM info".to_string())
         .await
-        .map_err(|e| {
-            eprintln!("Query error: {}", e);
-            status::Custom(Status::InternalServerError, format!("Query error: {}", e))
-        })?;
+        .map_err(|e| status::Custom(Status::InternalServerError, format!("Query error: {}", e)))?;
 
     Ok(Json(query_result))
 }
-
-
+/* 安装接口 */
 #[get("/install")]
 async fn install() -> status::Custom<String> {
-    match connect_database().await {
-        Ok(_) => status::Custom(Status::Ok, "Database connected successfully".to_string()),
-        Err(e) => status::Custom(Status::InternalServerError, format!("Failed to connect: {}", e))
-    }
+    get_db()
+        .await
+        .map(|_| status::Custom(Status::Ok, "Database connected successfully".into()))
+        .unwrap_or_else(|e| {
+            status::Custom(
+                Status::InternalServerError,
+                format!("Failed to connect: {}", e),
+            )
+        })
 }
-
-
+/* 启动函数 */
 #[launch]
 async fn rocket() -> _ {
-    connect_database().await.expect("Failed to connect to database");
-    rocket::build()
-        .mount("/api", routes![install,ssql])
+    let config = config::Config::read("./src/config/config.toml").expect("Failed to read config");
+    init_db(config.database)
+        .await
+        .expect("Failed to connect to database");
+    rocket::build().mount("/api", routes![install, ssql])
 }

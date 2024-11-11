@@ -1,57 +1,42 @@
-// mod.rs
+// sql/mod.rs
+/* 
+    定义了数据库具有的特征和方法
+*/
 mod postgresql;
-use std::{collections::HashMap, fs};
-use toml;
-use crate::config::Config;
+use std::collections::HashMap;
+use super::config;
 use async_trait::async_trait;
 use std::error::Error;
 use std::sync::Arc;
 
+
 #[async_trait]
-pub trait Databasetrait: Send + Sync {
-    async fn connect(
-        address: String,
-        port: u32,
-        user: String,
-        password: String,
-        dbname: String,
-    ) -> Result<Self, Box<dyn Error>> where Self: Sized;
+pub trait DatabaseTrait: Send + Sync {
+    // 连接数据库
+    async fn connect(database: config::Database) -> Result<Self, Box<dyn Error>> where Self: Sized;
+    // 执行查询
     async fn query<'a>(&'a self, query: String) -> Result<Vec<HashMap<String, String>>, Box<dyn Error + 'a>>;
 }
+
 #[derive(Clone)]
 pub struct Database {
-    pub db: Arc<Box<dyn Databasetrait>>,
+    // 数据库实例
+    pub db: Arc<Box<dyn DatabaseTrait>>,
 }
 
 impl Database {
-    pub fn get_db(&self) -> &Box<dyn Databasetrait> {
+    // 获取当前数据库实例
+    pub fn get_db(&self) -> &Box<dyn DatabaseTrait> {
         &self.db
     }
-}
+    
+    // 初始化数据库
+    pub async fn init(database: config::Database) -> Result<Self, Box<dyn Error>> {
+        let db = match database.db_type.as_str() {
+            "postgresql" => postgresql::Postgresql::connect(database).await?,
+            _ => return Err("unknown database type".into()),
+        };
 
-
-
-impl Database {
-    pub async fn init() -> Result<Database, Box<dyn Error>> {
-        let config_string = fs::read_to_string("./src/config.toml")
-            .map_err(|e| Box::new(e) as Box<dyn Error>)?;
-        let config: Config = toml::from_str(&config_string)
-            .map_err(|e| Box::new(e) as Box<dyn Error>)?;
-
-        match config.database.db_type.as_str() {
-            "postgresql" => {
-                let db = postgresql::Postgresql::connect(
-                    config.database.address,
-                    config.database.prot,
-                    config.database.user,
-                    config.database.password,
-                    config.database.db_name,
-                ).await?;
-                Ok(Database {
-                    db: Arc::new(Box::new(db))
-                })
-            }
-            _ => Err(anyhow::anyhow!("unknown database type").into()),
-        }
+        Ok(Self { db: Arc::new(Box::new(db)) })
     }
 }

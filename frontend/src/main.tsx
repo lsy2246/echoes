@@ -1,3 +1,4 @@
+//main.tsx
 import * as React from "react";
 import "./main.css"
 import DynamicPage from "./page/page.tsx"
@@ -7,7 +8,7 @@ import {createContext} from "react";
 export const serverAddressContext=createContext("localhost:8080")
 // 动态路由
 const RouterListener: React.FC = () => {
-    let pathname = location.pathname.split("/");
+    const pathname = location.pathname.split("/");
     console.log(pathname)
     return (
         <serverAddressContext.Provider value={"localhost:8080"}>
@@ -17,7 +18,7 @@ const RouterListener: React.FC = () => {
 }
 
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <RouterListener/>
     </React.StrictMode>

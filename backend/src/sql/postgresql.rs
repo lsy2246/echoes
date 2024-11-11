@@ -1,27 +1,28 @@
+// sql/psotgresql.rs
+/* 
+    为postgresql数据库实现具体的方法
+*/
+use super::DatabaseTrait;
+use crate::config;
 use async_trait::async_trait;
-use sqlx::{PgPool, Row,Column};
+use sqlx::{Column, PgPool, Row};
 use std::{collections::HashMap, error::Error};
-use super::Databasetrait;
 
 #[derive(Clone)]
 pub struct Postgresql {
     pool: PgPool,
 }
 
-
-
 #[async_trait]
-impl Databasetrait for Postgresql {
-    async fn connect(
-        address: String,
-        port: u32,
-        user: String,
-        password: String,
-        dbname: String,
-    ) -> Result<Self, Box<dyn Error>> {
+impl DatabaseTrait for Postgresql {
+    async fn connect(database: config::Database) -> Result<Self, Box<dyn Error>> {
         let connection_str = format!(
             "postgres://{}:{}@{}:{}/{}",
-            user, password, address, port, dbname
+            database.user,
+            database.password,
+            database.address, 
+            database.prot, 
+            database.db_name
         );
 
         let pool = PgPool::connect(&connection_str)
@@ -30,7 +31,10 @@ impl Databasetrait for Postgresql {
 
         Ok(Postgresql { pool })
     }
-    async fn query<'a>(&'a self, query: String) -> Result<Vec<HashMap<String, String>>, Box<dyn Error + 'a>> {
+    async fn query<'a>(
+        &'a self,
+        query: String,
+    ) -> Result<Vec<HashMap<String, String>>, Box<dyn Error + 'a>> {
         let rows = sqlx::query(&query)
             .fetch_all(&self.pool)
             .await

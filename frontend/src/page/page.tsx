@@ -1,3 +1,4 @@
+// page/page.tsx
 import React from "react";
 const THEMEPATH= "../../themes"
 import {serverAddressContext} from "../main.tsx";
