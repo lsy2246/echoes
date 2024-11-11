@@ -1,7 +1,8 @@
 // page/page.tsx
 import React from "react";
-const THEMEPATH= "../../themes"
+const THEMEPATH= "@/themes"
 import {serverAddressContext} from "../main.tsx";
+
 // 动态获取当前主题
 const getCurrentTheme = async (): Promise<string> => {
     return new Promise<string>((resolve) => {

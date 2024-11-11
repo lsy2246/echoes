@@ -8,6 +8,8 @@ import {createContext} from "react";
 export const serverAddressContext=createContext("localhost:8080")
 // 动态路由
 const RouterListener: React.FC = () => {
+    const a=import.meta.env.VITE_APP_THEMES;
+    console.log(a)
     const pathname = location.pathname.split("/");
     console.log(pathname)
     return (
