@@ -1,4 +1,4 @@
-// /d:/data/echoes/frontend/types/theme.ts
+// types/theme.ts
 /**
  * 主题配置和模板接口定义文件
  * 该文件包含主题配置接口和主题模板接口的定义，用于主题管理和渲染。
@@ -16,21 +16,17 @@ export interface ThemeConfig {
     entry: string; // 主题的入口组件路径
     templates: Map<string, ThemeTemplate>; // 主题模板的映射表
     /** 主题全局配置 */
-    globalSettings?: {
+    globalSettings: {
         layout?: string; // 主题的布局配置
         css?: string; // 主题的CSS配置
     };
     /** 主题配置文件 */
-    settingsSchema?: {
-        type: string; // 配置文件的类型
-        /** 属性定义 */
-        properties: Record<string, {
-            type: string; // 属性的数据类型
-            title: string; // 属性的标题
-            description?: string; // 属性的描述信息
-            data?: any; // 属性的默认数据
-        }>;
-    };
+    settingsSchema: Record<string, {
+        type: string; // 属性的数据类型
+        title: string; // 属性的标题
+        description?: string; // 属性的描述信息
+        data?: any; // 属性的默认数据
+    }>;
     /** 依赖 */
     dependencies?: {
         plugins?: string[]; // 主题所依赖的插件列表

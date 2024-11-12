@@ -4,7 +4,7 @@
 */
 mod postgresql;
 use std::collections::HashMap;
-use super::config;
+use crate::config;
 use async_trait::async_trait;
 use std::error::Error;
 use std::sync::Arc;
@@ -13,7 +13,7 @@ use std::sync::Arc;
 #[async_trait]
 pub trait DatabaseTrait: Send + Sync {
     // 连接数据库
-    async fn connect(database: config::Database) -> Result<Self, Box<dyn Error>> where Self: Sized;
+    async fn connect(database: config::DbConfig) -> Result<Self, Box<dyn Error>> where Self: Sized;
     // 执行查询
     async fn query<'a>(&'a self, query: String) -> Result<Vec<HashMap<String, String>>, Box<dyn Error + 'a>>;
 }
@@ -31,7 +31,7 @@ impl Database {
     }
     
     // 初始化数据库
-    pub async fn init(database: config::Database) -> Result<Self, Box<dyn Error>> {
+    pub async fn init(database: config::DbConfig) -> Result<Self, Box<dyn Error>> {
         let db = match database.db_type.as_str() {
             "postgresql" => postgresql::Postgresql::connect(database).await?,
             _ => return Err("unknown database type".into()),

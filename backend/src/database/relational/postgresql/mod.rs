@@ -15,10 +15,10 @@ pub struct Postgresql {
 
 #[async_trait]
 impl DatabaseTrait for Postgresql {
-    async fn connect(database: config::Database) -> Result<Self, Box<dyn Error>> {
+    async fn connect(db_config: config::DbConfig) -> Result<Self, Box<dyn Error>> {
         let connection_str = format!(
             "postgres://{}:{}@{}:{}/{}",
-            database.user, database.password, database.address, database.prot, database.db_name
+            db_config.user, db_config.password, db_config.address, db_config.prot, db_config.db_name
         );
 
         // 连接到数据库池

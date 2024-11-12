@@ -5,6 +5,7 @@
  * 此接口定义了应用程序的上下文配置，包括API基础URL、主题、插件和资源目录的路径。
  */
 export interface AppContext {
+    blogType:boolean; //用于判断是动态博客还是静态博客
     apiBaseUrl: string; // 用于访问API的基础URL
     themesPath: string; // 存储主题文件的目录路径
     pluginsPath: string; // 存储插件文件的目录路径

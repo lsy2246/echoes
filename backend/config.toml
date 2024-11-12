@@ -1,0 +1,16 @@
+# config/config.toml
+# 配置文件
+
+# 信息
+[info]
+install = false # 是否为第一次安装
+non_relational = true # 是否使用非关系型数据库
+
+# 数据库
+[db_config]
+db_type = "postgresql" # 数据库类型
+address = "localhost" # 地址
+prot = 5432 # 端口
+user = "postgres" # 用户名
+password = "postgres" # 密码
+db_name = "echoes" # 数据库
