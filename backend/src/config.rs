@@ -8,24 +8,24 @@ use std::{env, fs};
 
 #[derive(Deserialize)]
 pub struct Config {
-    pub info: Info,
-    pub db_config: DbConfig,
+    pub info: Info, // 配置信息
+    pub db_config: DbConfig, // 数据库配置
 }
 
 #[derive(Deserialize)]
 pub struct Info {
-    pub install: bool,
-    pub non_relational: bool,
+    pub install: bool, // 是否安装
+    pub non_relational: bool, // 是否非关系型
 }
 
 #[derive(Deserialize)]
 pub struct DbConfig {
-    pub db_type: String,
-    pub address: String,
-    pub prot: u32,
-    pub user: String,
-    pub password: String,
-    pub db_name: String,
+    pub db_type: String, // 数据库类型
+    pub address: String, // 地址
+    pub prot: u32, // 端口
+    pub user: String, // 用户名
+    pub password: String, // 密码
+    pub db_name: String, // 数据库名称
 }
 
 impl Config {

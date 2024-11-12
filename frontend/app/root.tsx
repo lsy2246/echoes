@@ -23,6 +23,8 @@ export const links: LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  console.log(import.meta.env.VITE_THEME_NAME);
+  
   return (
     <html lang="en">
       <head>

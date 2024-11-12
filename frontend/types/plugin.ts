@@ -1,4 +1,4 @@
-// File path: /d:/data/echoes/frontend/types/plugin.ts
+// File path: types/plugin.ts
 
 /**
  * 插件配置接口

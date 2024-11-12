@@ -39,6 +39,13 @@ export interface ThemeConfig {
         onActivate?: string; // 主题激活时执行的钩子
         onDeactivate?: string; // 主题停用时执行的钩子
     };
+    /** 路由 */
+    routes:{
+        post:string; // 文章使用的模板
+        tag:string; // 标签使用的模板
+        category:string; // 分类使用的模板
+        page:string; // 独立页面模板路径
+    }
 }
 
 /**
