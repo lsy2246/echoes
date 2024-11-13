@@ -25,6 +25,8 @@
     "paths": {
       "theme/*":["./theme/*"],
       "types/*":["./types/*"],
+      "service/*":["./service/*"],
+      "hooks/*":["./hooks/*"],
     },
 
     // Vite takes care of building everything, not tsc.
