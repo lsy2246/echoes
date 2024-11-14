@@ -88,7 +88,7 @@ export class ExtensionService {
     }
 
     //获取指定配置文件
-    getConfiguration(pluginName: string): PluginConfiguration | undefined {
+    private getConfiguration(pluginName: string): PluginConfiguration | undefined {
         return this.configuration.get(pluginName);
     }
 }

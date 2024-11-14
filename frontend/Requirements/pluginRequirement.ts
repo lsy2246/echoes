@@ -8,8 +8,8 @@
  */
 import { SerializeType } from "./generalRequirement";
 import { ExtensionProps } from "types/extensionRequirement";
-import { useExtention } from "hooks/extensionService";
 import { ExtensionService } from "service/extensionService";
+import { useExtension } from "hooks/servicesProvider";
 
 export interface PluginConfig {
     name: string;       // 插件名称
@@ -46,25 +46,14 @@ export interface PluginConfiguration {
     };
 }
 
-export interface PluginDependencies {
-    plugins: string[]; // 依赖的插件列表（可选）
-    themes: string[];  // 依赖的主题列表（可选）
-}
 
 /**
  * 插件属性接口
  * 
  * 该接口定义了插件的属性和行为。
  */
-export class usePluginProps implements ExtensionProps {
-    private extensionService: ExtensionService = useExtention();
-    private dependencies: PluginDependencies;
-
-    constructor(dependencies: PluginDependencies) {
-        this.dependencies = dependencies;
-    }
-
-    action?: ((...args: any[]) => void); // 动作函数（可选）
-    component?: (...args: any[]) => React.FC; // 组件函数（可选）
-    text?: (...args: any[]) => string; // 文本生成函数（可选）
+export class usePluginProps extends ExtensionProps {
+    
 }
+
+

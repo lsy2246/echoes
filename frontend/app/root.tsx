@@ -1,8 +1,8 @@
 import { Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
 import type { LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { ThemeProvider } from "hooks/themeContext";
 import { createContext, useContext, ReactNode } from 'react';
+import { ServiceProvider } from "hooks/servicesProvider";
 import "./tailwind.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -17,9 +17,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
       </head>
       <body>
-        <ThemeProvider>
+        <ServiceProvider>
           {children}
-        </ThemeProvider>
+        </ServiceProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
