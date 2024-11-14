@@ -8,7 +8,10 @@
  * - component: 可选的组件函数，接受任意参数并返回一个 React 组件。
  * - text: 可选的文本生成函数，接受任意参数并返回一个字符串。
  */
-export interface ExtensionType {
+
+
+export class ExtensionProps {
+    
     /** 可选的操作函数，接受任意参数并返回 void */
     action?: (...args: any[]) => void;
     
@@ -18,3 +21,5 @@ export interface ExtensionType {
     /** 可选的文本生成函数，接受任意参数并返回一个字符串 */
     text?: (...args: any[]) => string;
 }
+
+

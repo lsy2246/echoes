@@ -8,6 +8,7 @@
  * 主题配置接口
  * 定义主题的基本信息、模板、全局配置、依赖、钩子和路由。
  */
+import { SerializeType } from "./generalRequirement";
 export interface ThemeConfig {
     name: string; // 主题的名称
     displayName: string; // 主题的显示名称
@@ -23,10 +24,9 @@ export interface ThemeConfig {
     };
     /** 主题配置文件 */
     settingsSchema: Record<string, {
-        type: string; // 属性的数据类型
-        title: string; // 属性的标题
+        name: string; // 属性的名称
         description?: string; // 属性的描述信息
-        data?: any; // 属性的默认数据
+        data: SerializeType; // 属性的默认数据
     }>;
     /** 依赖 */
     dependencies?: {

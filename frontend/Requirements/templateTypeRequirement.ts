@@ -5,7 +5,7 @@
  * 该接口定义了模板的基本配置，包括依赖项、钩子和页面渲染函数。
  */
 import React from "react"; 
-import { ExtensionType } from "types/extensionType";
+import { ExtensionProps } from "types/extensionRequirement";
 
 export interface TemplateConfig {
     /** 
@@ -22,7 +22,7 @@ export interface TemplateConfig {
 
     extensions?: Record<string, {
         description?: string; 
-        extension: ExtensionType; 
+        extension: ExtensionProps; 
     }>;
 
     /** 

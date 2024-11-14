@@ -1,4 +1,4 @@
-import { ThemeConfig } from "types/themeType";
+import { ThemeConfig } from "types/themeTypeRequirement";
 
 export const themeConfig: ThemeConfig = {
     name: 'default',
