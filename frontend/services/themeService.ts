@@ -1,5 +1,5 @@
 // service/theme/themeService.ts
-import type { ThemeConfig } from 'types/themeTypeRequirement';
+import { ThemeConfig } from "contracts/themeContract"
 
 export class ThemeService {
     private static themeInstance: ThemeService; // 单例实例

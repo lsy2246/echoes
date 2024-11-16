@@ -1,5 +1,5 @@
-import { ExtensionService } from 'service/extensionService';
-import { ThemeService } from 'service/themeService';
+import { ExtensionService } from 'services/extensionService';
+import { ThemeService } from 'services/themeService';
 import { createServiceContext } from './createServiceContext';
 import { ReactNode } from 'react';
 

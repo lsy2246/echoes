@@ -1,4 +1,4 @@
-// File path: types/themeType.ts
+// File path: contracts\themeTypeContract.ts
 /**
  * 主题配置和模板接口定义文件
  * 该文件包含主题配置接口和主题模板接口的定义，用于主题管理和渲染。
@@ -8,7 +8,8 @@
  * 主题配置接口
  * 定义主题的基本信息、模板、全局配置、依赖、钩子和路由。
  */
-import { SerializeType } from "./generalRequirement";
+import { CapabilityProps } from "contracts/capabilityContract";
+import { SerializeType } from "contracts/generalContract";
 export interface ThemeConfig {
     name: string; // 主题的名称
     displayName: string; // 主题的显示名称
@@ -33,11 +34,9 @@ export interface ThemeConfig {
         plugins?: string[]; // 主题所依赖的插件列表
         assets?: string[]; // 主题所依赖的资源列表
     };
-    /** 钩子 */
-    hooks?: {
-        onActivate?: () => {}; // 主题激活时执行的钩子
-        onDeactivate?: () => {}; // 主题停用时执行的钩子
-    };
+    /** 能力 */
+    capabilities?: Set<CapabilityProps>;
+    
     /** 路由 */
     routes: {
         index: string; // 首页使用的模板

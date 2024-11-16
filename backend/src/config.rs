@@ -32,6 +32,7 @@ impl Config {
     /// 读取配置文件
     pub fn read() -> Result<Self, Box<dyn std::error::Error>> {
         let path = env::current_dir()?
+            .join("assets")
             .join("config.toml");
         Ok(toml::from_str(&fs::read_to_string(path)?)?)
     }

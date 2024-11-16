@@ -1,4 +1,4 @@
-// File path: /d:/data/echoes/frontend/Requirements/generalRequirement.ts
+// File path: contracts\generalContract.ts
 /**
  * 表示可以序列化的类型。
  * 可以是以下类型之一：

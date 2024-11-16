@@ -1,4 +1,4 @@
-// File path: ../Requirements/pluginRequirement.ts
+// File path: contracts\pluginContract.ts
 
 /**
  * 插件配置接口
@@ -6,10 +6,9 @@
  * 该接口定义了插件的基本配置，包括插件的名称、版本、描述、作者等信息。
  * 还包括插件的生命周期钩子和依赖项的配置。
  */
-import { SerializeType } from "./generalRequirement";
-import { ExtensionProps } from "types/extensionRequirement";
-import { ExtensionService } from "service/extensionService";
-import { useExtension } from "hooks/servicesProvider";
+import { SerializeType } from "contracts/generalContract";
+import { CapabilityProps } from "contracts/capabilityContract";
+
 
 export interface PluginConfig {
     name: string;       // 插件名称
@@ -21,16 +20,16 @@ export interface PluginConfig {
     icon?: string;      // 插件图标URL（可选）
     managePath?: string; // 插件管理页面路径（可选）
     configuration?: PluginConfiguration; // 插件配置
-    hooks?: {
-        onInstall?: (context: any) => {}; // 安装时调用的钩子（可选）
-        onUninstall?: (context: any) => {}; // 卸载时调用的钩子（可选）
-        onEnable?: (context: any) => {}; // 启用时调用的钩子（可选）
-        onDisable?: (context: any) => {}; // 禁用时调用的钩子（可选）
-    };
+    /** 能力 */
+    capabilities?: Set<CapabilityProps>;
     routs: Set<{
         description?: string; // 路由描述（可选）
         path: string; // 路由路径
     }>;
+    // 模块初始化函数
+    initialize?: () => Promise<void>;
+    // 模块销毁函数
+    destroy?: () => Promise<void>
 }
 
 /**
@@ -45,15 +44,4 @@ export interface PluginConfiguration {
         data: SerializeType; // 额外数据（可选），支持序列化
     };
 }
-
-
-/**
- * 插件属性接口
- * 
- * 该接口定义了插件的属性和行为。
- */
-export class usePluginProps extends ExtensionProps {
-    
-}
-
 

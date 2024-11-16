@@ -9,11 +9,15 @@
  */
 
 mod config; // 配置模块
-mod database; // 数据库模块
+mod database;
+mod secret;
+use chrono::Duration;
+// 数据库模块
 use database::relational; // 引入关系型数据库
 use once_cell::sync::Lazy; // 用于延迟初始化
 use rocket::{get, http::Status, launch, response::status, routes, serde::json::Json}; // 引入Rocket框架相关功能
-use std::sync::Arc; // 引入Arc用于线程安全的引用计数
+use std::sync::Arc;
+// 引入Arc用于线程安全的引用计数
 use tokio::sync::Mutex; // 引入Mutex用于异步锁
 
 // 全局数据库连接变量
@@ -86,3 +90,24 @@ async fn rocket() -> _ {
         .expect("Failed to connect to database"); // 初始化数据库连接
     rocket::build().mount("/api", routes![install, ssql]) // 挂载API路由
 }
+
+
+// fn main(){
+//     // secret::generate_key().expect("msg");
+//      // 创建claims
+//     let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
+
+//     // 创建 Claims
+//     let claims = secret::CustomClaims {
+//         user_id: String::from("lsy"),
+//         device_ua: String::from("lsy"),
+//     };
+//     let t=String::from("eyJhbGciOiJFZERTQSJ9.eyJleHAiOjE3MzE3NTczMDMsIm5iZiI6MTczMTc1NzI4MywiaWF0IjoxNzMxNzU3MjgzLCJ1c2VyX2lkIjoibHN5IiwiZGV2aWNlX3VhIjoibHN5In0.C8t5XZFSKnnDVmc6WkY-gzGNSAP7lNAjP9yBjhdvIRO7r_QjDnfcm0INIqCt5cyvnRlE2rFJIx_axOfLx2QJAw");
+//     // 生成JWT
+//     let token = secret::generate_jwt(claims,Duration::seconds(20)).expect("msg");
+//     println!("{}", token);
+
+//     // 验证JWT
+//     let a=secret::validate_jwt(&t).expect("msg");
+//     println!("\n\n{}",a.user_id)
+// }
