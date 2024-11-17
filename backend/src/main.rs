@@ -88,7 +88,7 @@ async fn rocket() -> _ {
     init_db(config.db_config)
         .await
         .expect("Failed to connect to database"); // 初始化数据库连接
-    rocket::build().mount("/api", routes![install, ssql]) // 挂载API路由
+    rocket::build().mount("/", routes![install, ssql]) // 挂载API路由
 }
 
 

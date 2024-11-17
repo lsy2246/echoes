@@ -8,7 +8,6 @@
  * 主题配置接口
  * 定义主题的基本信息、模板、全局配置、依赖、钩子和路由。
  */
-import { CapabilityProps } from "contracts/capabilityContract";
 import { SerializeType } from "contracts/generalContract";
 export interface ThemeConfig {
     name: string; // 主题的名称
@@ -16,7 +15,7 @@ export interface ThemeConfig {
     version: string; // 主题的版本号
     description?: string; // 主题的描述信息
     author?: string; // 主题的作者信息 
-    entry?: string; // 主题的入口路径
+    entry: string; // 主题的入口路径
     templates: Map<string, ThemeTemplate>; // 主题模板的映射表
     /** 主题全局配置 */
     globalSettings?: {
@@ -29,14 +28,6 @@ export interface ThemeConfig {
         description?: string; // 属性的描述信息
         data: SerializeType; // 属性的默认数据
     }>;
-    /** 依赖 */
-    dependencies?: {
-        plugins?: string[]; // 主题所依赖的插件列表
-        assets?: string[]; // 主题所依赖的资源列表
-    };
-    /** 能力 */
-    capabilities?: Set<CapabilityProps>;
-    
     /** 路由 */
     routes: {
         index: string; // 首页使用的模板

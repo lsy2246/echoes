@@ -20,16 +20,12 @@ export interface PluginConfig {
     icon?: string;      // 插件图标URL（可选）
     managePath?: string; // 插件管理页面路径（可选）
     configuration?: PluginConfiguration; // 插件配置
-    /** 能力 */
-    capabilities?: Set<CapabilityProps>;
+    /** 声明需要使用的能力，没有实际作用 */
+    capabilities?: Set<CapabilityProps<void>>;
     routs: Set<{
         description?: string; // 路由描述（可选）
         path: string; // 路由路径
     }>;
-    // 模块初始化函数
-    initialize?: () => Promise<void>;
-    // 模块销毁函数
-    destroy?: () => Promise<void>
 }
 
 /**

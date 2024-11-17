@@ -5,7 +5,7 @@ CREATE DATABASE echoes;
 --- 安装自动生成uuid插件
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 --- 用户权限枚举
-CREATE TYPE privilege_level AS ENUM ('visitor', 'contributor', 'administrators');
+CREATE TYPE privilege_level AS ENUM ( 'contributor', 'administrators');
 --- 用户信息表
 CREATE TABLE persons
 (
@@ -18,7 +18,7 @@ CREATE TABLE persons
     person_avatar     VARCHAR(255),                        --- 用户头像URL
     person_role       VARCHAR(50),                         --- 用户角色
     person_last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP, --- 最后登录时间
-    person_level      privilege_level     NOT NULL         --- 用户权限
+    person_level      privilege_level     NOT NULL DEFULT 'contributor'       --- 用户权限
 );
 --- 页面状态枚举
 CREATE TYPE publication_status AS ENUM ('draft', 'published', 'private','hide');

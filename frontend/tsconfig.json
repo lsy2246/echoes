@@ -1,19 +1,32 @@
 {
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/.server/**/*.ts",
+    "**/.server/**/*.tsx",
+    "**/.client/**/*.ts",
+    "**/.client/**/*.tsx"
+  ],
   "compilerOptions": {
-    "target": "es6", // 编译到 ES5
-    "lib": ["dom", "dom.iterable", "esnext"], // 指定要编译的库
-    "allowJs": true, // 允许 JavaScript 文件
-    "skipLibCheck": true, // 跳过库检查
-    "esModuleInterop": true, // 支持 CommonJS 模块
-    "allowSyntheticDefaultImports": true, // 允许导入默认值
-    "strict": true, // 启用严格模式
-    "forceConsistentCasingInFileNames": true, // 强制文件名大小写一致
-    "module": "esnext", // 使用 ES 模块
-    "moduleResolution": "node", // 模块解析策略
-    "resolveJsonModule": true, // 允许导入 JSON 模块
-    "isolatedModules": true, // 每个文件单独编译
-    "noEmit": true // 不输出任何文件，只检查类型
-  },
-  "include": ["src/**/*"], // 包含 src 文件夹中的所有 TypeScript 文件
-  "exclude": ["node_modules"] // 排除 node_modules 文件夹
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "types": ["@remix-run/node", "vite/client"],
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "target": "ES2022",
+    "strict": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./app/*"]
+    },
+
+    // Vite takes care of building everything, not tsc.
+    "noEmit": true
+  }
 }
