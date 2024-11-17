@@ -1,16 +1,21 @@
 import { CapabilityService } from "services/capabilityService";
 import { ThemeService } from "services/themeService";
-import { createServiceContext } from "./createServiceContext";
+import { ApiService } from "services/apiService";
+import { createServiceContext } from "hooks/createServiceContext";
 import { ReactNode } from "react";
 
-export const { ExtensionProvider, useExtension } = createServiceContext(
-  "Extension",
-  () => CapabilityService.getInstance(),
+export const { CapabilityProvider, useCapability } = createServiceContext(
+  "Capability", () => CapabilityService.getInstance(),
 );
 
-export const { ThemeProvider, useTheme } = createServiceContext("Theme", () =>
-  ThemeService.getInstance(),
+export const { ThemeProvider, useTheme } = createServiceContext(
+  "Theme", () => ThemeService.getInstance(),
 );
+
+export const { ApiProvider, useApi } = createServiceContext(
+  "Api", () => ThemeService.getInstance(),
+);
+
 
 // File path:hooks/servicesProvider.tsx
 /**
@@ -19,7 +24,11 @@ export const { ThemeProvider, useTheme } = createServiceContext("Theme", () =>
  * @param children - 要渲染的子组件。
  */
 export const ServiceProvider = ({ children }: { children: ReactNode }) => (
-  <ExtensionProvider>
-    <ThemeProvider>{children}</ThemeProvider>
-  </ExtensionProvider>
+  <ApiProvider>
+    <CapabilityProvider>
+      <ThemeProvider>
+      {children}
+      </ThemeProvider>
+    </CapabilityProvider>
+  </ApiProvider>
 );

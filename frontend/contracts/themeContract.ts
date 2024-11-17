@@ -12,10 +12,10 @@ import { SerializeType } from "contracts/generalContract";
 export interface ThemeConfig {
     name: string; // 主题的名称
     displayName: string; // 主题的显示名称
+    icon?: string;      // 主题图标URL（可选）
     version: string; // 主题的版本号
     description?: string; // 主题的描述信息
     author?: string; // 主题的作者信息 
-    entry: string; // 主题的入口路径
     templates: Map<string, ThemeTemplate>; // 主题模板的映射表
     /** 主题全局配置 */
     globalSettings?: {

@@ -32,7 +32,6 @@ CREATE TABLE pages
     page_content          TEXT         NOT NULL,             --- 独立页面内容
     page_mould            VARCHAR(50),                       --- 独立页面模板名称
     page_fields           JSON,                              --- 自定义字段
-    page_path             VARCHAR(255),                      --- 文章路径
     page_status           publication_status DEFAULT 'draft' --- 文章状态
 );
 --- 文章表
@@ -48,7 +47,6 @@ CREATE TABLE posts
     post_status           publication_status DEFAULT 'draft',                                      --- 文章状态
     post_editor           BOOLEAN            DEFAULT FALSE,                                        --- 文章是否编辑未保存
     post_unsaved_content TEXT,                                                                    --- 未保存的文章
-    post_path            VARCHAR(255),                                                            --- 文章路径
     post_created_at       TIMESTAMP          DEFAULT CURRENT_TIMESTAMP,                            --- 文章创建时间
     post_updated_at       TIMESTAMP          DEFAULT CURRENT_TIMESTAMP,                            --- 文章更新时间
     post_published_at     TIMESTAMP,                                                               --- 文章发布时间

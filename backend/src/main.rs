@@ -79,6 +79,20 @@ async fn install() -> status::Custom<String> {
         })
 }
 
+#[get("/system")]
+async fn token_system() -> Result<status::Custom<String>, status::Custom<String>> {
+    // 创建 Claims
+    let claims = secret::CustomClaims {
+        user_id: String::from("system"),
+        device_ua: String::from("system"),
+    };
+    // 生成JWT
+    let token = secret::generate_jwt(claims,Duration::seconds(1))
+        .map_err(|e| status::Custom(Status::InternalServerError, format!("JWT generation failed: {}", e)))?;
+    
+    Ok(status::Custom(Status::Ok, token))
+}
+
 /**
  * 启动Rocket应用
  */
@@ -88,26 +102,7 @@ async fn rocket() -> _ {
     init_db(config.db_config)
         .await
         .expect("Failed to connect to database"); // 初始化数据库连接
-    rocket::build().mount("/", routes![install, ssql]) // 挂载API路由
+    rocket::build()
+        .mount("/", routes![install, ssql]) // 挂载API路由
+        .mount("/auth/token", routes![token_system])
 }
-
-
-// fn main(){
-//     // secret::generate_key().expect("msg");
-//      // 创建claims
-//     let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
-
-//     // 创建 Claims
-//     let claims = secret::CustomClaims {
-//         user_id: String::from("lsy"),
-//         device_ua: String::from("lsy"),
-//     };
-//     let t=String::from("eyJhbGciOiJFZERTQSJ9.eyJleHAiOjE3MzE3NTczMDMsIm5iZiI6MTczMTc1NzI4MywiaWF0IjoxNzMxNzU3MjgzLCJ1c2VyX2lkIjoibHN5IiwiZGV2aWNlX3VhIjoibHN5In0.C8t5XZFSKnnDVmc6WkY-gzGNSAP7lNAjP9yBjhdvIRO7r_QjDnfcm0INIqCt5cyvnRlE2rFJIx_axOfLx2QJAw");
-//     // 生成JWT
-//     let token = secret::generate_jwt(claims,Duration::seconds(20)).expect("msg");
-//     println!("{}", token);
-
-//     // 验证JWT
-//     let a=secret::validate_jwt(&t).expect("msg");
-//     println!("\n\n{}",a.user_id)
-// }

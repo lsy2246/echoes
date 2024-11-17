@@ -40,26 +40,30 @@ export class ApiService {
      * @throws Error 如果未找到凭据或请求失败
      */
     private async getSystemToken(): Promise<string> {
-        const credentials = localStorage.getItem('system_credentials');
-        if (!credentials) {
-            throw new Error('System credentials not found');
+        const username = import.meta.env.VITE_SYSTEM_USERNAME;
+        const password = import.meta.env.VITE_SYSTEM_PASSWORD;
+        if (!username || !password ) {
+            throw new Error('Failed to obtain the username or password of the front-end system');
         }
 
         try {
-            const response = await fetch(`${this.baseURL}/auth/system`, {
+            const response = await fetch(`${this.baseURL}/auth/token/system`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(JSON.parse(credentials)),
+                body: JSON.stringify({
+                    username,
+                    password,
+                }),
             });
 
             if (!response.ok) {
                 throw new Error('Failed to get system token');
             }
 
-            const { token } = await response.json();
-            return token;
+            const data = await response.text();
+            return data; // Assuming the token is in the 'token' field of the response
         } catch (error) {
             console.error('Error getting system token:', error);
             throw error;
@@ -77,7 +81,7 @@ export class ApiService {
     public async request<T>(
         endpoint: string,
         options: RequestInit = {},
-        requiresAuth = true
+        auth ?: string
     ): Promise<T> {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.timeout);
@@ -85,9 +89,8 @@ export class ApiService {
         try {
             const headers = new Headers(options.headers);
             
-            if (requiresAuth) {
-                const token = await this.getSystemToken();
-                headers.set('Authorization', `Bearer ${token}`);
+            if (auth) {
+                headers.set('Authorization', `Bearer ${auth}`);
             }
 
             const response = await fetch(`${this.baseURL}${endpoint}`, {

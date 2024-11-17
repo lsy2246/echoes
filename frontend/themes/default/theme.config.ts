@@ -1,4 +1,4 @@
-import { ThemeConfig } from "types/themeTypeRequirement";
+import { ThemeConfig } from "contracts/themeContract";
 
 export const themeConfig: ThemeConfig = {
     name: 'default',
@@ -15,7 +15,6 @@ export const themeConfig: ThemeConfig = {
           }],
     ]),
     
-    settingsSchema: undefined,
     routes: {
         post: "",
         tag: "",

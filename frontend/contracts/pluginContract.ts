@@ -7,7 +7,6 @@
  * 还包括插件的生命周期钩子和依赖项的配置。
  */
 import { SerializeType } from "contracts/generalContract";
-import { CapabilityProps } from "contracts/capabilityContract";
 
 
 export interface PluginConfig {
@@ -20,8 +19,6 @@ export interface PluginConfig {
     icon?: string;      // 插件图标URL（可选）
     managePath?: string; // 插件管理页面路径（可选）
     configuration?: PluginConfiguration; // 插件配置
-    /** 声明需要使用的能力，没有实际作用 */
-    capabilities?: Set<CapabilityProps<void>>;
     routs: Set<{
         description?: string; // 路由描述（可选）
         path: string; // 路由路径
