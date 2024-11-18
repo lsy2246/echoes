@@ -2,6 +2,7 @@
 
 /** 
     本模块定义了数据库的特征和方法，包括查询构建器和数据库连接。
+    提供了对不同类型数据库的支持，如PostgreSQL。
 */
 
 mod postgresql;
@@ -47,7 +48,14 @@ pub trait DatabaseTrait: Send + Sync {
     async fn execute_query<'a>(
         &'a self,
         builder: &QueryBuilder,
-    ) -> Result<Vec<HashMap<String, String>>, Box<dyn Error + 'a>> ;
+    ) -> Result<Vec<HashMap<String, String>>, Box<dyn Error + 'a>>;
+
+    /** 
+        初始化数据库
+        @param database 数据库配置
+        @return Result<(), Box<dyn Error>> 返回初始化结果或错误
+    */
+    async fn initialization(database: config::SqlConfig) -> Result<(), Box<dyn Error>> where Self: Sized;
 }
 
 #[derive(Clone)]
@@ -70,13 +78,26 @@ impl Database {
         @param database 数据库配置
         @return Result<Self, Box<dyn Error>> 返回数据库实例或错误
     */
-    pub async fn init(database: config::SqlConfig) -> Result<Self, Box<dyn Error>> {
+    pub async fn link(database: config::SqlConfig) -> Result<Self, Box<dyn Error>> {
         let db = match database.db_type.as_str() {
             "postgresql" => postgresql::Postgresql::connect(database).await?,
             _ => return Err("unknown database type".into()),
         };
 
         Ok(Self { db: Arc::new(Box::new(db)) })
+    }
+
+    /** 
+        执行数据库初始化设置
+        @param database 数据库配置
+        @return Result<(), Box<dyn Error>> 返回初始化结果或错误
+    */
+    pub async fn initial_setup(database: config::SqlConfig) -> Result<(), Box<dyn Error>> {
+        match database.db_type.as_str() {
+            "postgresql" => postgresql::Postgresql::initialization(database).await?,
+            _ => return Err("unknown database type".into()),
+        };
+        Ok(())
     }
 }
 

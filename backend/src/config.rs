@@ -4,36 +4,36 @@
 */
 
 use serde::Deserialize;
-use std::{env, fs};
+use std::{ env, fs};
 
-#[derive(Deserialize)]
+#[derive(Deserialize,Debug,Clone)]
 pub struct Config {
     pub info: Info, // 配置信息
     pub sql_config: SqlConfig, // 关系型数据库配置
     // pub no_sql_config:NoSqlConfig, 非关系型数据库配置
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize,Debug,Clone)]
 pub struct Info {
     pub install: bool, // 是否安装
     pub non_relational: bool, // 是否非关系型
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize,Debug,Clone)]
 pub struct SqlConfig {
     pub db_type: String, // 数据库类型
     pub address: String, // 地址
-    pub prot: u32, // 端口
+    pub port: u32, // 端口
     pub user: String, // 用户名
     pub password: String, // 密码
     pub db_name: String, // 数据库名称
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize,Debug,Clone)]
 pub struct NoSqlConfig {
     pub db_type: String, // 数据库类型
     pub address: String, // 地址
-    pub prot: u32, // 端口
+    pub port: u32, // 端口
     pub user: String, // 用户名
     pub password: String, // 密码
     pub db_name: String, // 数据库名称
