@@ -26,7 +26,7 @@ static DB: Lazy<Arc<Mutex<Option<relational::Database>>>> = Lazy::new(|| Arc::ne
 /**
  * 初始化数据库连接
  */
-async fn init_db(database: config::DbConfig) -> Result<(), Box<dyn std::error::Error>> {
+async fn init_db(database: config::SqlConfig) -> Result<(), Box<dyn std::error::Error>> {
     let database = relational::Database::init(database).await?; // 初始化数据库
     *DB.lock().await = Some(database); // 保存数据库实例
     Ok(())
@@ -99,7 +99,7 @@ async fn token_system() -> Result<status::Custom<String>, status::Custom<String>
 #[launch]
 async fn rocket() -> _ {
     let config = config::Config::read().expect("Failed to read config"); // 读取配置
-    init_db(config.db_config)
+    init_db(config.sql_config)
         .await
         .expect("Failed to connect to database"); // 初始化数据库连接
     rocket::build()

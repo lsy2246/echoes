@@ -9,7 +9,8 @@ use std::{env, fs};
 #[derive(Deserialize)]
 pub struct Config {
     pub info: Info, // 配置信息
-    pub db_config: DbConfig, // 数据库配置
+    pub sql_config: SqlConfig, // 关系型数据库配置
+    // pub no_sql_config:NoSqlConfig, 非关系型数据库配置
 }
 
 #[derive(Deserialize)]
@@ -19,7 +20,7 @@ pub struct Info {
 }
 
 #[derive(Deserialize)]
-pub struct DbConfig {
+pub struct SqlConfig {
     pub db_type: String, // 数据库类型
     pub address: String, // 地址
     pub prot: u32, // 端口
@@ -27,6 +28,17 @@ pub struct DbConfig {
     pub password: String, // 密码
     pub db_name: String, // 数据库名称
 }
+
+#[derive(Deserialize)]
+pub struct NoSqlConfig {
+    pub db_type: String, // 数据库类型
+    pub address: String, // 地址
+    pub prot: u32, // 端口
+    pub user: String, // 用户名
+    pub password: String, // 密码
+    pub db_name: String, // 数据库名称
+}
+
 
 impl Config {
     /// 读取配置文件
