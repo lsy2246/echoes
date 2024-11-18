@@ -1,4 +1,3 @@
-// File path: components/ErrorBoundary.tsx
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ThemeService } from '../services/themeService';
 
@@ -28,11 +27,9 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       const themeService = ThemeService.getInstance();
       try {
-        // 尝试使用主题的错误模板
         const errorTemplate = themeService.getTemplate('error');
         return <div dangerouslySetInnerHTML={{ __html: errorTemplate }} />;
       } catch (e) {
-        // 如果无法获取主题模板，显示默认错误页面
         return (
           <div className="error-page">
             <h1>Something went wrong</h1>

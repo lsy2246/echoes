@@ -1,4 +1,3 @@
-// File path: components/LoadingBoundary.tsx
 import React, { Suspense } from 'react';
 
 interface LoadingBoundaryProps {

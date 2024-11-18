@@ -1,47 +1,39 @@
-// config/mod.rs
-/*
-   配置文件结构和操作
-*/
-
 use serde::Deserialize;
 use std::{ env, fs};
 
 #[derive(Deserialize,Debug,Clone)]
 pub struct Config {
-    pub info: Info, // 配置信息
-    pub sql_config: SqlConfig, // 关系型数据库配置
-    // pub no_sql_config:NoSqlConfig, 非关系型数据库配置
+    pub info: Info,
+    pub sql_config: SqlConfig,
 }
 
 #[derive(Deserialize,Debug,Clone)]
 pub struct Info {
-    pub install: bool, // 是否安装
-    pub non_relational: bool, // 是否非关系型
+    pub install: bool,
+    pub non_relational: bool,
 }
 
 #[derive(Deserialize,Debug,Clone)]
 pub struct SqlConfig {
-    pub db_type: String, // 数据库类型
-    pub address: String, // 地址
-    pub port: u32, // 端口
-    pub user: String, // 用户名
-    pub password: String, // 密码
-    pub db_name: String, // 数据库名称
+    pub db_type: String,
+    pub address: String,
+    pub port: u32,
+    pub user: String,
+    pub password: String,
+    pub db_name: String,
 }
 
 #[derive(Deserialize,Debug,Clone)]
 pub struct NoSqlConfig {
-    pub db_type: String, // 数据库类型
-    pub address: String, // 地址
-    pub port: u32, // 端口
-    pub user: String, // 用户名
-    pub password: String, // 密码
-    pub db_name: String, // 数据库名称
+    pub db_type: String,
+    pub address: String,
+    pub port: u32,
+    pub user: String,
+    pub password: String,
+    pub db_name: String,
 }
 
-
 impl Config {
-    /// 读取配置文件
     pub fn read() -> Result<Self, Box<dyn std::error::Error>> {
         let path = env::current_dir()?
             .join("assets")

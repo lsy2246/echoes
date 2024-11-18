@@ -16,13 +16,6 @@ export const { ApiProvider, useApi } = createServiceContext(
   "Api", () => ThemeService.getInstance(),
 );
 
-
-// File path:hooks/servicesProvider.tsx
-/**
- * ServiceProvider 组件用于提供扩展和主题上下文给其子组件。
- *
- * @param children - 要渲染的子组件。
- */
 export const ServiceProvider = ({ children }: { children: ReactNode }) => (
   <ApiProvider>
     <CapabilityProvider>

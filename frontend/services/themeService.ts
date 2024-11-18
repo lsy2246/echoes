@@ -1,4 +1,3 @@
-// File path: services/themeService.ts
 import { ThemeConfig, ThemeTemplate } from "contracts/themeContract";
 import { ApiService } from "./apiService";
 
@@ -19,18 +18,12 @@ export class ThemeService {
     return ThemeService.instance;
   }
 
-  /**
-   * 初始化主题服务
-   */
   public async initialize(): Promise<void> {
     try {
-      // 从API获取当前主题配置
       const themeConfig = await this.api.request<ThemeConfig>(
         '/theme/current',
         { method: 'GET' }
       );
-      
-      // 加载主题配置
       await this.loadTheme(themeConfig);
     } catch (error) {
       console.error('Failed to initialize theme:', error);
@@ -38,9 +31,6 @@ export class ThemeService {
     }
   }
 
-  /**
-   * 加载主题配置
-   */
   private async loadTheme(config: ThemeConfig): Promise<void> {
     try {
       this.currentTheme = config;
@@ -51,9 +41,6 @@ export class ThemeService {
     }
   }
 
-  /**
-   * 加载主题模板
-   */
   private async loadTemplates(): Promise<void> {
     if (!this.currentTheme) {
       throw new Error('No theme configuration loaded');
@@ -70,23 +57,16 @@ export class ThemeService {
       }
     };
 
-    // 并行加载所有模板
     const loadPromises = Array.from(this.currentTheme.templates.values())
       .map(template => loadTemplate(template));
     
     await Promise.all(loadPromises);
   }
 
-  /**
-   * 获取主题配置
-   */
   public getThemeConfig(): ThemeConfig | undefined {
     return this.currentTheme;
   }
 
-  /**
-   * 获取模板内容
-   */
   public getTemplate(templateName: string): string {
     const template = this.templates.get(templateName);
     if (!template) {
@@ -95,9 +75,6 @@ export class ThemeService {
     return template;
   }
 
-  /**
-   * 根据路由获取对应的模板
-   */
   public getTemplateByRoute(route: string): string {
     if (!this.currentTheme) {
       throw new Error('No theme configuration loaded');
@@ -105,7 +82,6 @@ export class ThemeService {
 
     let templateName: string | undefined;
 
-    // 检查是否是预定义路由
     if (route === '/') {
       templateName = this.currentTheme.routes.index;
     } else if (route.startsWith('/post/')) {
@@ -115,7 +91,6 @@ export class ThemeService {
     } else if (route.startsWith('/category/')) {
       templateName = this.currentTheme.routes.category;
     } else {
-      // 检查自定义页面路由
       templateName = this.currentTheme.routes.page.get(route);
     }
 
@@ -126,9 +101,6 @@ export class ThemeService {
     return this.getTemplate(templateName);
   }
 
-  /**
-   * 更新主题配置
-   */
   public async updateThemeConfig(config: Partial<ThemeConfig>): Promise<void> {
     try {
       const updatedConfig = await this.api.request<ThemeConfig>(
