@@ -18,6 +18,7 @@ export interface ThemeConfig {
         tag: string;
         category: string;
         error: string;
+        loding: string;
         page: Map<string, string>;
     }
 }

@@ -1,4 +1,4 @@
-use super::{DatabaseTrait, QueryBuilder};
+use super::{DatabaseTrait,builder};
 use crate::config;
 use async_trait::async_trait;
 use sqlx::{Column, PgPool, Row, Executor};
@@ -49,9 +49,9 @@ impl DatabaseTrait for Postgresql {
 
     async fn execute_query<'a>(
         &'a self,
-        builder: &QueryBuilder,
+        builder: &builder::QueryBuilder,
     ) -> Result<Vec<HashMap<String, String>>, Box<dyn Error + 'a>> {
-        let (query, values) = builder.build();
+        let (query, values) = builder.build()?;
         
         let mut sqlx_query = sqlx::query(&query);
         

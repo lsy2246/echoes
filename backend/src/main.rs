@@ -1,73 +1,104 @@
 mod config;
 mod database;
-mod secret;
-
+mod auth;
+mod utils;
+mod routes;
 use chrono::Duration;
 use database::relational;
-use once_cell::sync::Lazy;
-use rocket::{get, post, http::Status, launch, response::status, routes, serde::json::Json};
+use rocket::{
+    get, post,
+    http::Status,
+    launch,
+    response::status,
+    State,
+};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-static SQL: Lazy<Arc<Mutex<Option<relational::Database>>>> =
-    Lazy::new(|| Arc::new(Mutex::new(None)));
-
-async fn init_sql(database: config::SqlConfig) -> Result<(), Box<dyn std::error::Error>> {
-    let database = relational::Database::link(database).await?;
-    *SQL.lock().await = Some(database);
-    Ok(())
+#[derive(Debug)]
+pub enum AppError {
+    Database(String),
+    Config(String),
+    Auth(String),
 }
 
-async fn get_sql() -> Result<relational::Database, Box<dyn std::error::Error>> {
-    SQL.lock()
-        .await
-        .clone()
-        .ok_or_else(|| "Database not initialized".into())
+impl From<AppError> for status::Custom<String> {
+    fn from(error: AppError) -> Self {
+        match error {
+            AppError::Database(msg) => status::Custom(Status::InternalServerError, format!("Database error: {}", msg)),
+            AppError::Config(msg) => status::Custom(Status::InternalServerError, format!("Config error: {}", msg)),
+            AppError::Auth(msg) => status::Custom(Status::InternalServerError, format!("Auth error: {}", msg)),
+        }
+    }
 }
 
-#[post("/install", format = "json", data = "<data>")]
-async fn install(data: Json<config::SqlConfig>) -> Result<status::Custom<String>, status::Custom<String>> {
-    relational::Database::initial_setup(data.into_inner()).await.map_err(|e| {
-        status::Custom(
-            Status::InternalServerError,
-            format!("Database initialization failed: {}", e),
-        )
-    })?;
-        
-    Ok(status::Custom(
-        Status::Ok,
-        format!("Initialization successful"),
-    ))
+type AppResult<T> = Result<T, AppError>;
+
+struct AppState {
+    db: Arc<Mutex<Option<relational::Database>>>,
+    configure: Arc<Mutex<config::Config>>,
 }
+
+impl AppState {
+    async fn get_sql(&self) -> AppResult<relational::Database> {
+        self.db
+            .lock()
+            .await
+            .clone()
+            .ok_or_else(|| AppError::Database("Database not initialized".into()))
+    }
+
+    async fn link_sql(&self, config: config::SqlConfig) -> AppResult<()> {
+        let database = relational::Database::link(config)
+            .await
+            .map_err(|e| AppError::Database(e.to_string()))?;
+        *self.db.lock().await = Some(database);
+        Ok(())
+    }
+
+}
+
+
 
 #[get("/system")]
-async fn token_system() -> Result<status::Custom<String>, status::Custom<String>> {
-    let claims = secret::CustomClaims {
-        user_id: String::from("system"),
-        device_ua: String::from("system"),
+async fn token_system(_state: &State<AppState>) -> Result<status::Custom<String>, status::Custom<String>> {
+    let claims = auth::jwt::CustomClaims {
+        user_id: "system".into(),
+        device_ua: "system".into(),
     };
-    let token = secret::generate_jwt(claims, Duration::seconds(1)).map_err(|e| {
-        status::Custom(
-            Status::InternalServerError,
-            format!("JWT generation failed: {}", e),
-        )
-    })?;
 
-    Ok(status::Custom(Status::Ok, token))
+    auth::jwt::generate_jwt(claims, Duration::seconds(1))
+        .map(|token| status::Custom(Status::Ok, token))
+        .map_err(|e| AppError::Auth(e.to_string()).into())
 }
+
 
 #[launch]
 async fn rocket() -> _ {
     let config = config::Config::read().expect("Failed to read config");
+    
+    let state = AppState {
+        db: Arc::new(Mutex::new(None)),
+        configure: Arc::new(Mutex::new(config.clone())),
+    };
+
+    let mut rocket_builder = rocket::build().manage(state);
 
     if config.info.install {
-        init_sql(config.sql_config)
-        .await
-        .expect("Failed to connect to database");
-        rocket::build()
-        .mount("/auth/token", routes![token_system])   
-    } else {
-        rocket::build()
-        .mount("/", routes![install])
+        if let Some(state) = rocket_builder.state::<AppState>() {
+            state.link_sql(config.sql_config.clone())
+                .await
+                .expect("Failed to connect to database");
+        }
     }
+
+    if ! config.info.install {
+        rocket_builder = rocket_builder
+            .mount("/", rocket::routes![routes::install]);
+    } 
+   
+    rocket_builder = rocket_builder
+            .mount("/auth/token", routes![token_system]);
+
+    rocket_builder
 }

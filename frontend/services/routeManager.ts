@@ -1,6 +1,5 @@
 import React from 'react'; // Import React
-import { useEffect } from 'react';
-import {  LoaderFunction, RouteObject } from 'react-router-dom';
+import { LoaderFunction, RouteObject } from 'react-router-dom';
 
 export class RouteManager {
   private static instance: RouteManager;
@@ -15,30 +14,18 @@ export class RouteManager {
     return RouteManager.instance;
   }
 
-  private register(path:string, element: React.ReactNode) {
+
+  private createRouteElement(path: string,element:React.ReactNode,loader?:LoaderFunction,children?:RouteObject[]) {
     this.routes.push({
       path,
       element,
-    });
-  }
-
-
-  private createRouteElement(path: string,element:React.ReactNode,loader?:LoaderFunction) {
-    this.routes.push({
-      path,
-      element,
-      loader?: loader
+      loader,
+      children,
     })
   }
 
-  public getRoutes(): RouteObject[] {
+  private getRoutes(): RouteObject[] {
     return this.routes;
   }
 
-  public addRoute(path: string, templateName: string): void {
-    this.routes.push({
-      path,
-      element: this.createRouteElement(templateName),
-    });
-  }
 }

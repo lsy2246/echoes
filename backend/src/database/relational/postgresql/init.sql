@@ -3,12 +3,12 @@ CREATE TYPE privilege_level AS ENUM ( 'contributor', 'administrators');
 CREATE TABLE persons
 (
     person_name       VARCHAR(100) PRIMARY KEY,
+    person_avatar     VARCHAR(255),
     person_email      VARCHAR(255) UNIQUE NOT NULL,
     person_icon       VARCHAR(255),
     person_password   VARCHAR(255)        NOT NULL,
     person_created_at TIMESTAMP                    DEFAULT CURRENT_TIMESTAMP,
     person_updated_at TIMESTAMP                    DEFAULT CURRENT_TIMESTAMP,
-    person_avatar     VARCHAR(255),
     person_role       VARCHAR(50),
     person_last_login TIMESTAMP                    DEFAULT CURRENT_TIMESTAMP,
     person_level      privilege_level     NOT NULL DEFAULT 'contributor'

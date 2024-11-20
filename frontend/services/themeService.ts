@@ -4,7 +4,6 @@ import { ApiService } from "./apiService";
 export class ThemeService {
   private static instance: ThemeService;
   private currentTheme?: ThemeConfig;
-  private templates: Map<string, string> = new Map();
   private api: ApiService;
 
   private constructor(api: ApiService) {
