@@ -1,6 +1,8 @@
-mod intsall;
-use rocket::routes;
+pub mod intsall;
+pub mod person;
+use rocket::routes; 
 
-pub fn create_routes() -> routes {
-    routes!["/", intsall::install]
-}
+// pub fn create_routes() -> Vec<rocket::Route> {
+
+// }
+

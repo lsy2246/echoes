@@ -34,7 +34,7 @@ impl DatabaseTrait for Postgresql {
         Ok(())
     }
 
-    async fn connect(db_config: config::SqlConfig) -> Result<Self, Box<dyn Error>> {
+    async fn connect(db_config: &config::SqlConfig) -> Result<Self, Box<dyn Error>> {
         let connection_str = format!(
             "postgres://{}:{}@{}:{}/{}",
             db_config.user, db_config.password, db_config.address, db_config.port, db_config.db_name
@@ -52,9 +52,9 @@ impl DatabaseTrait for Postgresql {
         builder: &builder::QueryBuilder,
     ) -> Result<Vec<HashMap<String, String>>, Box<dyn Error + 'a>> {
         let (query, values) = builder.build()?;
-        
+
         let mut sqlx_query = sqlx::query(&query);
-        
+
         for value in values {
             sqlx_query = sqlx_query.bind(value);
         }

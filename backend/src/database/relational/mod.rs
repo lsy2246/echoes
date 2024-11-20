@@ -31,7 +31,7 @@ impl Error for DatabaseError {}
 
 #[async_trait]
 pub trait DatabaseTrait: Send + Sync {
-    async fn connect(database: config::SqlConfig) -> Result<Self, Box<dyn Error>>
+    async fn connect(database: &config::SqlConfig) -> Result<Self, Box<dyn Error>>
     where
         Self: Sized;
     async fn execute_query<'a>(
@@ -53,7 +53,7 @@ impl Database {
         &self.db
     }
 
-    pub async fn link(database: config::SqlConfig) -> Result<Self, Box<dyn Error>> {
+    pub async fn link(database: &config::SqlConfig) -> Result<Self, Box<dyn Error>> {
         let db = match database.db_type.as_str() {
             "postgresql" => postgresql::Postgresql::connect(database).await?,
             _ => return Err("unknown database type".into()),

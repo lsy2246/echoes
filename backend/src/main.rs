@@ -49,7 +49,7 @@ impl AppState {
     }
 
     async fn link_sql(&self, config: config::SqlConfig) -> AppResult<()> {
-        let database = relational::Database::link(config)
+        let database = relational::Database::link(&config)
             .await
             .map_err(|e| AppError::Database(e.to_string()))?;
         *self.db.lock().await = Some(database);
@@ -63,14 +63,14 @@ impl AppState {
 #[get("/system")]
 async fn token_system(_state: &State<AppState>) -> Result<status::Custom<String>, status::Custom<String>> {
     let claims = auth::jwt::CustomClaims {
-        user_id: "system".into(),
-        device_ua: "system".into(),
+        name: "system".into(),
     };
 
     auth::jwt::generate_jwt(claims, Duration::seconds(1))
         .map(|token| status::Custom(Status::Ok, token))
         .map_err(|e| AppError::Auth(e.to_string()).into())
 }
+
 
 
 #[launch]
@@ -94,11 +94,28 @@ async fn rocket() -> _ {
 
     if ! config.info.install {
         rocket_builder = rocket_builder
-            .mount("/", rocket::routes![routes::install]);
+            .mount("/", rocket::routes![routes::intsall::install]);
     } 
    
     rocket_builder = rocket_builder
-            .mount("/auth/token", routes![token_system]);
+            .mount("/auth/token", rocket::routes![token_system])
+            .mount("/", rocket::routes![routes::intsall::test]);
 
     rocket_builder
 }
+
+#[tokio::test]
+async fn test_placeholder() {
+    let config = config::Config::read().expect("Failed to read config");
+    
+    let state = AppState {
+        db: Arc::new(Mutex::new(None)),
+        configure: Arc::new(Mutex::new(config.clone())),
+    };
+    state.link_sql(config.sql_config.clone())
+        .await
+        .expect("Failed to connect to database");
+    let sql=state.get_sql().await.expect("Failed to get sql");
+    let _=routes::person::insert(&sql,routes::person::RegisterData{ name: String::from("test"), email: String::from("lsy22@vip.qq.com"), password:String::from("test") }).await.unwrap();
+}
+

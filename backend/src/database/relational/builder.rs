@@ -276,4 +276,28 @@ impl QueryBuilder {
 
         Ok((sql, values))
     }
+    pub fn fields(mut self, fields: Vec<ValidatedValue>) -> Self {
+        self.fields = fields;
+        self
+    }
+
+    pub fn params(mut self, params:  HashMap<ValidatedValue, ValidatedValue>) -> Self {
+        self.params = params;
+        self
+    }
+
+    pub fn where_clause(mut self, clause: WhereClause) -> Self {
+        self.where_clause = Some(clause);
+        self
+    }
+
+    pub fn order_by(mut self, order: ValidatedValue) -> Self {
+        self.order_by = Some(order);
+        self
+    }
+
+    pub fn limit(mut self, limit: i32) -> Self {
+        self.limit = Some(limit);
+        self
+    }
 }

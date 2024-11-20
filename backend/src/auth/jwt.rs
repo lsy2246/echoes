@@ -10,8 +10,7 @@ use rand::{SeedableRng, RngCore};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CustomClaims {
-    pub user_id: String,
-    pub device_ua: String,
+    pub name: String,
 }
 
 pub enum SecretKey {
