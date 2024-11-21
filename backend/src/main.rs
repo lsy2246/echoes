@@ -6,33 +6,13 @@ mod routes;
 use chrono::Duration;
 use database::relational;
 use rocket::{
-    get, post,
-    http::Status,
-    launch,
-    response::status,
-    State,
+    get, http::Status, launch, outcome::IntoOutcome, post, response::status, State
 };
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use std::error::Error;
 
-#[derive(Debug)]
-pub enum AppError {
-    Database(String),
-    Config(String),
-    Auth(String),
-}
 
-impl From<AppError> for status::Custom<String> {
-    fn from(error: AppError) -> Self {
-        match error {
-            AppError::Database(msg) => status::Custom(Status::InternalServerError, format!("Database error: {}", msg)),
-            AppError::Config(msg) => status::Custom(Status::InternalServerError, format!("Config error: {}", msg)),
-            AppError::Auth(msg) => status::Custom(Status::InternalServerError, format!("Auth error: {}", msg)),
-        }
-    }
-}
-
-type AppResult<T> = Result<T, AppError>;
 
 struct AppState {
     db: Arc<Mutex<Option<relational::Database>>>,
@@ -40,18 +20,17 @@ struct AppState {
 }
 
 impl AppState {
-    async fn get_sql(&self) -> AppResult<relational::Database> {
+        async fn get_sql(&self) -> Result<relational::Database,Box<dyn Error>> {
         self.db
             .lock()
             .await
             .clone()
-            .ok_or_else(|| AppError::Database("Database not initialized".into()))
+            .ok_or_else(|| "Database not initialized".into())
     }
 
-    async fn link_sql(&self, config: config::SqlConfig) -> AppResult<()> {
+    async fn link_sql(&self, config: config::SqlConfig) ->  Result<,Box<dyn Error>>  {
         let database = relational::Database::link(&config)
-            .await
-            .map_err(|e| AppError::Database(e.to_string()))?;
+            .await?;
         *self.db.lock().await = Some(database);
         Ok(())
     }
@@ -68,7 +47,7 @@ async fn token_system(_state: &State<AppState>) -> Result<status::Custom<String>
 
     auth::jwt::generate_jwt(claims, Duration::seconds(1))
         .map(|token| status::Custom(Status::Ok, token))
-        .map_err(|e| AppError::Auth(e.to_string()).into())
+        .map_err(|e| status::Custom(Status::InternalServerError, e.to_string()))
 }
 
 

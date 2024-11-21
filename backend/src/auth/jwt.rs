@@ -5,7 +5,7 @@ use ed25519_dalek::{SigningKey, VerifyingKey};
 use std::fs::File;
 use std::io::Write;
 use std::{env, fs};
-use std::error::Error;
+use crate::utils::CustomError;
 use rand::{SeedableRng, RngCore};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -27,7 +27,7 @@ impl SecretKey {
     }
 }
 
-pub fn generate_key() -> Result<(), Box<dyn Error>> {
+pub fn generate_key() -> Result<(),CustomError> {
     let mut csprng = rand::rngs::StdRng::from_entropy();
 
     let mut private_key_bytes = [0u8; 32];
@@ -49,7 +49,7 @@ pub fn generate_key() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn get_key(key_type: SecretKey) -> Result<[u8; 32], Box<dyn Error>> {
+pub fn get_key(key_type: SecretKey) -> Result<[u8; 32],CustomError> {
     let path = env::current_dir()?
         .join("assets")
         .join("key")
@@ -60,7 +60,7 @@ pub fn get_key(key_type: SecretKey) -> Result<[u8; 32], Box<dyn Error>> {
     Ok(key)
 }
 
-pub fn generate_jwt(claims: CustomClaims, duration: Duration) -> Result<String, Box<dyn Error>> {
+pub fn generate_jwt(claims: CustomClaims, duration: Duration) -> Result<String,CustomError> {
     let key_bytes = get_key(SecretKey::Signing)?;
     let signing_key = SigningKey::from_bytes(&key_bytes);
 
@@ -79,7 +79,7 @@ pub fn generate_jwt(claims: CustomClaims, duration: Duration) -> Result<String, 
     Ok(token)
 }
 
-pub fn validate_jwt(token: &str) -> Result<CustomClaims, Box<dyn Error>> {
+pub fn validate_jwt(token: &str) -> Result<CustomClaims, CustomError> {
     let key_bytes = get_key(SecretKey::Verifying)?;
     let verifying = VerifyingKey::from_bytes(&key_bytes)?;
     let token = UntrustedToken::new(token)?;

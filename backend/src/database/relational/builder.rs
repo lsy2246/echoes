@@ -1,8 +1,6 @@
 use regex::Regex;
+use crate::utils::CustomError;
 use std::collections::HashMap;
-use super::DatabaseError;
-
-
 use std::hash::Hash;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -13,17 +11,15 @@ pub enum ValidatedValue {
 }
 
 impl ValidatedValue {
-    pub fn new_identifier(value: String) -> Result<Self, DatabaseError> {
+    pub fn new_identifier(value: String) -> Result<Self, CustomError> {
         let valid_pattern = Regex::new(r"^[a-zA-Z][a-zA-Z0-9_]{0,63}$").unwrap();
         if !valid_pattern.is_match(&value) {
-            return Err(DatabaseError::ValidationError(
-                "Invalid identifier format".to_string(),
-            ));
+            return Err(CustomError::from_str("Invalid identifier format"));
         }
         Ok(ValidatedValue::Identifier(value))
     }
 
-    pub fn new_rich_text(value: String) -> Result<Self, DatabaseError> {
+    pub fn new_rich_text(value: String) -> Result<Self, CustomError> {
         let dangerous_patterns = [
             "UNION ALL SELECT",
             "UNION SELECT",
@@ -42,24 +38,24 @@ impl ValidatedValue {
         let value_upper = value.to_uppercase();
         for pattern in dangerous_patterns.iter() {
             if value_upper.contains(&pattern.to_uppercase()) {
-                return Err(DatabaseError::SqlInjectionAttempt(
-                    format!("Dangerous SQL pattern detected: {}", pattern)
-                ));
+                return Err(CustomError::from_str("Invalid identifier format"));
             }
         }
         Ok(ValidatedValue::RichText(value))
     }
 
-    pub fn new_plain_text(value: String) -> Result<Self, DatabaseError> {
+    pub fn new_plain_text(value: String) -> Result<Self, CustomError> {
         if value.contains(';') || value.contains("--") {
-            return Err(DatabaseError::ValidationError("Invalid characters in text".to_string()));
+            return Err(CustomError::from_str("Invalid characters in text"));
         }
         Ok(ValidatedValue::PlainText(value))
     }
 
     pub fn get(&self) -> &str {
         match self {
-            ValidatedValue::Identifier(s) | ValidatedValue::RichText(s) | ValidatedValue::PlainText(s) => s,
+            ValidatedValue::Identifier(s)
+            | ValidatedValue::RichText(s)
+            | ValidatedValue::PlainText(s) => s,
         }
     }
 }
@@ -105,7 +101,7 @@ impl Operator {
 
 #[derive(Debug, Clone)]
 pub struct WhereCondition {
-    field: ValidatedValue, 
+    field: ValidatedValue,
     operator: Operator,
     value: Option<ValidatedValue>,
 }
@@ -115,9 +111,9 @@ impl WhereCondition {
         field: String,
         operator: Operator,
         value: Option<String>,
-    ) -> Result<Self, DatabaseError> {
+    ) -> Result<Self, CustomError> {
         let field = ValidatedValue::new_identifier(field)?;
-        
+
         let value = match value {
             Some(v) => Some(match operator {
                 Operator::Like => ValidatedValue::new_plain_text(v)?,
@@ -140,19 +136,19 @@ pub enum WhereClause {
     Or(Vec<WhereClause>),
     Condition(WhereCondition),
 }
-
+#[derive(Debug, Clone)]
 pub struct QueryBuilder {
     operation: SqlOperation,
     table: ValidatedValue,
-    fields: Vec<ValidatedValue>, 
-    params: HashMap<ValidatedValue, ValidatedValue>, 
+    fields: Vec<ValidatedValue>,
+    params: HashMap<ValidatedValue, ValidatedValue>,
     where_clause: Option<WhereClause>,
-    order_by: Option<ValidatedValue>, 
+    order_by: Option<ValidatedValue>,
     limit: Option<i32>,
 }
 
 impl QueryBuilder {
-    pub fn new(operation: SqlOperation, table: String) -> Result<Self, DatabaseError> {
+    pub fn new(operation: SqlOperation, table: String) -> Result<Self, CustomError> {
         Ok(QueryBuilder {
             operation,
             table: ValidatedValue::new_identifier(table)?,
@@ -164,7 +160,7 @@ impl QueryBuilder {
         })
     }
 
-    pub fn build(&self) -> Result<(String, Vec<String>), DatabaseError> {
+    pub fn build(&self) -> Result<(String, Vec<String>), CustomError> {
         let mut query = String::new();
         let mut values = Vec::new();
         let mut param_counter = 1;
@@ -174,7 +170,8 @@ impl QueryBuilder {
                 let fields = if self.fields.is_empty() {
                     "*".to_string()
                 } else {
-                    self.fields.iter()
+                    self.fields
+                        .iter()
                         .map(|f| f.get().to_string())
                         .collect::<Vec<_>>()
                         .join(", ")
@@ -182,12 +179,9 @@ impl QueryBuilder {
                 query.push_str(&format!("SELECT {} FROM {}", fields, self.table.get()));
             }
             SqlOperation::Insert => {
-                let fields: Vec<String> = self.params.keys()
-                    .map(|k| k.get().to_string())
-                    .collect();
-                let placeholders: Vec<String> = (1..=self.params.len())
-                    .map(|i| format!("${}", i))
-                    .collect();
+                let fields: Vec<String> = self.params.keys().map(|k| k.get().to_string()).collect();
+                let placeholders: Vec<String> =
+                    (1..=self.params.len()).map(|i| format!("${}", i)).collect();
 
                 query.push_str(&format!(
                     "INSERT INTO {} ({}) VALUES ({})",
@@ -201,7 +195,8 @@ impl QueryBuilder {
             }
             SqlOperation::Update => {
                 query.push_str(&format!("UPDATE {} SET ", self.table.get()));
-                let set_clauses: Vec<String> = self.params
+                let set_clauses: Vec<String> = self
+                    .params
                     .iter()
                     .map(|(key, _)| {
                         let placeholder = format!("${}", param_counter);
@@ -239,7 +234,7 @@ impl QueryBuilder {
         &self,
         clause: &WhereClause,
         mut param_counter: i32,
-    ) -> Result<(String, Vec<String>), DatabaseError> {
+    ) -> Result<(String, Vec<String>), CustomError> {
         let mut values = Vec::new();
 
         let sql = match clause {
@@ -267,7 +262,12 @@ impl QueryBuilder {
                 if let Some(value) = &cond.value {
                     let placeholder = format!("${}", param_counter);
                     values.push(value.get().to_string());
-                    format!("{} {} {}", cond.field.get(), cond.operator.as_str(), placeholder)
+                    format!(
+                        "{} {} {}",
+                        cond.field.get(),
+                        cond.operator.as_str(),
+                        placeholder
+                    )
                 } else {
                     format!("{} {}", cond.field.get(), cond.operator.as_str())
                 }
@@ -281,7 +281,7 @@ impl QueryBuilder {
         self
     }
 
-    pub fn params(mut self, params:  HashMap<ValidatedValue, ValidatedValue>) -> Self {
+    pub fn params(mut self, params: HashMap<ValidatedValue, ValidatedValue>) -> Self {
         self.params = params;
         self
     }

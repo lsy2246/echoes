@@ -1,7 +1,6 @@
 use serde::{Deserialize,Serialize};
 use crate::{config,utils};
 use crate::database::{relational,relational::builder};
-use crate::{AppError,AppResult};
 use rocket::{
     get, post,
     http::Status,
@@ -11,6 +10,8 @@ use rocket::{
 };
 use std::collections::HashMap;
 use bcrypt::{hash, verify, DEFAULT_COST};
+use crate::utils::CustomError;
+
 
 
 #[derive(Deserialize, Serialize)]
@@ -25,7 +26,7 @@ pub struct RegisterData{
     pub password:String
 } 
 
-pub async fn insert(sql:&relational::Database,data:RegisterData) -> AppResult<()>{
+pub async fn insert(sql:&relational::Database,data:RegisterData) -> Result<(),CustomError>{
     let hashed_password = hash(data.password, DEFAULT_COST).expect("Failed to hash password");
     
 
@@ -46,16 +47,11 @@ pub async fn insert(sql:&relational::Database,data:RegisterData) -> AppResult<()
          builder::ValidatedValue::PlainText(hashed_password)
     );
 
-    let builder = builder::QueryBuilder::new(builder::SqlOperation::Insert,String::from("persons"))
-    .map_err(|e|{
-        AppError::Database(format!("Error while building query: {}", e.to_string()))
-    })?
+    let builder = builder::QueryBuilder::new(builder::SqlOperation::Insert,String::from("persons"))?
     .params(user_params)
     ;
 
-    let _= sql.get_db().execute_query(&builder).await.map_err(|e|{
-        AppError::Database(format!("Travel during execution: {}", e.to_string()))
-    })?;
+    sql.get_db().execute_query(&builder).await?;
     Ok(())
 }
 
