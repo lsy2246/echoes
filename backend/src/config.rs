@@ -1,6 +1,7 @@
 use serde::{Deserialize,Serialize};
 use std::{ env, fs};
 use std::path::PathBuf;
+use crate::utils::CustomResult;
 
 #[derive(Deserialize,Serialize,Debug,Clone)]
 pub struct Config {
@@ -35,17 +36,17 @@ pub struct NoSqlConfig {
 }
 
 impl Config {
-    pub fn read() -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read() -> CustomResult<Self> {
         let path=Self::get_path()?;
         Ok(toml::from_str(&fs::read_to_string(path)?)?)
     }
-    pub fn write(config:Config) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn write(config:Config) -> CustomResult<()> {
         let path=Self::get_path()?;
         fs::write(path, toml::to_string(&config)?)?;
         Ok(())
     }
 
-    pub fn get_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
+    pub fn get_path() -> CustomResult<PathBuf> {
         Ok(env::current_dir()?
             .join("assets")
             .join("config.toml"))

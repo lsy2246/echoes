@@ -6,11 +6,11 @@ mod routes;
 use chrono::Duration;
 use database::relational;
 use rocket::{
-    get, http::Status, launch, outcome::IntoOutcome, post, response::status, State
+    get, http::Status, launch,  response::status, State
 };
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use std::error::Error;
+use utils::{CustomResult, AppResult,CustomError};
 
 
 
@@ -20,15 +20,15 @@ struct AppState {
 }
 
 impl AppState {
-        async fn get_sql(&self) -> Result<relational::Database,Box<dyn Error>> {
+        async fn get_sql(&self) -> CustomResult<relational::Database> {
         self.db
             .lock()
             .await
             .clone()
-            .ok_or_else(|| "Database not initialized".into())
+            .ok_or_else(|| CustomError::from_str("Database not initialized"))
     }
 
-    async fn link_sql(&self, config: config::SqlConfig) ->  Result<,Box<dyn Error>>  {
+    async fn link_sql(&self, config: config::SqlConfig) ->  Result<(),CustomError>  {
         let database = relational::Database::link(&config)
             .await?;
         *self.db.lock().await = Some(database);
@@ -40,7 +40,7 @@ impl AppState {
 
 
 #[get("/system")]
-async fn token_system(_state: &State<AppState>) -> Result<status::Custom<String>, status::Custom<String>> {
+async fn token_system(_state: &State<AppState>) -> AppResult<status::Custom<String>> {
     let claims = auth::jwt::CustomClaims {
         name: "system".into(),
     };
@@ -77,8 +77,7 @@ async fn rocket() -> _ {
     } 
    
     rocket_builder = rocket_builder
-            .mount("/auth/token", rocket::routes![token_system])
-            .mount("/", rocket::routes![routes::intsall::test]);
+            .mount("/auth/token", rocket::routes![token_system]);
 
     rocket_builder
 }

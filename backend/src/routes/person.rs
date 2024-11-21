@@ -9,8 +9,8 @@ use rocket::{
     State,
 };
 use std::collections::HashMap;
-use bcrypt::{hash, verify, DEFAULT_COST};
-use crate::utils::CustomError;
+use bcrypt::{hash, DEFAULT_COST};
+use crate::utils::CustomResult;
 
 
 
@@ -26,7 +26,7 @@ pub struct RegisterData{
     pub password:String
 } 
 
-pub async fn insert(sql:&relational::Database,data:RegisterData) -> Result<(),CustomError>{
+pub async fn insert(sql:&relational::Database,data:RegisterData) -> CustomResult<()>{
     let hashed_password = hash(data.password, DEFAULT_COST).expect("Failed to hash password");
     
 

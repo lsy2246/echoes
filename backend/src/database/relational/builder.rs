@@ -1,5 +1,5 @@
 use regex::Regex;
-use crate::utils::CustomError;
+use crate::utils::{CustomResult,CustomError};
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -11,7 +11,7 @@ pub enum ValidatedValue {
 }
 
 impl ValidatedValue {
-    pub fn new_identifier(value: String) -> Result<Self, CustomError> {
+    pub fn new_identifier(value: String) -> CustomResult<Self> {
         let valid_pattern = Regex::new(r"^[a-zA-Z][a-zA-Z0-9_]{0,63}$").unwrap();
         if !valid_pattern.is_match(&value) {
             return Err(CustomError::from_str("Invalid identifier format"));
@@ -19,7 +19,7 @@ impl ValidatedValue {
         Ok(ValidatedValue::Identifier(value))
     }
 
-    pub fn new_rich_text(value: String) -> Result<Self, CustomError> {
+    pub fn new_rich_text(value: String) -> CustomResult<Self> {
         let dangerous_patterns = [
             "UNION ALL SELECT",
             "UNION SELECT",
@@ -44,7 +44,7 @@ impl ValidatedValue {
         Ok(ValidatedValue::RichText(value))
     }
 
-    pub fn new_plain_text(value: String) -> Result<Self, CustomError> {
+    pub fn new_plain_text(value: String) -> CustomResult<Self> {
         if value.contains(';') || value.contains("--") {
             return Err(CustomError::from_str("Invalid characters in text"));
         }
@@ -111,7 +111,7 @@ impl WhereCondition {
         field: String,
         operator: Operator,
         value: Option<String>,
-    ) -> Result<Self, CustomError> {
+    ) -> CustomResult<Self> {
         let field = ValidatedValue::new_identifier(field)?;
 
         let value = match value {
@@ -148,7 +148,7 @@ pub struct QueryBuilder {
 }
 
 impl QueryBuilder {
-    pub fn new(operation: SqlOperation, table: String) -> Result<Self, CustomError> {
+    pub fn new(operation: SqlOperation, table: String) -> CustomResult<Self> {
         Ok(QueryBuilder {
             operation,
             table: ValidatedValue::new_identifier(table)?,
@@ -160,7 +160,7 @@ impl QueryBuilder {
         })
     }
 
-    pub fn build(&self) -> Result<(String, Vec<String>), CustomError> {
+    pub fn build(&self) -> CustomResult<(String, Vec<String>)> {
         let mut query = String::new();
         let mut values = Vec::new();
         let mut param_counter = 1;
@@ -234,7 +234,7 @@ impl QueryBuilder {
         &self,
         clause: &WhereClause,
         mut param_counter: i32,
-    ) -> Result<(String, Vec<String>), CustomError> {
+    ) -> CustomResult<(String, Vec<String>)> {
         let mut values = Vec::new();
 
         let sql = match clause {

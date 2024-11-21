@@ -2,8 +2,10 @@ use super::{DatabaseTrait,builder};
 use crate::config;
 use async_trait::async_trait;
 use sqlx::{Column, PgPool, Row, Executor};
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 use std::{env, fs};
+use crate::utils::CustomResult;
+
 
 #[derive(Clone)]
 pub struct Postgresql {
@@ -12,7 +14,7 @@ pub struct Postgresql {
 
 #[async_trait]
 impl DatabaseTrait for Postgresql {
-    async fn initialization(db_config: config::SqlConfig) -> Result<(), Box<dyn Error>> {
+    async fn initialization(db_config: config::SqlConfig) -> CustomResult<()> {
         let path = env::current_dir()?
             .join("src")
             .join("database")
@@ -34,15 +36,14 @@ impl DatabaseTrait for Postgresql {
         Ok(())
     }
 
-    async fn connect(db_config: &config::SqlConfig) -> Result<Self, Box<dyn Error>> {
+    async fn connect(db_config: &config::SqlConfig) -> CustomResult<Self> {
         let connection_str = format!(
             "postgres://{}:{}@{}:{}/{}",
             db_config.user, db_config.password, db_config.address, db_config.port, db_config.db_name
         );
 
         let pool = PgPool::connect(&connection_str)
-            .await
-            .map_err(|e| Box::new(e) as Box<dyn Error>)?;
+            .await?;
 
         Ok(Postgresql { pool })
     }
@@ -50,7 +51,7 @@ impl DatabaseTrait for Postgresql {
     async fn execute_query<'a>(
         &'a self,
         builder: &builder::QueryBuilder,
-    ) -> Result<Vec<HashMap<String, String>>, Box<dyn Error + 'a>> {
+    ) -> CustomResult<Vec<HashMap<String, String>>> {
         let (query, values) = builder.build()?;
 
         let mut sqlx_query = sqlx::query(&query);
@@ -61,8 +62,7 @@ impl DatabaseTrait for Postgresql {
 
         let rows = sqlx_query
             .fetch_all(&self.pool)
-            .await
-            .map_err(|e| Box::new(e) as Box<dyn Error>)?;
+            .await?;
 
         let mut results = Vec::new();
         for row in rows {

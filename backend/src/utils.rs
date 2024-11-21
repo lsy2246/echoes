@@ -1,5 +1,5 @@
 use rand::seq::SliceRandom;
-
+use rocket::response::status;
 
 pub fn generate_random_string(length: usize) -> String {
     let charset = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -8,7 +8,7 @@ pub fn generate_random_string(length: usize) -> String {
         .map(|_| *charset.choose(&mut rng).unwrap() as char)
         .collect()
 }
-
+#[derive(Debug)]
 pub struct CustomError(String);
 
 impl std::fmt::Display for CustomError {
@@ -16,7 +16,6 @@ impl std::fmt::Display for CustomError {
         write!(f, "{}", self.0)
     }
 }
-
 
 impl<T> From<T> for CustomError
 where
@@ -32,3 +31,7 @@ impl CustomError {
         CustomError(error.to_string())
     }
 }
+
+pub type CustomResult<T> = Result<T, CustomError>;
+
+pub type AppResult<T> = Result<T, status::Custom<String>>;
