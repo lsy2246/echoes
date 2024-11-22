@@ -1,11 +1,10 @@
-use super::{DatabaseTrait,builder};
+use super::{builder, DatabaseTrait};
 use crate::config;
+use crate::utils::CustomResult;
 use async_trait::async_trait;
-use sqlx::{Column, PgPool, Row, Executor};
+use sqlx::{Column, Executor, PgPool, Row};
 use std::collections::HashMap;
 use std::{env, fs};
-use crate::utils::CustomResult;
-
 
 #[derive(Clone)]
 pub struct Postgresql {
@@ -23,12 +22,23 @@ impl DatabaseTrait for Postgresql {
             .join("init.sql");
         let grammar = fs::read_to_string(&path)?;
 
-        let connection_str = format!("postgres://{}:{}@{}:{}", db_config.user, db_config.password, db_config.address, db_config.port);
+        let connection_str = format!(
+            "postgres://{}:{}@{}:{}",
+            db_config.user, db_config.password, db_config.address, db_config.port
+        );
         let pool = PgPool::connect(&connection_str).await?;
 
-        pool.execute(format!("CREATE DATABASE {}", db_config.db_name).as_str()).await?;
+        pool.execute(format!("CREATE DATABASE {}", db_config.db_name).as_str())
+            .await?;
 
-        let new_connection_str = format!("postgres://{}:{}@{}:{}/{}", db_config.user, db_config.password, db_config.address, db_config.port, db_config.db_name);
+        let new_connection_str = format!(
+            "postgres://{}:{}@{}:{}/{}",
+            db_config.user,
+            db_config.password,
+            db_config.address,
+            db_config.port,
+            db_config.db_name
+        );
         let new_pool = PgPool::connect(&new_connection_str).await?;
 
         new_pool.execute(grammar.as_str()).await?;
@@ -39,11 +49,14 @@ impl DatabaseTrait for Postgresql {
     async fn connect(db_config: &config::SqlConfig) -> CustomResult<Self> {
         let connection_str = format!(
             "postgres://{}:{}@{}:{}/{}",
-            db_config.user, db_config.password, db_config.address, db_config.port, db_config.db_name
+            db_config.user,
+            db_config.password,
+            db_config.address,
+            db_config.port,
+            db_config.db_name
         );
 
-        let pool = PgPool::connect(&connection_str)
-            .await?;
+        let pool = PgPool::connect(&connection_str).await?;
 
         Ok(Postgresql { pool })
     }
@@ -60,9 +73,7 @@ impl DatabaseTrait for Postgresql {
             sqlx_query = sqlx_query.bind(value);
         }
 
-        let rows = sqlx_query
-            .fetch_all(&self.pool)
-            .await?;
+        let rows = sqlx_query.fetch_all(&self.pool).await?;
 
         let mut results = Vec::new();
         for row in rows {

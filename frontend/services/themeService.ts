@@ -20,12 +20,12 @@ export class ThemeService {
   public async initialize(): Promise<void> {
     try {
       const themeConfig = await this.api.request<ThemeConfig>(
-        '/theme/current',
-        { method: 'GET' }
+        "/theme/current",
+        { method: "GET" },
       );
       await this.loadTheme(themeConfig);
     } catch (error) {
-      console.error('Failed to initialize theme:', error);
+      console.error("Failed to initialize theme:", error);
       throw error;
     }
   }
@@ -35,14 +35,14 @@ export class ThemeService {
       this.currentTheme = config;
       await this.loadTemplates();
     } catch (error) {
-      console.error('Failed to load theme:', error);
+      console.error("Failed to load theme:", error);
       throw error;
     }
   }
 
   private async loadTemplates(): Promise<void> {
     if (!this.currentTheme) {
-      throw new Error('No theme configuration loaded');
+      throw new Error("No theme configuration loaded");
     }
 
     const loadTemplate = async (template: ThemeTemplate) => {
@@ -56,9 +56,10 @@ export class ThemeService {
       }
     };
 
-    const loadPromises = Array.from(this.currentTheme.templates.values())
-      .map(template => loadTemplate(template));
-    
+    const loadPromises = Array.from(this.currentTheme.templates.values()).map(
+      (template) => loadTemplate(template),
+    );
+
     await Promise.all(loadPromises);
   }
 
@@ -76,18 +77,18 @@ export class ThemeService {
 
   public getTemplateByRoute(route: string): string {
     if (!this.currentTheme) {
-      throw new Error('No theme configuration loaded');
+      throw new Error("No theme configuration loaded");
     }
 
     let templateName: string | undefined;
 
-    if (route === '/') {
+    if (route === "/") {
       templateName = this.currentTheme.routes.index;
-    } else if (route.startsWith('/post/')) {
+    } else if (route.startsWith("/post/")) {
       templateName = this.currentTheme.routes.post;
-    } else if (route.startsWith('/tag/')) {
+    } else if (route.startsWith("/tag/")) {
       templateName = this.currentTheme.routes.tag;
-    } else if (route.startsWith('/category/')) {
+    } else if (route.startsWith("/category/")) {
       templateName = this.currentTheme.routes.category;
     } else {
       templateName = this.currentTheme.routes.page.get(route);
@@ -103,19 +104,19 @@ export class ThemeService {
   public async updateThemeConfig(config: Partial<ThemeConfig>): Promise<void> {
     try {
       const updatedConfig = await this.api.request<ThemeConfig>(
-        '/theme/config',
+        "/theme/config",
         {
-          method: 'PUT',
+          method: "PUT",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(config),
-        }
+        },
       );
 
       await this.loadTheme(updatedConfig);
     } catch (error) {
-      console.error('Failed to update theme configuration:', error);
+      console.error("Failed to update theme configuration:", error);
       throw error;
     }
   }

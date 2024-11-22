@@ -1,5 +1,5 @@
 [info]
-install = true
+install = false
 non_relational = false
 
 [sql_config]

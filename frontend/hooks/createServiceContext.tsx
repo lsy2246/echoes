@@ -1,6 +1,6 @@
-import { createContext, useContext, ReactNode, FC } from 'react';
+import { createContext, useContext, ReactNode, FC } from "react";
 
-type ServiceContextReturn<N extends string,T> = {
+type ServiceContextReturn<N extends string, T> = {
   [K in `${N}Provider`]: FC<{ children: ReactNode }>;
 } & {
   [K in `use${N}`]: () => T;
@@ -8,8 +8,8 @@ type ServiceContextReturn<N extends string,T> = {
 
 export function createServiceContext<T, N extends string>(
   serviceName: N,
-  getServiceInstance: () => T
-): ServiceContextReturn<N,T> {
+  getServiceInstance: () => T,
+): ServiceContextReturn<N, T> {
   const ServiceContext = createContext<T | undefined>(undefined);
 
   const Provider: FC<{ children: ReactNode }> = ({ children }) => (
@@ -21,7 +21,9 @@ export function createServiceContext<T, N extends string>(
   const useService = (): T => {
     const context = useContext(ServiceContext);
     if (context === undefined) {
-      throw new Error(`use${serviceName} must be used within a ${serviceName}Provider`);
+      throw new Error(
+        `use${serviceName} must be used within a ${serviceName}Provider`,
+      );
     }
     return context;
   };
@@ -29,5 +31,5 @@ export function createServiceContext<T, N extends string>(
   return {
     [`${serviceName}Provider`]: Provider,
     [`use${serviceName}`]: useService,
-  } as ServiceContextReturn<N,T>;
+  } as ServiceContextReturn<N, T>;
 }

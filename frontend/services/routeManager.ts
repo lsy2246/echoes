@@ -1,5 +1,5 @@
-import React from 'react'; // Import React
-import { LoaderFunction, RouteObject } from 'react-router-dom';
+import React from "react"; // Import React
+import { LoaderFunction, RouteObject } from "react-router-dom";
 
 export class RouteManager {
   private static instance: RouteManager;
@@ -14,18 +14,21 @@ export class RouteManager {
     return RouteManager.instance;
   }
 
-
-  private createRouteElement(path: string,element:React.ReactNode,loader?:LoaderFunction,children?:RouteObject[]) {
+  private createRouteElement(
+    path: string,
+    element: React.ReactNode,
+    loader?: LoaderFunction,
+    children?: RouteObject[],
+  ) {
     this.routes.push({
       path,
       element,
       loader,
       children,
-    })
+    });
   }
 
   private getRoutes(): RouteObject[] {
     return this.routes;
   }
-
 }

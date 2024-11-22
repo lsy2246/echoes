@@ -1,5 +1,5 @@
+use crate::utils::{CustomError, CustomResult};
 use regex::Regex;
-use crate::utils::{CustomResult,CustomError};
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -107,11 +107,7 @@ pub struct WhereCondition {
 }
 
 impl WhereCondition {
-    pub fn new(
-        field: String,
-        operator: Operator,
-        value: Option<String>,
-    ) -> CustomResult<Self> {
+    pub fn new(field: String, operator: Operator, value: Option<String>) -> CustomResult<Self> {
         let field = ValidatedValue::new_identifier(field)?;
 
         let value = match value {
