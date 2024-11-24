@@ -1,7 +1,8 @@
+use crate::auth;
+use crate::auth::bcrypt;
 use crate::database::{relational, relational::builder};
-use crate::utils::CustomResult;
+use crate::error::{CustomErrorInto, CustomResult};
 use crate::{config, utils};
-use bcrypt::{hash, DEFAULT_COST};
 use rocket::{get, http::Status, post, response::status, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -16,28 +17,36 @@ pub struct RegisterData {
     pub name: String,
     pub email: String,
     pub password: String,
+    pub level: String,
 }
 
 pub async fn insert(sql: &relational::Database, data: RegisterData) -> CustomResult<()> {
-    let hashed_password = hash(data.password, DEFAULT_COST).expect("Failed to hash password");
+    let mut builder =
+        builder::QueryBuilder::new(builder::SqlOperation::Insert, "persons".to_string())?;
 
-    let mut user_params = HashMap::new();
-    user_params.insert(
-        builder::ValidatedValue::Identifier(String::from("person_name")),
-        builder::ValidatedValue::PlainText(data.name),
-    );
-    user_params.insert(
-        builder::ValidatedValue::Identifier(String::from("person_email")),
-        builder::ValidatedValue::PlainText(data.email),
-    );
-    user_params.insert(
-        builder::ValidatedValue::Identifier(String::from("person_password")),
-        builder::ValidatedValue::PlainText(hashed_password),
-    );
+    let password_hash = auth::bcrypt::generate_hash(&data.password)?;
 
-    let builder =
-        builder::QueryBuilder::new(builder::SqlOperation::Insert, String::from("persons"))?
-            .params(user_params);
+    builder
+        .set_value(
+            "person_name".to_string(),
+            builder::SafeValue::Text(data.name.to_string(), builder::ValidationLevel::Relaxed),
+        )?
+        .set_value(
+            "person_email".to_string(),
+            builder::SafeValue::Text(data.email.to_string(), builder::ValidationLevel::Relaxed),
+        )?
+        .set_value(
+            "person_password".to_string(),
+            builder::SafeValue::Text(password_hash, builder::ValidationLevel::Relaxed),
+        )?
+        .set_value(
+            "person_level".to_string(),
+            builder::SafeValue::Enum(
+                data.level.to_string(),
+                "privilege_level".to_string(),
+                builder::ValidationLevel::Standard,
+            ),
+        )?;
 
     sql.get_db().execute_query(&builder).await?;
     Ok(())

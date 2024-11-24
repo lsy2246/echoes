@@ -1,11 +1,11 @@
 use super::{builder, DatabaseTrait};
 use crate::config;
-use crate::utils::CustomResult;
+use crate::error::CustomErrorInto;
+use crate::error::CustomResult;
 use async_trait::async_trait;
 use sqlx::{Column, Executor, PgPool, Row};
 use std::collections::HashMap;
 use std::{env, fs};
-
 #[derive(Clone)]
 pub struct Postgresql {
     pool: PgPool,
@@ -70,10 +70,14 @@ impl DatabaseTrait for Postgresql {
         let mut sqlx_query = sqlx::query(&query);
 
         for value in values {
-            sqlx_query = sqlx_query.bind(value);
+            sqlx_query = sqlx_query.bind(value.to_sql_string()?);
         }
 
-        let rows = sqlx_query.fetch_all(&self.pool).await?;
+        let rows = sqlx_query.fetch_all(&self.pool).await.map_err(|e| {
+            let (sql, params) = builder.build().unwrap();
+            format!("Err:{}\n,SQL: {}\nParams: {:?}", e.to_string(), sql, params)
+                .into_custom_error()
+        })?;
 
         let mut results = Vec::new();
         for row in rows {

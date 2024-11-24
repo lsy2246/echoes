@@ -1,6 +1,6 @@
 mod postgresql;
 use crate::config;
-use crate::utils::{CustomError, CustomResult};
+use crate::error::{CustomErrorInto, CustomResult};
 use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -33,7 +33,7 @@ impl Database {
     pub async fn link(database: &config::SqlConfig) -> CustomResult<Self> {
         let db = match database.db_type.as_str() {
             "postgresql" => postgresql::Postgresql::connect(database).await?,
-            _ => return Err(CustomError::from_str("unknown database type")),
+            _ => return Err("unknown database type".into_custom_error()),
         };
 
         Ok(Self {
@@ -44,7 +44,7 @@ impl Database {
     pub async fn initial_setup(database: config::SqlConfig) -> CustomResult<()> {
         match database.db_type.as_str() {
             "postgresql" => postgresql::Postgresql::initialization(database).await?,
-            _ => return Err(CustomError::from_str("unknown database type")),
+            _ => return Err("unknown database type".into_custom_error()),
         };
         Ok(())
     }

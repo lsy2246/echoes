@@ -1,4 +1,4 @@
-use crate::utils::CustomResult;
+use crate::error::CustomResult;
 use chrono::{Duration, Utc};
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use jwt_compact::{alg::Ed25519, AlgorithmExt, Header, TimeOptions, Token, UntrustedToken};

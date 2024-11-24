@@ -1,4 +1,4 @@
-use crate::utils::CustomResult;
+use crate::error::CustomResult;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::{env, fs};
@@ -47,6 +47,6 @@ impl Config {
     }
 
     pub fn get_path() -> CustomResult<PathBuf> {
-        Ok(env::current_dir()?.join("assets").join("config.toml"))
+        Ok(env::current_dir()?.join("config.toml"))
     }
 }

@@ -17,3 +17,5 @@ rand = "0.8.5"
 chrono = "0.4"
 regex = "1.11.1"
 bcrypt = "0.16"
+uuid = { version = "1.11.0", features = ["v4", "serde"] }
+hex = "0.4.3"
