@@ -2,8 +2,7 @@ mod postgresql;
 use crate::config;
 use crate::error::{CustomErrorInto, CustomResult};
 use async_trait::async_trait;
-use std::collections::HashMap;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 pub mod builder;
 
 #[async_trait]
@@ -14,7 +13,7 @@ pub trait DatabaseTrait: Send + Sync {
     async fn execute_query<'a>(
         &'a self,
         builder: &builder::QueryBuilder,
-    ) -> CustomResult<Vec<HashMap<String, String>>>;
+    ) -> CustomResult<Vec<HashMap<String, serde_json::Value>>>;
     async fn initialization(database: config::SqlConfig) -> CustomResult<()>
     where
         Self: Sized;

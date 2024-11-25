@@ -23,26 +23,26 @@ pub struct RegisterData {
 pub async fn insert(sql: &relational::Database, data: RegisterData) -> CustomResult<()> {
     let mut builder =
         builder::QueryBuilder::new(builder::SqlOperation::Insert, "persons".to_string())?;
-
-    let password_hash = auth::bcrypt::generate_hash(&data.password)?;
-
     builder
         .set_value(
             "person_name".to_string(),
-            builder::SafeValue::Text(data.name.to_string(), builder::ValidationLevel::Relaxed),
+            builder::SafeValue::Text(data.name, builder::ValidationLevel::Relaxed),
         )?
         .set_value(
             "person_email".to_string(),
-            builder::SafeValue::Text(data.email.to_string(), builder::ValidationLevel::Relaxed),
+            builder::SafeValue::Text(data.email, builder::ValidationLevel::Relaxed),
         )?
         .set_value(
             "person_password".to_string(),
-            builder::SafeValue::Text(password_hash, builder::ValidationLevel::Relaxed),
+            builder::SafeValue::Text(
+                bcrypt::generate_hash(&data.password)?,
+                builder::ValidationLevel::Relaxed,
+            ),
         )?
         .set_value(
             "person_level".to_string(),
             builder::SafeValue::Enum(
-                data.level.to_string(),
+                data.level,
                 "privilege_level".to_string(),
                 builder::ValidationLevel::Standard,
             ),

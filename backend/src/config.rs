@@ -11,7 +11,6 @@ pub struct Config {
     pub sql_config: SqlConfig,
 }
 
-
 impl Default for Config {
     fn default() -> Self {
         Self {

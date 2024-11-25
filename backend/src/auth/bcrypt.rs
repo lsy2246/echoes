@@ -1,16 +1,12 @@
-use crate::error::CustomErrorInto;
-use crate::error::CustomResult;
+use crate::error::{CustomErrorInto, CustomResult};
 use bcrypt::{hash, verify, DEFAULT_COST};
 
 pub fn generate_hash(s: &str) -> CustomResult<String> {
-    let hashed = hash(s, DEFAULT_COST)?;
-    Ok(hashed)
+    Ok(hash(s, DEFAULT_COST)?)
 }
 
 pub fn verify_hash(s: &str, hash: &str) -> CustomResult<()> {
-    let is_valid = verify(s, hash)?;
-    if !is_valid {
-        return Err("密码无效".into_custom_error());
-    }
-    Ok(())
+    verify(s, hash)?
+        .then_some(())
+        .ok_or_else(|| "密码无效".into_custom_error())
 }

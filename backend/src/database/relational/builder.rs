@@ -77,7 +77,7 @@ impl TextValidator {
         let max_length = self
             .level_max_lengths
             .get(&level)
-            .ok_or( "Invalid validation level".into_custom_error())?;
+            .ok_or("Invalid validation level".into_custom_error())?;
 
         if text.len() > *max_length {
             return Err("Text exceeds maximum length".into_custom_error());
@@ -499,7 +499,7 @@ impl QueryBuilder {
                 for condition in conditions {
                     let (sql, mut condition_params) =
                         self.build_where_clause_with_index(condition, param_index)?;
-                    param_index += condition_params.len(); // 更新参数索引
+                    param_index += condition_params.len();
                     parts.push(sql);
                     params.append(&mut condition_params);
                 }

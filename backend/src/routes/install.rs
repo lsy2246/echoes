@@ -1,14 +1,14 @@
+use super::{configure, person};
 use crate::auth;
 use crate::database::relational;
 use crate::error::{AppResult, AppResultInto};
-use super::{person, configure};
 use crate::AppState;
 use crate::{config, utils};
 use chrono::Duration;
 use rocket::{http::Status, post, response::status, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 use serde_json::json;
+use std::sync::Arc;
 
 #[derive(Deserialize, Serialize)]
 pub struct InstallData {
@@ -37,26 +37,26 @@ pub async fn install(
         ));
     }
 
-    config.info.install = true;
-    config.sql_config = data.sql_config.clone();
-
     let data = data.into_inner();
+    let sql = {
+        config.info.install = true;
+        config.sql_config = data.sql_config.clone();
 
-    relational::Database::initial_setup(data.sql_config.clone())
-        .await
-        .into_app_result()?;
+        relational::Database::initial_setup(data.sql_config.clone())
+            .await
+            .into_app_result()?;
+        auth::jwt::generate_key().into_app_result()?;
 
-    let _ = auth::jwt::generate_key();
+        state.sql_link(&data.sql_config).await.into_app_result()?;
+        state.sql_get().await.into_app_result()?
+    };
 
-    
+    let system_credentials = (
+        utils::generate_random_string(20),
+        utils::generate_random_string(20),
+    );
 
-    state.sql_link(&data.sql_config).await.into_app_result()?;
-    let sql = state.sql_get().await.into_app_result()?;
-
-    let system_name = utils::generate_random_string(20);
-    let system_password = utils::generate_random_string(20);
-
-    let _ = person::insert(
+    person::insert(
         &sql,
         person::RegisterData {
             name: data.name.clone(),
@@ -68,41 +68,45 @@ pub async fn install(
     .await
     .into_app_result()?;
 
-    let _ = person::insert(
+    person::insert(
         &sql,
         person::RegisterData {
-            name: system_name.clone(),
-            email: String::from("author@lsy22.com"),
-            password: system_password.clone(),
+            name: system_credentials.0.clone(),
+            email: "author@lsy22.com".to_string(),
+            password: system_credentials.1.clone(),
             level: "administrators".to_string(),
         },
     )
     .await
     .into_app_result()?;
 
-    let mut system_configure = configure::SystemConfigure::default();
-    system_configure.author_name = data.name.clone();
-
-    configure::insert_configure(&sql, "system".to_string(), "configure".to_string(), Json(json!(system_configure))).await.into_app_result()?;
-    
+    configure::insert_configure(
+        &sql,
+        "system".to_string(),
+        "config".to_string(),
+        Json(json!(configure::SystemConfigure {
+            author_name: data.name.clone(),
+            ..configure::SystemConfigure::default()
+        })),
+    )
+    .await
+    .into_app_result()?;
 
     let token = auth::jwt::generate_jwt(
-        auth::jwt::CustomClaims {
-            name: data.name.clone(),
-        },
+        auth::jwt::CustomClaims { name: data.name },
         Duration::days(7),
     )
     .into_app_result()?;
 
-    config::Config::write(config.clone()).into_app_result()?;
-
+    config::Config::write(config).into_app_result()?;
     state.trigger_restart().await.into_app_result()?;
+
     Ok(status::Custom(
         Status::Ok,
         Json(InstallReplyData {
-            token: token,
-            name: system_name,
-            password: system_password,
+            token,
+            name: system_credentials.0,
+            password: system_credentials.1,
         }),
     ))
 }

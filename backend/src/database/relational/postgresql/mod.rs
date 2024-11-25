@@ -3,7 +3,8 @@ use crate::config;
 use crate::error::CustomErrorInto;
 use crate::error::CustomResult;
 use async_trait::async_trait;
-use sqlx::{Column, Executor, PgPool, Row};
+use serde_json::Value;
+use sqlx::{Column, Executor, PgPool, Row, TypeInfo};
 use std::collections::HashMap;
 use std::{env, fs};
 #[derive(Clone)]
@@ -64,7 +65,7 @@ impl DatabaseTrait for Postgresql {
     async fn execute_query<'a>(
         &'a self,
         builder: &builder::QueryBuilder,
-    ) -> CustomResult<Vec<HashMap<String, String>>> {
+    ) -> CustomResult<Vec<HashMap<String, Value>>> {
         let (query, values) = builder.build()?;
 
         let mut sqlx_query = sqlx::query(&query);
@@ -73,22 +74,32 @@ impl DatabaseTrait for Postgresql {
             sqlx_query = sqlx_query.bind(value.to_sql_string()?);
         }
 
-        let rows = sqlx_query.fetch_all(&self.pool).await.map_err(|e| {
-            let (sql, params) = builder.build().unwrap();
-            format!("Err:{}\n,SQL: {}\nParams: {:?}", e.to_string(), sql, params)
-                .into_custom_error()
-        })?;
+        let rows = sqlx_query.fetch_all(&self.pool).await?;
 
-        let mut results = Vec::new();
-        for row in rows {
-            let mut map = HashMap::new();
-            for column in row.columns() {
-                let value: String = row.try_get(column.name()).unwrap_or_default();
-                map.insert(column.name().to_string(), value);
-            }
-            results.push(map);
-        }
-
-        Ok(results)
+        Ok(rows
+            .into_iter()
+            .map(|row| {
+                row.columns()
+                    .iter()
+                    .map(|col| {
+                        let value = match col.type_info().name() {
+                            "INT4" | "INT8" => Value::Number(
+                                row.try_get::<i64, _>(col.name()).unwrap_or_default().into(),
+                            ),
+                            "FLOAT4" | "FLOAT8" => Value::Number(
+                                serde_json::Number::from_f64(
+                                    row.try_get::<f64, _>(col.name()).unwrap_or(0.0),
+                                )
+                                .unwrap_or_else(|| 0.into()),
+                            ),
+                            "BOOL" => Value::Bool(row.try_get(col.name()).unwrap_or_default()),
+                            "JSON" | "JSONB" => row.try_get(col.name()).unwrap_or(Value::Null),
+                            _ => Value::String(row.try_get(col.name()).unwrap_or_default()),
+                        };
+                        (col.name().to_string(), value)
+                    })
+                    .collect()
+            })
+            .collect())
     }
 }

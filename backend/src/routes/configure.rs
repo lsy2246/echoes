@@ -39,15 +39,28 @@ pub async fn get_configure(
     comfig_type: String,
     name: String,
 ) -> CustomResult<Json<Value>> {
+    let name_condition = builder::Condition::new(
+        "config_name".to_string(),
+        builder::Operator::Eq,
+        Some(builder::SafeValue::Text(
+            format!("{}_{}", comfig_type, name),
+            builder::ValidationLevel::Strict,
+        )),
+    )?;
+
+    println!(
+        "Searching for config_name: {}",
+        format!("{}_{}", comfig_type, name)
+    );
+
+    let where_clause = builder::WhereClause::Condition(name_condition);
+
     let mut sql_builder =
         builder::QueryBuilder::new(builder::SqlOperation::Select, "config".to_string())?;
-    sql_builder.set_value(
-        "config_name".to_string(),
-        builder::SafeValue::Text(
-            format!("{}_{}", comfig_type, name).to_string(),
-            builder::ValidationLevel::Strict,
-        ),
-    )?;
+    sql_builder
+        .add_condition(where_clause)
+        .add_field("config_data".to_string())?;
+
     let result = sql.get_db().execute_query(&sql_builder).await?;
     Ok(Json(json!(result)))
 }
@@ -76,9 +89,12 @@ pub async fn insert_configure(
 }
 
 #[get("/system")]
-pub async fn system_config_get(state: &State<Arc<AppState>>,token: SystemToken) -> AppResult<Json<Value>> {
+pub async fn system_config_get(
+    state: &State<Arc<AppState>>,
+    _token: SystemToken,
+) -> AppResult<Json<Value>> {
     let sql = state.sql_get().await.into_app_result()?;
-    let configure = get_configure(&sql, "system".to_string(), "configure".to_string())
+    let configure = get_configure(&sql, "system".to_string(), "config".to_string())
         .await
         .into_app_result()?;
     Ok(configure)
