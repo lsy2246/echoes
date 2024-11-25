@@ -77,13 +77,12 @@ impl TextValidator {
         let max_length = self
             .level_max_lengths
             .get(&level)
-            .ok_or_else(|| "Invalid validation level".into_custom_error())?;
+            .ok_or( "Invalid validation level".into_custom_error())?;
 
         if text.len() > *max_length {
             return Err("Text exceeds maximum length".into_custom_error());
         }
 
-        // 简化验证逻辑
         if level == ValidationLevel::Relaxed {
             return self.validate_sql_patterns(text);
         }
@@ -514,7 +513,6 @@ impl QueryBuilder {
         Ok((sql, params))
     }
 
-    // 添加新的辅助方法
     fn build_where_clause_with_index(
         &self,
         clause: &WhereClause,

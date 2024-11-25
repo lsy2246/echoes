@@ -15,6 +15,7 @@ interface ImportMetaEnv {
   readonly VITE_ASSETS_PATH: string; // 存储静态资源的目录路径
   VITE_SYSTEM_USERNAME: string; // 前端账号名称
   VITE_SYSTEM_PASSWORD: string; // 前端账号密码
+  VITE_SYSTEM_STATUS: boolean; // 系统是否进行安装
 }
 
 interface ImportMeta {

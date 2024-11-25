@@ -80,5 +80,5 @@ CREATE TABLE library
 CREATE TABLE config
 (
     config_name   VARCHAR(50) PRIMARY KEY CHECK (LOWER(config_name) = config_name),
-    config_config JSON
+    config_data JSON
 );

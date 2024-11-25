@@ -3,7 +3,6 @@ use crate::database::relational::builder;
 use crate::error::{AppResult, AppResultInto};
 use crate::AppState;
 use chrono::Duration;
-use jwt_compact::Token;
 use rocket::{
     http::Status,
     post,
@@ -91,12 +90,14 @@ pub async fn token_system(
             String::from("该用户密码丢失"),
         ))?;
 
-    auth::bcrypt::verify_hash(&data.password, password).into_app_result()?;
+    auth::bcrypt::verify_hash(&data.password, password).map_err(|_| {
+        status::Custom(Status::Forbidden, String::from("密码错误"))
+    })?;
 
     let claims = auth::jwt::CustomClaims {
         name: "system".into(),
     };
-    let token = auth::jwt::generate_jwt(claims, Duration::seconds(1)).into_app_result()?;
+    let token = auth::jwt::generate_jwt(claims, Duration::minutes(1)).into_app_result()?;
 
     Ok(token)
 }

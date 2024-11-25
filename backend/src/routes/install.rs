@@ -1,13 +1,14 @@
 use crate::auth;
 use crate::database::relational;
 use crate::error::{AppResult, AppResultInto};
-use crate::routes::person;
+use super::{person, configure};
 use crate::AppState;
 use crate::{config, utils};
 use chrono::Duration;
 use rocket::{http::Status, post, response::status, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use serde_json::json;
 
 #[derive(Deserialize, Serialize)]
 pub struct InstallData {
@@ -28,13 +29,16 @@ pub async fn install(
     data: Json<InstallData>,
     state: &State<Arc<AppState>>,
 ) -> AppResult<status::Custom<Json<InstallReplyData>>> {
-    let mut config = state.configure.lock().await;
+    let mut config = config::Config::read().unwrap_or_default();
     if config.info.install {
         return Err(status::Custom(
             Status::BadRequest,
             "Database already initialized".to_string(),
         ));
     }
+
+    config.info.install = true;
+    config.sql_config = data.sql_config.clone();
 
     let data = data.into_inner();
 
@@ -44,7 +48,7 @@ pub async fn install(
 
     let _ = auth::jwt::generate_key();
 
-    config.info.install = true;
+    
 
     state.sql_link(&data.sql_config).await.into_app_result()?;
     let sql = state.sql_get().await.into_app_result()?;
@@ -75,6 +79,12 @@ pub async fn install(
     )
     .await
     .into_app_result()?;
+
+    let mut system_configure = configure::SystemConfigure::default();
+    system_configure.author_name = data.name.clone();
+
+    configure::insert_configure(&sql, "system".to_string(), "configure".to_string(), Json(json!(system_configure))).await.into_app_result()?;
+    
 
     let token = auth::jwt::generate_jwt(
         auth::jwt::CustomClaims {

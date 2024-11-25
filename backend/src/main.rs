@@ -12,16 +12,14 @@ use error::{CustomErrorInto, CustomResult};
 
 pub struct AppState {
     db: Arc<Mutex<Option<relational::Database>>>,
-    configure: Arc<Mutex<config::Config>>,
     shutdown: Arc<Mutex<Option<Shutdown>>>,
     restart_progress: Arc<Mutex<bool>>,
 }
 
 impl AppState {
-    pub fn new(config: config::Config) -> Self {
+    pub fn new() -> Self {
         Self {
             db: Arc::new(Mutex::new(None)),
-            configure: Arc::new(Mutex::new(config)),
             shutdown: Arc::new(Mutex::new(None)),
             restart_progress: Arc::new(Mutex::new(false)),
         }
@@ -61,22 +59,24 @@ impl AppState {
 
 #[rocket::main]
 async fn main() -> CustomResult<()> {
-    let config = config::Config::read()?;
+    let config = config::Config::read().unwrap_or_default();
 
-    let state = AppState::new(config.clone());
-
-    if config.info.install {
-        state.sql_link(&config.sql_config).await?;
-    }
+    let rocket_config = rocket::Config::figment()
+        .merge(("address", config.address.clone()))
+        .merge(("port", config.port));
+    let state = AppState::new();
 
     let state = Arc::new(state);
 
-    let rocket_builder = rocket::build().manage(state.clone());
+    let rocket_builder = rocket::build().configure(rocket_config).manage(state.clone());
 
     let rocket_builder = if !config.info.install {
         rocket_builder.mount("/", rocket::routes![routes::install::install])
     } else {
-        rocket_builder.mount("/auth/token", routes::jwt_routes())
+        state.sql_link(&config.sql_config).await?;
+        rocket_builder
+            .mount("/auth/token", routes::jwt_routes())
+            .mount("/config", routes::configure_routes())
     };
 
     let rocket = rocket_builder.ignite().await?;
