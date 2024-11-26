@@ -1,4 +1,9 @@
-import { CapabilityProps } from "contracts/capabilityContract";
+export interface CapabilityProps<T> {
+  name: string;
+  description?: string;
+  execute: (...args: any[]) => Promise<T>;
+}
+
 
 export class CapabilityService {
   private capabilities: Map<

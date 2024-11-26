@@ -1,6 +1,6 @@
-import { CapabilityService } from "services/capabilityService";
-import { ThemeService } from "services/themeService";
-import { ApiService } from "services/apiService";
+import { CapabilityService } from "core/capability";
+import { ApiService } from "core/api";
+import { RouteManager } from "core/route";
 import { createServiceContext } from "hooks/createServiceContext";
 import { ReactNode } from "react";
 
@@ -9,18 +9,18 @@ export const { CapabilityProvider, useCapability } = createServiceContext(
   () => CapabilityService.getInstance(),
 );
 
-export const { ThemeProvider, useTheme } = createServiceContext("Theme", () =>
-  ThemeService.getInstance(),
+export const { RouteProvider, useRoute } = createServiceContext("Route", () =>
+  RouteManager.getInstance(),
 );
 
 export const { ApiProvider, useApi } = createServiceContext("Api", () =>
-  ThemeService.getInstance(),
+  ApiService.getInstance(),
 );
 
-export const ServiceProvider = ({ children }: { children: ReactNode }) => (
+export const BaseProvider = ({ children }: { children: ReactNode }) => (
   <ApiProvider>
     <CapabilityProvider>
-      <ThemeProvider>{children}</ThemeProvider>
+      <RouteProvider>{children}</RouteProvider>
     </CapabilityProvider>
   </ApiProvider>
 );

@@ -1,10 +1,24 @@
-import { PluginConfiguration } from "types/pluginRequirement";
-import { Contracts } from "contracts/capabilityContract";
+
+export interface PluginConfig {
+  name: string;
+  version: string;
+  displayName: string;
+  description?: string;
+  author?: string;
+  enabled: boolean;
+  icon?: string;
+  managePath?: string;
+  configuration?: Configuration;
+  routes: Set<{
+    description?: string;
+    path: string;
+  }>;
+}
+
+
 
 export class PluginManager {
-  private plugins: Map<string, PluginProps> = new Map();
-  private configurations: Map<string, PluginConfiguration> = new Map();
-  private extensions: Map<string, ExtensionProps> = new Map();
+  private configurations: Map<string, PluginConfig> = new Map();
 
   async loadPlugins() {
     const pluginDirs = await this.scanPluginDirectory();
@@ -37,7 +51,7 @@ export class PluginManager {
 
   async getPluginConfig(
     pluginName: string,
-  ): Promise<PluginConfiguration | undefined> {
+  ): Promise<PluginConfig | undefined> {
     const dbConfig = await this.fetchConfigFromDB(pluginName);
     if (dbConfig) {
       return dbConfig;

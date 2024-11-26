@@ -17,7 +17,7 @@ use std::sync::Arc;
 pub struct SystemConfigure {
     pub author_name: String,
     pub current_theme: String,
-    pub site_keyword: Vec<String>,
+    pub site_keyword: String,
     pub site_description: String,
     pub admin_path: String,
 }
@@ -27,7 +27,7 @@ impl Default for SystemConfigure {
         Self {
             author_name: "lsy".to_string(),
             current_theme: "default".to_string(),
-            site_keyword: vec!["echoes".to_string()],
+            site_keyword: "echoes".to_string(),
             site_description: "echoes是一个高效、可扩展的博客平台".to_string(),
             admin_path: "admin".to_string(),
         }
@@ -91,8 +91,21 @@ pub async fn system_config_get(
     _token: SystemToken,
 ) -> AppResult<Json<Value>> {
     let sql = state.sql_get().await.into_app_result()?;
-    let configure = get_setting(&sql, "system".to_string(), "settings".to_string())
+    let settings = get_setting(&sql, "system".to_string(), "settings".to_string())
         .await
         .into_app_result()?;
-    Ok(configure)
+    Ok(settings)
+}
+
+#[get("/theme/<name>")]
+pub async fn theme_config_get(
+    state: &State<Arc<AppState>>,
+    _token: SystemToken,
+    name: String,
+) -> AppResult<Json<Value>> {
+    let sql = state.sql_get().await.into_app_result()?;
+    let settings = get_setting(&sql, "theme".to_string(), name)
+        .await
+        .into_app_result()?;
+    Ok(settings)
 }
