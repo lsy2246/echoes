@@ -53,6 +53,37 @@ export class ApiService {
     }
   }
 
+  private async getToken(username: string, password: string): Promise<string> {
+    if (username.split(" ").length === 0 || password.split(" ").length === 0) {
+      throw new Error(
+        "Username or password cannot be empty",
+      );
+    }
+
+    try {
+      const response = await fetch(`${this.baseURL}/auth/token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get system token");
+      }
+
+      const data = await response.text();
+      return data;
+    } catch (error) {
+      console.error("Error getting system token:", error);
+      throw error;
+    }
+  }
+
   public async request<T>(
     endpoint: string,
     options: RequestInit = {},

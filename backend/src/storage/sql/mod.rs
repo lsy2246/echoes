@@ -1,6 +1,6 @@
 mod postgresql;
 use crate::config;
-use crate::error::{CustomErrorInto, CustomResult};
+use crate::common::error::{CustomErrorInto, CustomResult};
 use async_trait::async_trait;
 use std::{collections::HashMap, sync::Arc};
 pub mod builder;

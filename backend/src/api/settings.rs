@@ -1,6 +1,6 @@
 use super::SystemToken;
-use crate::database::{relational, relational::builder};
-use crate::error::{AppResult, AppResultInto, CustomResult};
+use crate::storage::{sql, sql::builder};
+use crate::common::error::{AppResult, AppResultInto, CustomResult};
 use crate::AppState;
 use rocket::{
     get,
@@ -34,13 +34,13 @@ impl Default for SystemConfigure {
     }
 }
 
-pub async fn get_configure(
-    sql: &relational::Database,
+pub async fn get_setting(
+    sql: &sql::Database,
     comfig_type: String,
     name: String,
 ) -> CustomResult<Json<Value>> {
     let name_condition = builder::Condition::new(
-        "config_name".to_string(),
+        "key".to_string(),
         builder::Operator::Eq,
         Some(builder::SafeValue::Text(
             format!("{}_{}", comfig_type, name),
@@ -48,40 +48,37 @@ pub async fn get_configure(
         )),
     )?;
 
-    println!(
-        "Searching for config_name: {}",
-        format!("{}_{}", comfig_type, name)
-    );
-
     let where_clause = builder::WhereClause::Condition(name_condition);
 
     let mut sql_builder =
-        builder::QueryBuilder::new(builder::SqlOperation::Select, "config".to_string())?;
+        builder::QueryBuilder::new(builder::SqlOperation::Select, "settings".to_string())?;
+
     sql_builder
         .add_condition(where_clause)
-        .add_field("config_data".to_string())?;
+        .add_field("data".to_string())?;
+    println!("{:?}", sql_builder.build());
 
     let result = sql.get_db().execute_query(&sql_builder).await?;
     Ok(Json(json!(result)))
 }
 
-pub async fn insert_configure(
-    sql: &relational::Database,
+pub async fn insert_setting(
+    sql: &sql::Database,
     comfig_type: String,
     name: String,
     data: Json<Value>,
 ) -> CustomResult<()> {
     let mut builder =
-        builder::QueryBuilder::new(builder::SqlOperation::Insert, "config".to_string())?;
+        builder::QueryBuilder::new(builder::SqlOperation::Insert, "settings".to_string())?;
     builder.set_value(
-        "config_name".to_string(),
+        "key".to_string(),
         builder::SafeValue::Text(
             format!("{}_{}", comfig_type, name).to_string(),
             builder::ValidationLevel::Strict,
         ),
     )?;
     builder.set_value(
-        "config_data".to_string(),
+        "data".to_string(),
         builder::SafeValue::Json(data.into_inner()),
     )?;
     sql.get_db().execute_query(&builder).await?;
@@ -94,7 +91,7 @@ pub async fn system_config_get(
     _token: SystemToken,
 ) -> AppResult<Json<Value>> {
     let sql = state.sql_get().await.into_app_result()?;
-    let configure = get_configure(&sql, "system".to_string(), "config".to_string())
+    let configure = get_setting(&sql, "system".to_string(), "settings".to_string())
         .await
         .into_app_result()?;
     Ok(configure)

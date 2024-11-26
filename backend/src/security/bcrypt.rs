@@ -1,4 +1,4 @@
-use crate::error::{CustomErrorInto, CustomResult};
+use crate::common::error::{CustomErrorInto, CustomResult};
 use bcrypt::{hash, verify, DEFAULT_COST};
 
 pub fn generate_hash(s: &str) -> CustomResult<String> {

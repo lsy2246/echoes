@@ -1,4 +1,4 @@
-use crate::error::{CustomErrorInto, CustomResult};
+use crate::common::error::{CustomErrorInto, CustomResult};
 use chrono::{DateTime, Utc};
 use regex::Regex;
 use serde::Serialize;

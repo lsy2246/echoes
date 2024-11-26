@@ -1,18 +1,16 @@
-mod auth;
-mod config;
-mod database;
-mod error;
-mod routes;
-mod utils;
+mod security;
+mod common;
+mod storage;
+mod api;
 
-use database::relational;
-use error::{CustomErrorInto, CustomResult};
+use storage::sql;
+use common::error::{CustomErrorInto, CustomResult};
 use rocket::Shutdown;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
+use crate::common::config;
 pub struct AppState {
-    db: Arc<Mutex<Option<relational::Database>>>,
+    db: Arc<Mutex<Option<sql::Database>>>,
     shutdown: Arc<Mutex<Option<Shutdown>>>,
     restart_progress: Arc<Mutex<bool>>,
 }
@@ -26,7 +24,7 @@ impl AppState {
         }
     }
 
-    pub async fn sql_get(&self) -> CustomResult<relational::Database> {
+    pub async fn sql_get(&self) -> CustomResult<sql::Database> {
         self.db
             .lock()
             .await
@@ -35,7 +33,7 @@ impl AppState {
     }
 
     pub async fn sql_link(&self, config: &config::SqlConfig) -> CustomResult<()> {
-        *self.db.lock().await = Some(relational::Database::link(config).await?);
+        *self.db.lock().await = Some(sql::Database::link(config).await?);
         Ok(())
     }
 
@@ -69,12 +67,12 @@ async fn main() -> CustomResult<()> {
         .manage(state.clone());
 
     if !config.info.install {
-        rocket_builder = rocket_builder.mount("/", rocket::routes![routes::install::install]);
+        rocket_builder = rocket_builder.mount("/", rocket::routes![api::setup::install]);
     } else {
         state.sql_link(&config.sql_config).await?;
         rocket_builder = rocket_builder
-            .mount("/auth/token", routes::jwt_routes())
-            .mount("/config", routes::configure_routes());
+            .mount("/auth/token", api::jwt_routes())
+            .mount("/config", api::configure_routes());
     }
 
     let rocket = rocket_builder.ignite().await?;

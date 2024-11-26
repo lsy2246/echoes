@@ -1,8 +1,8 @@
 pub mod auth;
-pub mod configure;
-pub mod install;
-pub mod person;
-use crate::auth::jwt;
+pub mod settings;
+pub mod setup;
+pub mod users;
+use crate::security::jwt;
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket::routes;
@@ -48,5 +48,5 @@ pub fn jwt_routes() -> Vec<rocket::Route> {
 }
 
 pub fn configure_routes() -> Vec<rocket::Route> {
-    routes![configure::system_config_get]
+    routes![settings::system_config_get]
 }

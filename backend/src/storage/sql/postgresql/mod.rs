@@ -1,7 +1,6 @@
 use super::{builder, DatabaseTrait};
 use crate::config;
-use crate::error::CustomErrorInto;
-use crate::error::CustomResult;
+use crate::common::error::CustomResult;
 use async_trait::async_trait;
 use serde_json::Value;
 use sqlx::{Column, Executor, PgPool, Row, TypeInfo};
@@ -17,10 +16,10 @@ impl DatabaseTrait for Postgresql {
     async fn initialization(db_config: config::SqlConfig) -> CustomResult<()> {
         let path = env::current_dir()?
             .join("src")
-            .join("database")
-            .join("relational")
+            .join("storage")
+            .join("sql")
             .join("postgresql")
-            .join("init.sql");
+            .join("schema.sql");
         let grammar = fs::read_to_string(&path)?;
 
         let connection_str = format!(

@@ -1,6 +1,6 @@
-use crate::auth;
-use crate::database::relational::builder;
-use crate::error::{AppResult, AppResultInto};
+use crate::security;
+use crate::storage::sql::builder;
+use crate::common::error::{AppResult, AppResultInto};
 use crate::AppState;
 use chrono::Duration;
 use rocket::{
@@ -15,7 +15,7 @@ use serde_json::json;
 use std::sync::Arc;
 #[derive(Deserialize, Serialize)]
 pub struct TokenSystemData {
-    name: String,
+    username: String,
     password: String,
 }
 #[post("/system", format = "application/json", data = "<data>")]
@@ -24,18 +24,18 @@ pub async fn token_system(
     data: Json<TokenSystemData>,
 ) -> AppResult<String> {
     let mut builder =
-        builder::QueryBuilder::new(builder::SqlOperation::Select, "persons".to_string())
+        builder::QueryBuilder::new(builder::SqlOperation::Select, "users".to_string())
             .into_app_result()?;
     builder
-        .add_field("person_password".to_string())
+        .add_field("password_hash".to_string())
         .into_app_result()?
         .add_condition(builder::WhereClause::And(vec![
             builder::WhereClause::Condition(
                 builder::Condition::new(
-                    "person_name".to_string(),
+                    "username".to_string(),
                     builder::Operator::Eq,
                     Some(builder::SafeValue::Text(
-                        data.name.clone(),
+                        data.username.clone(),
                         builder::ValidationLevel::Relaxed,
                     )),
                 )
@@ -43,7 +43,7 @@ pub async fn token_system(
             ),
             builder::WhereClause::Condition(
                 builder::Condition::new(
-                    "person_email".to_string(),
+                    "email".to_string(),
                     builder::Operator::Eq,
                     Some(builder::SafeValue::Text(
                         "author@lsy22.com".into(),
@@ -54,11 +54,11 @@ pub async fn token_system(
             ),
             builder::WhereClause::Condition(
                 builder::Condition::new(
-                    "person_level".to_string(),
+                    "role".to_string(),
                     builder::Operator::Eq,
                     Some(builder::SafeValue::Enum(
-                        "administrators".into(),
-                        "privilege_level".into(),
+                        "administrator".into(),
+                        "user_role".into(),
                         builder::ValidationLevel::Standard,
                     )),
                 )
@@ -77,17 +77,17 @@ pub async fn token_system(
 
     let password = values
         .first()
-        .and_then(|row| row.get("person_password"))
+        .and_then(|row| row.get("password_hash"))
         .and_then(|val| val.as_str())
         .ok_or_else(|| {
             status::Custom(Status::NotFound, "Invalid system user or password".into())
         })?;
 
-    auth::bcrypt::verify_hash(&data.password, password)
+    security::bcrypt::verify_hash(&data.password, password)
         .map_err(|_| status::Custom(Status::Forbidden, "Invalid password".into()))?;
 
-    Ok(auth::jwt::generate_jwt(
-        auth::jwt::CustomClaims {
+    Ok(security::jwt::generate_jwt(
+        security::jwt::CustomClaims {
             name: "system".into(),
         },
         Duration::minutes(1),

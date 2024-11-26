@@ -1,49 +1,54 @@
-use crate::auth;
-use crate::auth::bcrypt;
-use crate::database::{relational, relational::builder};
-use crate::error::{CustomErrorInto, CustomResult};
-use crate::{config, utils};
+use crate::security;
+use crate::security::bcrypt;
+use crate::storage::{sql, sql::builder};
+use crate::common::error::{CustomErrorInto, CustomResult};
 use rocket::{get, http::Status, post, response::status, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Deserialize, Serialize)]
 pub struct LoginData {
-    pub name: String,
+    pub username: String,
     pub password: String,
 }
 
+#[derive(Debug)]
 pub struct RegisterData {
-    pub name: String,
+    pub username: String,
     pub email: String,
     pub password: String,
-    pub level: String,
+    pub role: String,
 }
 
-pub async fn insert(sql: &relational::Database, data: RegisterData) -> CustomResult<()> {
+pub async fn insert_user(sql: &sql::Database, data: RegisterData) -> CustomResult<()> {
+    let role = match data.role.as_str() {
+        "administrator" | "contributor" => data.role,
+        _ => return Err("Invalid role. Must be either 'administrator' or 'contributor'".into_custom_error()),
+    };
+
     let mut builder =
-        builder::QueryBuilder::new(builder::SqlOperation::Insert, "persons".to_string())?;
+        builder::QueryBuilder::new(builder::SqlOperation::Insert, "users".to_string())?;
     builder
         .set_value(
-            "person_name".to_string(),
-            builder::SafeValue::Text(data.name, builder::ValidationLevel::Relaxed),
+            "username".to_string(),
+            builder::SafeValue::Text(data.username, builder::ValidationLevel::Relaxed),
         )?
         .set_value(
-            "person_email".to_string(),
+            "email".to_string(),
             builder::SafeValue::Text(data.email, builder::ValidationLevel::Relaxed),
         )?
         .set_value(
-            "person_password".to_string(),
+            "password_hash".to_string(),
             builder::SafeValue::Text(
                 bcrypt::generate_hash(&data.password)?,
                 builder::ValidationLevel::Relaxed,
             ),
         )?
         .set_value(
-            "person_level".to_string(),
+            "role".to_string(),
             builder::SafeValue::Enum(
-                data.level,
-                "privilege_level".to_string(),
+                role,
+                "user_role".to_string(),
                 builder::ValidationLevel::Standard,
             ),
         )?;
