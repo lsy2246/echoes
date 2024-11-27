@@ -25,13 +25,13 @@ pub struct InstallReplyData {
     password: String,
 }
 
-#[post("/install", format = "application/json", data = "<data>")]
-pub async fn install(
+#[post("/sql", format = "application/json", data = "<data>")]
+pub async fn steup_sql(
     data: Json<InstallData>,
     state: &State<Arc<AppState>>,
 ) -> AppResult<status::Custom<Json<InstallReplyData>>> {
     let mut config = config::Config::read().unwrap_or_default();
-    if config.info.install {
+    if config.init.sql {
         return Err(status::Custom(
             Status::BadRequest,
             "Database already initialized".to_string(),
@@ -39,7 +39,7 @@ pub async fn install(
     }
     let data = data.into_inner();
     let sql = {
-        config.info.install = true;
+        config.init.sql = true;
         config.sql_config = data.sql_config.clone();
         sql::Database::initial_setup(data.sql_config.clone())
             .await

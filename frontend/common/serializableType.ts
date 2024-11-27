@@ -18,4 +18,3 @@ export interface PathDescription {
   name: string;
   description?: string;
 }
-

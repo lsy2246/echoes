@@ -7,7 +7,7 @@ use std::{env, fs};
 pub struct Config {
     pub address: String,
     pub port: u32,
-    pub info: Info,
+    pub init: Init,
     pub sql_config: SqlConfig,
 }
 
@@ -16,23 +16,25 @@ impl Default for Config {
         Self {
             address: "0.0.0.0".to_string(),
             port: 22000,
-            info: Info::default(),
+            init: Init::default(),
             sql_config: SqlConfig::default(),
         }
     }
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct Info {
-    pub install: bool,
-    pub non_relational: bool,
+pub struct Init {
+    pub sql: bool,
+    pub no_sql: bool,
+    pub administrator: bool,
 }
 
-impl Default for Info {
+impl Default for Init {
     fn default() -> Self {
         Self {
-            install: false,
-            non_relational: false,
+            sql: false,
+            no_sql: false,
+            administrator: false,
         }
     }
 }

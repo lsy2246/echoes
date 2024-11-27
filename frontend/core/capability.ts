@@ -4,7 +4,6 @@ export interface CapabilityProps<T> {
   execute: (...args: any[]) => Promise<T>;
 }
 
-
 export class CapabilityService {
   private capabilities: Map<
     string,

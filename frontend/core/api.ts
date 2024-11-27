@@ -55,9 +55,7 @@ export class ApiService {
 
   private async getToken(username: string, password: string): Promise<string> {
     if (username.split(" ").length === 0 || password.split(" ").length === 0) {
-      throw new Error(
-        "Username or password cannot be empty",
-      );
+      throw new Error("Username or password cannot be empty");
     }
 
     try {

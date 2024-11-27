@@ -1,4 +1,3 @@
-
 export interface PluginConfig {
   name: string;
   version: string;
@@ -14,8 +13,6 @@ export interface PluginConfig {
     path: string;
   }>;
 }
-
-
 
 export class PluginManager {
   private configurations: Map<string, PluginConfig> = new Map();
@@ -49,9 +46,7 @@ export class PluginManager {
     }
   }
 
-  async getPluginConfig(
-    pluginName: string,
-  ): Promise<PluginConfig | undefined> {
+  async getPluginConfig(pluginName: string): Promise<PluginConfig | undefined> {
     const dbConfig = await this.fetchConfigFromDB(pluginName);
     if (dbConfig) {
       return dbConfig;

@@ -25,8 +25,6 @@ export interface ThemeConfig {
   };
 }
 
-
-
 export interface Template {
   name: string;
   description?: string;
@@ -38,8 +36,6 @@ export interface Template {
   loader: () => Promise<void>;
   element: () => React.ReactNode;
 }
-
-
 
 export class ThemeService {
   private static instance: ThemeService;
@@ -70,11 +66,9 @@ export class ThemeService {
     }
   }
 
-
   public getThemeConfig(): ThemeConfig | undefined {
     return this.currentTheme;
   }
-
 
   public async updateThemeConfig(config: Partial<ThemeConfig>): Promise<void> {
     try {
