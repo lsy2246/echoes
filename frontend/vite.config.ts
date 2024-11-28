@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
         },
         routes: (defineRoutes) => {
           return defineRoutes((route) => {
-            if (!env.VITE_INIT_STATUS) {
+            if (Number(env.VITE_INIT_STATUS??1)<4) {
               route("/", "init.tsx", { id: "index-route" });
               route("*", "init.tsx", { id: "catch-all-route" });
             } else {
@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
       tsconfigPaths(),
     ],
     define: {
-      "import.meta.env.VITE_INIT_STATUS": JSON.stringify(false),
+      "import.meta.env.VITE_INIT_STATUS": JSON.stringify(1),
       "import.meta.env.VITE_SERVER_API": JSON.stringify("localhost:22000"),
       "import.meta.env.VITE_PORT": JSON.stringify(22100),
       "import.meta.env.VITE_ADDRESS": JSON.stringify("localhost"),

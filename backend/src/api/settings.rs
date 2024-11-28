@@ -2,6 +2,7 @@ use super::SystemToken;
 use crate::storage::{sql, sql::builder};
 use crate::common::error::{AppResult, AppResultInto, CustomResult};
 use crate::AppState;
+use rocket::data;
 use rocket::{
     get,
     http::Status,
@@ -40,7 +41,7 @@ pub async fn get_setting(
     name: String,
 ) -> CustomResult<Json<Value>> {
     let name_condition = builder::Condition::new(
-        "key".to_string(),
+        "name".to_string(),
         builder::Operator::Eq,
         Some(builder::SafeValue::Text(
             format!("{}_{}", comfig_type, name),
@@ -51,7 +52,7 @@ pub async fn get_setting(
     let where_clause = builder::WhereClause::Condition(name_condition);
 
     let mut sql_builder =
-        builder::QueryBuilder::new(builder::SqlOperation::Select, "settings".to_string())?;
+        builder::QueryBuilder::new(builder::SqlOperation::Select, sql.table_name("settings"),sql.get_type())?;
 
     sql_builder
         .add_condition(where_clause)
@@ -69,9 +70,9 @@ pub async fn insert_setting(
     data: Json<Value>,
 ) -> CustomResult<()> {
     let mut builder =
-        builder::QueryBuilder::new(builder::SqlOperation::Insert, "settings".to_string())?;
+        builder::QueryBuilder::new(builder::SqlOperation::Insert,  sql.table_name("settings"),sql.get_type())?;
     builder.set_value(
-        "key".to_string(),
+        "name".to_string(),
         builder::SafeValue::Text(
             format!("{}_{}", comfig_type, name).to_string(),
             builder::ValidationLevel::Strict,
@@ -79,7 +80,7 @@ pub async fn insert_setting(
     )?;
     builder.set_value(
         "data".to_string(),
-        builder::SafeValue::Json(data.into_inner()),
+        builder::SafeValue::Text(data.to_string(),builder::ValidationLevel::Relaxed),
     )?;
     sql.get_db().execute_query(&builder).await?;
     Ok(())
@@ -91,7 +92,7 @@ pub async fn system_config_get(
     _token: SystemToken,
 ) -> AppResult<Json<Value>> {
     let sql = state.sql_get().await.into_app_result()?;
-    let settings = get_setting(&sql, "system".to_string(), "settings".to_string())
+    let settings = get_setting(&sql, "system".to_string(),  sql.table_name("settings"))
         .await
         .into_app_result()?;
     Ok(settings)

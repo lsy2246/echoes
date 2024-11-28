@@ -2,16 +2,16 @@ use crate::common::error::{CustomErrorInto, CustomResult};
 use chrono::{DateTime, Utc};
 use regex::Regex;
 use serde::Serialize;
-use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::hash::Hash;
-use uuid::Uuid;
+use crate::sql::schema::DatabaseType;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy, Serialize)]
 pub enum ValidationLevel {
     Strict,
     Standard,
     Relaxed,
+    Raw,   
 }
 
 #[derive(Debug, Clone)]
@@ -28,6 +28,7 @@ impl Default for TextValidator {
             (ValidationLevel::Strict, 100),
             (ValidationLevel::Standard, 1000),
             (ValidationLevel::Relaxed, 100000),
+            (ValidationLevel::Raw, usize::MAX),
         ]);
 
         let level_allowed_chars = HashMap::from([
@@ -43,6 +44,7 @@ impl Default for TextValidator {
                     '}', '@', '#', '$', '%', '^', '&', '*', '+', '=', '<', '>', '/', '\\',
                 ],
             ),
+            (ValidationLevel::Raw, vec![]),
         ]);
 
         TextValidator {
@@ -74,6 +76,9 @@ impl Default for TextValidator {
 
 impl TextValidator {
     pub fn validate(&self, text: &str, level: ValidationLevel) -> CustomResult<()> {
+        if level == ValidationLevel::Raw {
+            return self.validate_sql_patterns(text);
+        }
         let max_length = self
             .level_max_lengths
             .get(&level)
@@ -140,6 +145,9 @@ impl TextValidator {
     pub fn validate_strict(&self, text: &str) -> CustomResult<()> {
         self.validate(text, ValidationLevel::Strict)
     }
+    pub fn validate_raw(&self, text: &str) -> CustomResult<()> {
+        self.validate(text, ValidationLevel::Raw)
+    }
 
     pub fn sanitize(&self, text: &str) -> CustomResult<String> {
         self.validate_relaxed(text)?;
@@ -155,77 +163,31 @@ pub enum SafeValue {
     Float(f64),
     Text(String, ValidationLevel),
     DateTime(DateTime<Utc>),
-    Uuid(Uuid),
-    Binary(Vec<u8>),
-    Array(Vec<SafeValue>),
-    Json(JsonValue),
-    Enum(String, String, ValidationLevel),
+}
+
+impl std::fmt::Display for SafeValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            SafeValue::Null => write!(f, "NULL"),
+            SafeValue::Bool(b) => write!(f, "{}", b),
+            SafeValue::Integer(i) => write!(f, "{}", i),
+            SafeValue::Float(f_val) => write!(f, "{}", f_val),
+            SafeValue::Text(s, _) => write!(f, "{}", s),
+            SafeValue::DateTime(dt) => write!(f, "{}", dt.to_rfc3339()),
+        }
+    }
 }
 
 impl SafeValue {
-    pub fn from_json(value: JsonValue, level: ValidationLevel) -> CustomResult<Self> {
-        match value {
-            JsonValue::Null => Ok(SafeValue::Null),
-            JsonValue::Bool(b) => Ok(SafeValue::Bool(b)),
-            JsonValue::Number(n) => {
-                if let Some(i) = n.as_i64() {
-                    Ok(SafeValue::Integer(i))
-                } else if let Some(f) = n.as_f64() {
-                    Ok(SafeValue::Float(f))
-                } else {
-                    Err("Invalid number format".into_custom_error())
-                }
-            }
-            JsonValue::String(s) => {
-                TextValidator::default().validate(&s, level)?;
-                Ok(SafeValue::Text(s, level))
-            }
-            JsonValue::Array(arr) => Ok(SafeValue::Array(
-                arr.into_iter()
-                    .map(|item| SafeValue::from_json(item, level))
-                    .collect::<CustomResult<Vec<_>>>()?,
-            )),
-            JsonValue::Object(_) => {
-                Self::validate_json_structure(&value, level)?;
-                Ok(SafeValue::Json(value))
-            }
-        }
-    }
-
-    fn validate_json_structure(value: &JsonValue, level: ValidationLevel) -> CustomResult<()> {
-        let validator = TextValidator::default();
-        match value {
-            JsonValue::Object(map) => {
-                for (key, val) in map {
-                    validator.validate(key, level)?;
-                    Self::validate_json_structure(val, level)?;
-                }
-            }
-            JsonValue::Array(arr) => {
-                arr.iter()
-                    .try_for_each(|item| Self::validate_json_structure(item, level))?;
-            }
-            JsonValue::String(s) => validator.validate(s, level)?,
-            _ => {}
-        }
-        Ok(())
-    }
 
     fn get_sql_type(&self) -> CustomResult<String> {
         let sql_type = match self {
             SafeValue::Null => "NULL",
-            SafeValue::Bool(_) => "boolean",
-            SafeValue::Integer(_) => "bigint",
-            SafeValue::Float(_) => "double precision",
-            SafeValue::Text(_, _) => "text",
-            SafeValue::DateTime(_) => "timestamp with time zone",
-            SafeValue::Uuid(_) => "uuid",
-            SafeValue::Binary(_) => "bytea",
-            SafeValue::Array(_) | SafeValue::Json(_) => "jsonb",
-            SafeValue::Enum(_, enum_type, level) => {
-                TextValidator::default().validate(enum_type, *level)?;
-                return Ok(enum_type.replace('\'', "''"));
-            }
+            SafeValue::Bool(_) => "BOOLEAN",
+            SafeValue::Integer(_) => "INTEGER",
+            SafeValue::Float(_) => "REAL",
+            SafeValue::Text(_, _) => "TEXT",
+            SafeValue::DateTime(_) => "TEXT",
         };
         Ok(sql_type.to_string())
     }
@@ -233,37 +195,27 @@ impl SafeValue {
     pub fn to_sql_string(&self) -> CustomResult<String> {
         match self {
             SafeValue::Null => Ok("NULL".to_string()),
-            SafeValue::Bool(b) => Ok(b.to_string()),
+            SafeValue::Bool(b) => Ok(if *b { "true" } else { "false" }.to_string()),
             SafeValue::Integer(i) => Ok(i.to_string()),
             SafeValue::Float(f) => Ok(f.to_string()),
             SafeValue::Text(s, level) => {
                 TextValidator::default().validate(s, *level)?;
-                Ok(s.replace('\'', "''"))
+                Ok(format!("{}", s.replace('\'', "''")))
             }
-            SafeValue::DateTime(dt) => Ok(format!("'{}'", dt.to_rfc3339())),
-            SafeValue::Uuid(u) => Ok(format!("'{}'", u)),
-            SafeValue::Binary(b) => Ok(format!("'\\x{}'", hex::encode(b))),
-            SafeValue::Array(arr) => {
-                let values: CustomResult<Vec<_>> = arr.iter().map(|v| v.to_sql_string()).collect();
-                Ok(format!("ARRAY[{}]", values?.join(",")))
-            }
-            SafeValue::Json(j) => {
-                let json_str = serde_json::to_string(j)?;
-                TextValidator::default().validate(&json_str, ValidationLevel::Relaxed)?;
-                Ok(json_str.replace('\'', "''"))
-            }
-            SafeValue::Enum(s, _, level) => {
-                TextValidator::default().validate(s, *level)?;
-                Ok(s.to_string())
-            }
+            SafeValue::DateTime(dt) => Ok(format!("{}", dt.to_rfc3339())),
         }
     }
 
-    fn to_param_sql(&self, param_index: usize) -> CustomResult<String> {
+    fn to_param_sql(&self, param_index: usize, db_type: DatabaseType) -> CustomResult<String> {
         if matches!(self, SafeValue::Null) {
-            Ok("NULL".to_string())
-        } else {
-            Ok(format!("${}::{}", param_index, self.get_sql_type()?))
+            return Ok("NULL".to_string());
+        }
+
+        // 根据数据库类型返回不同的参数占位符
+        match db_type {
+            DatabaseType::MySQL => Ok("?".to_string()),
+            DatabaseType::PostgreSQL => Ok(format!("${}", param_index)),
+            DatabaseType::SQLite => Ok("?".to_string()),
         }
     }
 }
@@ -305,12 +257,10 @@ pub enum Operator {
     In,
     IsNull,
     IsNotNull,
-    JsonContains,
-    JsonExists,
 }
 
 impl Operator {
-    fn as_str(&self) -> &'static str {
+    pub fn as_str(&self) -> &'static str {
         match self {
             Operator::Eq => "=",
             Operator::Ne => "!=",
@@ -322,17 +272,15 @@ impl Operator {
             Operator::In => "IN",
             Operator::IsNull => "IS NULL",
             Operator::IsNotNull => "IS NOT NULL",
-            Operator::JsonContains => "@>",
-            Operator::JsonExists => "?",
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct Condition {
-    field: Identifier,
-    operator: Operator,
-    value: Option<SafeValue>,
+    pub field: Identifier,
+    pub operator: Operator,
+    pub value: Option<SafeValue>,
 }
 
 impl Condition {
@@ -362,10 +310,11 @@ pub struct QueryBuilder {
     order_by: Option<Identifier>,
     limit: Option<i32>,
     offset: Option<i32>,
+    db_type: DatabaseType,
 }
 
 impl QueryBuilder {
-    pub fn new(operation: SqlOperation, table: String) -> CustomResult<Self> {
+    pub fn new(operation: SqlOperation, table: String, db_type: DatabaseType) -> CustomResult<Self> {
         Ok(QueryBuilder {
             operation,
             table: Identifier::new(table)?,
@@ -375,6 +324,7 @@ impl QueryBuilder {
             order_by: None,
             limit: None,
             offset: None,
+            db_type,
         })
     }
 
@@ -438,7 +388,7 @@ impl QueryBuilder {
             if matches!(value, SafeValue::Null) {
                 placeholders.push("NULL".to_string());
             } else {
-                placeholders.push(format!("${}::{}", params.len() + 1, value.get_sql_type()?));
+                placeholders.push(value.to_param_sql(params.len() + 1, self.db_type)?);
                 params.push(value.clone());
             }
         }
@@ -458,11 +408,13 @@ impl QueryBuilder {
 
         let mut updates = Vec::new();
         for (field, value) in &self.values {
-            let set_sql = format!(
-                "{} = {}",
-                field.as_str(),
-                value.to_param_sql(params.len() + 1)?
-            );
+            let placeholder = if matches!(value, SafeValue::Null) {
+                "NULL".to_string()
+            } else {
+                value.to_param_sql(params.len() + 1, self.db_type)?
+            };
+            
+            let set_sql = format!("{} = {}", field.as_str(), placeholder);
             if !matches!(value, SafeValue::Null) {
                 params.push(value.clone());
             }
@@ -542,11 +494,17 @@ impl QueryBuilder {
     ) -> CustomResult<String> {
         match &condition.value {
             Some(value) => {
+                let placeholder = if matches!(value, SafeValue::Null) {
+                    "NULL".to_string()
+                } else {
+                    value.to_param_sql(param_index, self.db_type)?
+                };
+                
                 let sql = format!(
                     "{} {} {}",
                     condition.field.as_str(),
                     condition.operator.as_str(),
-                    value.to_param_sql(param_index)?
+                    placeholder
                 );
                 if !matches!(value, SafeValue::Null) {
                     params.push(value.clone());

@@ -1,5 +1,6 @@
 import { Configuration, PathDescription } from "common/serializableType";
-import { ApiService } from "./api";
+import { ApiService } from "core/api";
+import { Template } from "core/template";
 
 export interface ThemeConfig {
   name: string;
@@ -25,17 +26,6 @@ export interface ThemeConfig {
   };
 }
 
-export interface Template {
-  name: string;
-  description?: string;
-  config: {
-    layout?: string;
-    styles?: string[];
-    scripts?: string[];
-  };
-  loader: () => Promise<void>;
-  element: () => React.ReactNode;
-}
 
 export class ThemeService {
   private static instance: ThemeService;
@@ -56,7 +46,7 @@ export class ThemeService {
   public async getCurrentTheme(): Promise<void> {
     try {
       const themeConfig = await this.api.request<ThemeConfig>(
-        "/theme/current",
+        "/theme",
         { method: "GET" },
       );
       this.currentTheme = themeConfig;
@@ -70,10 +60,10 @@ export class ThemeService {
     return this.currentTheme;
   }
 
-  public async updateThemeConfig(config: Partial<ThemeConfig>): Promise<void> {
+  public async updateThemeConfig(config: Partial<ThemeConfig>,name:string): Promise<void> {
     try {
       const updatedConfig = await this.api.request<ThemeConfig>(
-        "/theme/config",
+        `/theme/`,
         {
           method: "PUT",
           headers: {

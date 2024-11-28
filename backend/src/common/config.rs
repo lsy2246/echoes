@@ -47,17 +47,19 @@ pub struct SqlConfig {
     pub user: String,
     pub password: String,
     pub db_name: String,
+    pub db_prefix:String,
 }
 
 impl Default for SqlConfig {
     fn default() -> Self {
         Self {
-            db_type: "postgresql".to_string(),
-            address: "localhost".to_string(),
-            port: 5432,
-            user: "postgres".to_string(),
-            password: "postgres".to_string(),
+            db_type: "sqllite".to_string(),
+            address: "".to_string(),
+            port: 0,
+            user: "".to_string(),
+            password: "".to_string(),
             db_name: "echoes".to_string(),
+            db_prefix: "echoes_".to_string(),
         }
     }
 }

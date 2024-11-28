@@ -3,13 +3,19 @@ name = "echoes"
 version = "0.1.0"
 edition = "2021"
 
+
 [dependencies]
 rocket = { version = "0.5", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 toml = "0.8.19"
 tokio = { version = "1", features = ["full"] }
-sqlx = { version = "0.8.2", features = ["runtime-tokio-native-tls", "postgres"] }
+sqlx = { version = "0.8.2", features = [
+    "runtime-tokio-native-tls",
+    "postgres",
+    "mysql",
+    "sqlite"
+] }
 async-trait = "0.1.83"
 jwt-compact = { version = "0.8.0", features = ["ed25519-dalek"] }
 ed25519-dalek = "2.1.1"
@@ -17,5 +23,4 @@ rand = "0.8.5"
 chrono = "0.4"
 regex = "1.11.1"
 bcrypt = "0.16"
-uuid = { version = "1.11.0", features = ["v4", "serde"] }
 hex = "0.4.3"
