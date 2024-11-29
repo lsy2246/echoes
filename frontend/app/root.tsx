@@ -7,6 +7,8 @@ import {
 } from "@remix-run/react";
 
 import { BaseProvider } from "hooks/servicesProvider";
+import { MessageProvider } from "hooks/message";
+import { MessageContainer } from "hooks/message";
 
 import "~/index.css";
 
@@ -22,7 +24,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body suppressHydrationWarning={true}>
         <BaseProvider>
-          <Outlet />
+          <MessageProvider>
+            <MessageContainer />
+            <Outlet />
+          </MessageProvider>
         </BaseProvider>
         <ScrollRestoration />
         <script

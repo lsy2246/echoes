@@ -1,17 +1,10 @@
+use crate::common::error::{AppResult, AppResultInto};
 use crate::security;
 use crate::storage::sql::builder;
-use crate::common::error::{AppResult, AppResultInto};
 use crate::AppState;
 use chrono::Duration;
-use rocket::{
-    http::Status,
-    post,
-    response::status,
-    serde::json::{Json, Value},
-    State,
-};
+use rocket::{http::Status, post, response::status, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use std::sync::Arc;
 #[derive(Deserialize, Serialize)]
 pub struct TokenSystemData {
@@ -23,13 +16,13 @@ pub async fn token_system(
     state: &State<Arc<AppState>>,
     data: Json<TokenSystemData>,
 ) -> AppResult<String> {
-    let sql = state
-    .sql_get()
-    .await
+    let sql = state.sql_get().await.into_app_result()?;
+    let mut builder = builder::QueryBuilder::new(
+        builder::SqlOperation::Select,
+        sql.table_name("users"),
+        sql.get_type(),
+    )
     .into_app_result()?;
-    let mut builder =
-        builder::QueryBuilder::new(builder::SqlOperation::Select, sql.table_name("users"), sql.get_type())
-            .into_app_result()?;
     builder
         .add_field("password_hash".to_string())
         .into_app_result()?
@@ -69,7 +62,7 @@ pub async fn token_system(
             ),
         ]));
 
-        let values = sql
+    let values = sql
         .get_db()
         .execute_query(&builder)
         .await
@@ -79,14 +72,10 @@ pub async fn token_system(
         .first()
         .and_then(|row| row.get("password_hash"))
         .and_then(|val| val.as_str())
-        .ok_or_else(|| {
-            status::Custom(Status::NotFound, "Invalid system user or password".into())
-        })?;
-
-    println!("{}\n{}",&data.password,password.clone());
+        .ok_or_else(|| status::Custom(Status::NotFound, "系统用户或密码无效".into()))?;
 
     security::bcrypt::verify_hash(&data.password, password)
-        .map_err(|_| status::Custom(Status::Forbidden, "Invalid password".into()))?;
+        .map_err(|_| status::Custom(Status::Forbidden, "密码无效".into()))?;
 
     Ok(security::jwt::generate_jwt(
         security::jwt::CustomClaims {

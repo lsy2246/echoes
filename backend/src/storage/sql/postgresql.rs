@@ -2,10 +2,9 @@ use super::{
     builder::{self, SafeValue},
     schema, DatabaseTrait,
 };
-use crate::common::error::{CustomError, CustomErrorInto, CustomResult};
+use crate::common::error::CustomResult;
 use crate::config;
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
 use serde_json::Value;
 use sqlx::{Column, Executor, PgPool, Row, TypeInfo};
 use std::collections::HashMap;
@@ -17,45 +16,10 @@ pub struct Postgresql {
 
 #[async_trait]
 impl DatabaseTrait for Postgresql {
-    async fn initialization(db_config: config::SqlConfig) -> CustomResult<()> {
-        let db_prefix = SafeValue::Text(
-            format!("{}", db_config.db_prefix),
-            builder::ValidationLevel::Strict,
-        );
-        let grammar = schema::generate_schema(schema::DatabaseType::PostgreSQL, db_prefix)?;
-
-        let connection_str = format!(
-            "postgres://{}:{}@{}:{}",
-            db_config.user, db_config.password, db_config.address, db_config.port
-        );
-        let pool = PgPool::connect(&connection_str).await?;
-
-        pool.execute(format!("CREATE DATABASE {}", db_config.db_name).as_str())
-            .await?;
-
-        let new_connection_str = format!(
-            "postgres://{}:{}@{}:{}/{}",
-            db_config.user,
-            db_config.password,
-            db_config.address,
-            db_config.port,
-            db_config.db_name
-        );
-        let new_pool = PgPool::connect(&new_connection_str).await?;
-
-        new_pool.execute(grammar.as_str()).await?;
-
-        Ok(())
-    }
-
     async fn connect(db_config: &config::SqlConfig) -> CustomResult<Self> {
         let connection_str = format!(
             "postgres://{}:{}@{}:{}/{}",
-            db_config.user,
-            db_config.password,
-            db_config.address,
-            db_config.port,
-            db_config.db_name
+            db_config.user, db_config.password, db_config.host, db_config.port, db_config.db_name
         );
 
         let pool = PgPool::connect(&connection_str).await?;
@@ -109,10 +73,31 @@ impl DatabaseTrait for Postgresql {
             })
             .collect())
     }
-}
 
-impl Postgresql {
-    fn get_sdb(&self){
-        let a=self.pool;
+    async fn initialization(db_config: config::SqlConfig) -> CustomResult<()> {
+        let db_prefix = SafeValue::Text(
+            format!("{}", db_config.db_prefix),
+            builder::ValidationLevel::Strict,
+        );
+        let grammar = schema::generate_schema(super::DatabaseType::PostgreSQL, db_prefix)?;
+
+        let connection_str = format!(
+            "postgres://{}:{}@{}:{}",
+            db_config.user, db_config.password, db_config.host, db_config.port
+        );
+        let pool = PgPool::connect(&connection_str).await?;
+
+        pool.execute(format!("CREATE DATABASE {}", db_config.db_name).as_str())
+            .await?;
+
+        let new_connection_str = format!(
+            "postgres://{}:{}@{}:{}/{}",
+            db_config.user, db_config.password, db_config.host, db_config.port, db_config.db_name
+        );
+        let new_pool = PgPool::connect(&new_connection_str).await?;
+
+        new_pool.execute(grammar.as_str()).await?;
+
+        Ok(())
     }
 }

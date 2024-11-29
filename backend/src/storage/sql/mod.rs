@@ -1,16 +1,32 @@
-mod postgresql;
-mod mysql;
-mod sqllite;
 pub mod builder;
+mod mysql;
+mod postgresql;
 mod schema;
+mod sqllite;
 
-use crate::config;
 use crate::common::error::{CustomErrorInto, CustomResult};
+use crate::config;
 use async_trait::async_trait;
 use std::{collections::HashMap, sync::Arc};
-use schema::DatabaseType;
 
-#[async_trait] 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum DatabaseType {
+    PostgreSQL,
+    MySQL,
+    SQLite,
+}
+
+impl std::fmt::Display for DatabaseType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DatabaseType::PostgreSQL => write!(f, "postgresql"),
+            DatabaseType::MySQL => write!(f, "mysql"),
+            DatabaseType::SQLite => write!(f, "sqlite"),
+        }
+    }
+}
+
+#[async_trait]
 pub trait DatabaseTrait: Send + Sync {
     async fn connect(database: &config::SqlConfig) -> CustomResult<Self>
     where
@@ -28,7 +44,7 @@ pub trait DatabaseTrait: Send + Sync {
 pub struct Database {
     pub db: Arc<Box<dyn DatabaseTrait>>,
     pub prefix: Arc<String>,
-    pub db_type: Arc<String>
+    pub db_type: Arc<DatabaseType>,
 }
 
 impl Database {
@@ -40,20 +56,16 @@ impl Database {
         &self.prefix
     }
 
-    pub fn get_type(&self) -> DatabaseType {
-        match self.db_type.as_str() {
-            "postgresql" => DatabaseType::PostgreSQL,
-            "mysql" => DatabaseType::MySQL,
-            _ => DatabaseType::SQLite,
-        }
-    }
-
     pub fn table_name(&self, name: &str) -> String {
         format!("{}{}", self.prefix, name)
     }
 
+    pub fn get_type(&self) -> DatabaseType {
+        *self.db_type.clone()
+    }
+
     pub async fn link(database: &config::SqlConfig) -> CustomResult<Self> {
-        let db: Box<dyn DatabaseTrait> = match database.db_type.as_str() {
+        let db: Box<dyn DatabaseTrait> = match database.db_type.to_lowercase().as_str() {
             "postgresql" => Box::new(postgresql::Postgresql::connect(database).await?),
             "mysql" => Box::new(mysql::Mysql::connect(database).await?),
             "sqllite" => Box::new(sqllite::Sqlite::connect(database).await?),
@@ -63,12 +75,17 @@ impl Database {
         Ok(Self {
             db: Arc::new(db),
             prefix: Arc::new(database.db_prefix.clone()),
-            db_type: Arc::new(database.db_type.clone())
+            db_type: Arc::new(match database.db_type.to_lowercase().as_str() {
+                "postgresql" => DatabaseType::PostgreSQL,
+                "mysql" => DatabaseType::MySQL,
+                "sqllite" => DatabaseType::SQLite,
+                _ => return Err("unknown database type".into_custom_error()),
+            }),
         })
     }
 
     pub async fn initial_setup(database: config::SqlConfig) -> CustomResult<()> {
-        match database.db_type.as_str() {
+        match database.db_type.to_lowercase().as_str() {
             "postgresql" => postgresql::Postgresql::initialization(database).await?,
             "mysql" => mysql::Mysql::initialization(database).await?,
             "sqllite" => sqllite::Sqlite::initialization(database).await?,
@@ -76,5 +93,4 @@ impl Database {
         };
         Ok(())
     }
-    
 }

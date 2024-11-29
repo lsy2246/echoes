@@ -42,19 +42,19 @@ impl Default for Init {
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct SqlConfig {
     pub db_type: String,
-    pub address: String,
+    pub host: String,
     pub port: u32,
     pub user: String,
     pub password: String,
     pub db_name: String,
-    pub db_prefix:String,
+    pub db_prefix: String,
 }
 
 impl Default for SqlConfig {
     fn default() -> Self {
         Self {
             db_type: "sqllite".to_string(),
-            address: "".to_string(),
+            host: "".to_string(),
             port: 0,
             user: "".to_string(),
             password: "".to_string(),
@@ -67,7 +67,7 @@ impl Default for SqlConfig {
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct NoSqlConfig {
     pub db_type: String,
-    pub address: String,
+    pub host: String,
     pub port: u32,
     pub user: String,
     pub password: String,
@@ -78,7 +78,7 @@ impl Default for NoSqlConfig {
     fn default() -> Self {
         Self {
             db_type: "postgresql".to_string(),
-            address: "localhost".to_string(),
+            host: "localhost".to_string(),
             port: 5432,
             user: "postgres".to_string(),
             password: "postgres".to_string(),

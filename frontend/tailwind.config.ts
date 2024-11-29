@@ -13,21 +13,21 @@ export default {
       },
       colors: {
         custom: {
-          bg: { 
-            light: "#F5F5FB", 
-            dark: "#0F172A" 
+          bg: {
+            light: "#F5F5FB",
+            dark: "#0F172A",
           },
-          box: { 
-            light: "#FFFFFF", 
-            dark: "#1E293B"  
+          box: {
+            light: "#FFFFFF",
+            dark: "#1E293B",
           },
-          p: { 
-            light: "#4b5563", 
-            dark: "#94A3B8" 
+          p: {
+            light: "#4b5563",
+            dark: "#94A3B8",
           },
-          title: { 
-            light: "#111827", 
-            dark: "#F1F5F9" 
+          title: {
+            light: "#111827",
+            dark: "#F1F5F9",
           },
         },
       },

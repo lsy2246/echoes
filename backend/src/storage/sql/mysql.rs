@@ -1,12 +1,14 @@
-use super::{builder::{self, SafeValue}, schema, DatabaseTrait};
-use crate::config;
+use super::{
+    builder::{self, SafeValue},
+    schema, DatabaseTrait,
+};
 use crate::common::error::CustomResult;
+use crate::config;
 use async_trait::async_trait;
 use serde_json::Value;
 use sqlx::mysql::MySqlPool;
 use sqlx::{Column, Executor, Row, TypeInfo};
 use std::collections::HashMap;
-use chrono::{DateTime, Utc};
 
 #[derive(Clone)]
 pub struct Mysql {
@@ -15,51 +17,16 @@ pub struct Mysql {
 
 #[async_trait]
 impl DatabaseTrait for Mysql {
-    async fn initialization(db_config: config::SqlConfig) -> CustomResult<()> {
-        let db_prefix = SafeValue::Text(format!("{}",db_config.db_prefix), builder::ValidationLevel::Strict);
-        let grammar = schema::generate_schema(schema::DatabaseType::MySQL,db_prefix)?;
-        let connection_str = format!(
-            "mysql://{}:{}@{}:{}",
-            db_config.user, db_config.password, db_config.address, db_config.port
-        );
-        
-        let pool = MySqlPool::connect(&connection_str).await?;
-        
-        pool.execute(format!("CREATE DATABASE `{}`", db_config.db_name).as_str()).await?;
-        pool.execute(format!(
-            "ALTER DATABASE `{}` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci",
-            db_config.db_name
-        ).as_str()).await?;
-
-
-        let new_connection_str = format!(
-            "mysql://{}:{}@{}:{}/{}",
-            db_config.user,
-            db_config.password,
-            db_config.address,
-            db_config.port,
-            db_config.db_name
-        );
-        let new_pool = MySqlPool::connect(&new_connection_str).await?;
-
-        new_pool.execute(grammar.as_str()).await?;
-        Ok(())
-    }
     async fn connect(db_config: &config::SqlConfig) -> CustomResult<Self> {
         let connection_str = format!(
             "mysql://{}:{}@{}:{}/{}",
-            db_config.user,
-            db_config.password,
-            db_config.address,
-            db_config.port,
-            db_config.db_name
+            db_config.user, db_config.password, db_config.host, db_config.port, db_config.db_name
         );
 
         let pool = MySqlPool::connect(&connection_str).await?;
 
         Ok(Mysql { pool })
     }
-
     async fn execute_query<'a>(
         &'a self,
         builder: &builder::QueryBuilder,
@@ -107,4 +74,38 @@ impl DatabaseTrait for Mysql {
             .collect())
     }
 
+    async fn initialization(db_config: config::SqlConfig) -> CustomResult<()> {
+        let db_prefix = SafeValue::Text(
+            format!("{}", db_config.db_prefix),
+            builder::ValidationLevel::Strict,
+        );
+        let grammar = schema::generate_schema(super::DatabaseType::MySQL, db_prefix)?;
+
+        let connection_str = format!(
+            "mysql://{}:{}@{}:{}",
+            db_config.user, db_config.password, db_config.host, db_config.port
+        );
+
+        let pool = MySqlPool::connect(&connection_str).await?;
+
+        pool.execute(format!("CREATE DATABASE `{}`", db_config.db_name).as_str())
+            .await?;
+        pool.execute(
+            format!(
+                "ALTER DATABASE `{}` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci",
+                db_config.db_name
+            )
+            .as_str(),
+        )
+        .await?;
+
+        let new_connection_str = format!(
+            "mysql://{}:{}@{}:{}/{}",
+            db_config.user, db_config.password, db_config.host, db_config.port, db_config.db_name
+        );
+        let new_pool = MySqlPool::connect(&new_connection_str).await?;
+
+        new_pool.execute(grammar.as_str()).await?;
+        Ok(())
+    }
 }

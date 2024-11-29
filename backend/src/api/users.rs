@@ -1,10 +1,8 @@
-use crate::security;
+use crate::common::error::{CustomErrorInto, CustomResult};
 use crate::security::bcrypt;
 use crate::storage::{sql, sql::builder};
-use crate::common::error::{CustomErrorInto, CustomResult};
 use rocket::{get, http::Status, post, response::status, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Deserialize, Serialize)]
 pub struct LoginData {
@@ -20,16 +18,23 @@ pub struct RegisterData {
     pub role: String,
 }
 
-pub async fn insert_user(sql: &sql::Database , data: RegisterData) -> CustomResult<()> {
+pub async fn insert_user(sql: &sql::Database, data: RegisterData) -> CustomResult<()> {
     let role = match data.role.as_str() {
         "administrator" | "contributor" => data.role,
-        _ => return Err("Invalid role. Must be either 'administrator' or 'contributor'".into_custom_error()),
+        _ => {
+            return Err(
+                "Invalid role. Must be either 'administrator' or 'contributor'".into_custom_error(),
+            )
+        }
     };
 
     let password_hash = bcrypt::generate_hash(&data.password)?;
 
-    let mut builder =
-        builder::QueryBuilder::new(builder::SqlOperation::Insert, sql.table_name("users"), sql.get_type())?;
+    let mut builder = builder::QueryBuilder::new(
+        builder::SqlOperation::Insert,
+        sql.table_name("users"),
+        sql.get_type(),
+    )?;
     builder
         .set_value(
             "username".to_string(),

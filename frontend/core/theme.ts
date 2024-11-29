@@ -26,7 +26,6 @@ export interface ThemeConfig {
   };
 }
 
-
 export class ThemeService {
   private static instance: ThemeService;
   private currentTheme?: ThemeConfig;
@@ -45,10 +44,9 @@ export class ThemeService {
 
   public async getCurrentTheme(): Promise<void> {
     try {
-      const themeConfig = await this.api.request<ThemeConfig>(
-        "/theme",
-        { method: "GET" },
-      );
+      const themeConfig = await this.api.request<ThemeConfig>("/theme", {
+        method: "GET",
+      });
       this.currentTheme = themeConfig;
     } catch (error) {
       console.error("Failed to initialize theme:", error);
@@ -60,18 +58,18 @@ export class ThemeService {
     return this.currentTheme;
   }
 
-  public async updateThemeConfig(config: Partial<ThemeConfig>,name:string): Promise<void> {
+  public async updateThemeConfig(
+    config: Partial<ThemeConfig>,
+    name: string,
+  ): Promise<void> {
     try {
-      const updatedConfig = await this.api.request<ThemeConfig>(
-        `/theme/`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(config),
+      const updatedConfig = await this.api.request<ThemeConfig>(`/theme/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(config),
+      });
 
       await this.loadTheme(updatedConfig);
     } catch (error) {

@@ -2,12 +2,11 @@ use super::{
     builder::{self, SafeValue},
     schema, DatabaseTrait,
 };
-use crate::common::error::{CustomError, CustomErrorInto, CustomResult};
+use crate::common::error::{CustomErrorInto, CustomResult};
 use crate::config;
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
 use serde_json::Value;
-use sqlx::{Column, Executor, SqlitePool, Row, TypeInfo};
+use sqlx::{Column, Executor, Row, SqlitePool, TypeInfo};
 use std::collections::HashMap;
 use std::env;
 
@@ -18,40 +17,19 @@ pub struct Sqlite {
 
 #[async_trait]
 impl DatabaseTrait for Sqlite {
-    async fn initialization(db_config: config::SqlConfig) -> CustomResult<()> {
-        let db_prefix = SafeValue::Text(
-            format!("{}", db_config.db_prefix),
-            builder::ValidationLevel::Strict,
-        );
-        
-        let sqlite_dir = env::current_dir()?.join("assets").join("sqllite");
-        std::fs::create_dir_all(&sqlite_dir)?;
-        
-        let db_file = sqlite_dir.join(&db_config.db_name);
-        std::fs::File::create(&db_file)?;
-        
-        let path = db_file.to_str().ok_or("Unable to get sqllite path".into_custom_error())?;
-        let grammar = schema::generate_schema(schema::DatabaseType::SQLite, db_prefix)?;
-
-        let connection_str = format!("sqlite:///{}", path);
-        let pool = SqlitePool::connect(&connection_str).await?;
-
-        pool.execute(grammar.as_str()).await?;
-
-        Ok(())
-    }
-
     async fn connect(db_config: &config::SqlConfig) -> CustomResult<Self> {
         let db_file = env::current_dir()?
             .join("assets")
             .join("sqllite")
             .join(&db_config.db_name);
-        
+
         if !db_file.exists() {
-            return Err("SQLite database file does not exist".into_custom_error());
+            return Err("SQLite数据库文件不存在".into_custom_error());
         }
-        
-        let path = db_file.to_str().ok_or("Unable to get sqllite path".into_custom_error())?;
+
+        let path = db_file
+            .to_str()
+            .ok_or("无法获取SQLite路径".into_custom_error())?;
         let connection_str = format!("sqlite:///{}", path);
         let pool = SqlitePool::connect(&connection_str).await?;
 
@@ -103,5 +81,32 @@ impl DatabaseTrait for Sqlite {
                     .collect()
             })
             .collect())
+    }
+
+    async fn initialization(db_config: config::SqlConfig) -> CustomResult<()> {
+        let db_prefix = SafeValue::Text(
+            format!("{}", db_config.db_prefix),
+            builder::ValidationLevel::Strict,
+        );
+
+        let sqlite_dir = env::current_dir()?.join("assets").join("sqllite");
+        std::fs::create_dir_all(&sqlite_dir)?;
+
+        let db_file = sqlite_dir.join(&db_config.db_name);
+        std::fs::File::create(&db_file)?;
+
+        let path = db_file
+            .to_str()
+            .ok_or("Unable to get sqllite path".into_custom_error())?;
+        let grammar = schema::generate_schema(super::DatabaseType::SQLite, db_prefix)?;
+
+        println!("\n{}\n", grammar);
+
+        let connection_str = format!("sqlite:///{}", path);
+        let pool = SqlitePool::connect(&connection_str).await?;
+
+        pool.execute(grammar.as_str()).await?;
+
+        Ok(())
     }
 }

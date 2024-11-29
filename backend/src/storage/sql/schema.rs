@@ -1,13 +1,7 @@
 use super::builder::{Condition, Identifier, Operator, SafeValue, ValidationLevel, WhereClause};
+use super::DatabaseType;
 use crate::common::error::{CustomErrorInto, CustomResult};
-use std::{collections::HashMap, fmt::format};
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum DatabaseType {
-    PostgreSQL,
-    MySQL,
-    SQLite,
-}
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum FieldType {
@@ -46,16 +40,17 @@ pub struct ForeignKey {
     pub on_update: Option<ForeignKeyAction>,
 }
 
-impl ToString for ForeignKeyAction {
-    fn to_string(&self) -> String {
-        match self {
+impl Display for ForeignKeyAction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
             ForeignKeyAction::Cascade => "CASCADE",
             ForeignKeyAction::Restrict => "RESTRICT",
             ForeignKeyAction::SetNull => "SET NULL",
             ForeignKeyAction::NoAction => "NO ACTION",
             ForeignKeyAction::SetDefault => "SET DEFAULT",
         }
-        .to_string()
+        .to_string();
+        write!(f, "{}", str)
     }
 }
 
@@ -216,7 +211,7 @@ impl Field {
                                 "{} {} {}",
                                 field_name,
                                 condition.operator.as_str(),
-                                value.to_sql_string()?
+                                value.to_string()?
                             ))
                         } else {
                             Err("Missing value for comparison".into_custom_error())
@@ -256,7 +251,7 @@ impl Field {
             }
         }
         if let Some(default) = &self.constraints.default_value {
-            sql.push_str(&format!(" DEFAULT {}", default.to_sql_string()?));
+            sql.push_str(&format!(" DEFAULT {}", default.to_string()?));
         }
         if let Some(check) = &self.constraints.check_constraint {
             let check_sql = Self::build_check_constraint(check)?;
@@ -332,7 +327,7 @@ impl Index {
         })
     }
 
-    fn to_sql(&self, table_name: &str, db_type: DatabaseType) -> CustomResult<String> {
+    fn to_sql(&self, table_name: &str, _db_type: DatabaseType) -> CustomResult<String> {
         let unique = if self.is_unique { "UNIQUE " } else { "" };
         Ok(format!(
             "CREATE {}INDEX {} ON {} ({});",
@@ -356,9 +351,7 @@ pub struct SchemaBuilder {
 
 impl SchemaBuilder {
     pub fn new() -> Self {
-        Self {
-            tables: Vec::new(),
-        }
+        Self { tables: Vec::new() }
     }
 
     pub fn add_table(&mut self, table: Table) -> CustomResult<&mut Self> {
@@ -376,14 +369,14 @@ impl SchemaBuilder {
     }
 }
 
-pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResult<String> {
-    let db_prefix=db_prefix.to_sql_string()?;
+pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomResult<String> {
+    let db_prefix = db_prefix.to_string()?;
     let mut schema = SchemaBuilder::new();
     let user_level = "('contributor', 'administrator')";
     let content_state = "('draft', 'published', 'private', 'hidden')";
 
     // 用户表
-    let mut users_table = Table::new(&format!("{}users",db_prefix))?;
+    let mut users_table = Table::new(&format!("{}users", db_prefix))?;
     users_table
         .add_field(Field::new(
             "username",
@@ -423,7 +416,10 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
                 .check(WhereClause::Condition(Condition::new(
                     "role".to_string(),
                     Operator::In,
-                    Some(SafeValue::Text(user_level.to_string(), ValidationLevel::Relaxed)),
+                    Some(SafeValue::Text(
+                        user_level.to_string(),
+                        ValidationLevel::Relaxed,
+                    )),
                 )?)),
             ValidationLevel::Strict,
         )?)
@@ -458,8 +454,8 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
     schema.add_table(users_table)?;
 
     // 独立页面表
-    
-    let mut pages_table = Table::new(&format!("{}pages",db_prefix))?;
+
+    let mut pages_table = Table::new(&format!("{}pages", db_prefix))?;
     pages_table
         .add_field(Field::new(
             "id",
@@ -511,16 +507,18 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
                 .check(WhereClause::Condition(Condition::new(
                     "status".to_string(),
                     Operator::In,
-                    Some(SafeValue::Text(content_state.to_string(), ValidationLevel::Standard)),
+                    Some(SafeValue::Text(
+                        content_state.to_string(),
+                        ValidationLevel::Standard,
+                    )),
                 )?)),
             ValidationLevel::Strict,
         )?);
 
     schema.add_table(pages_table)?;
 
-    
     // posts 表
-    let mut posts_table = Table::new(&format!("{}posts",db_prefix))?;
+    let mut posts_table = Table::new(&format!("{}posts", db_prefix))?;
     posts_table
         .add_field(Field::new(
             "id",
@@ -533,7 +531,7 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
             FieldType::VarChar(100),
             FieldConstraint::new()
                 .not_null()
-                .foreign_key(format!("{}users",db_prefix), "username".to_string())
+                .foreign_key(format!("{}users", db_prefix), "username".to_string())
                 .on_delete(ForeignKeyAction::Cascade)
                 .on_update(ForeignKeyAction::Cascade),
             ValidationLevel::Strict,
@@ -576,7 +574,10 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
                 .check(WhereClause::Condition(Condition::new(
                     "status".to_string(),
                     Operator::In,
-                    Some(SafeValue::Text(content_state.to_string(), ValidationLevel::Standard)),
+                    Some(SafeValue::Text(
+                        content_state.to_string(),
+                        ValidationLevel::Standard,
+                    )),
                 )?)),
             ValidationLevel::Strict,
         )?)
@@ -622,7 +623,7 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
     schema.add_table(posts_table)?;
 
     // 标签表
-    let mut tags_tables = Table::new(&format!("{}tags",db_prefix))?;
+    let mut tags_tables = Table::new(&format!("{}tags", db_prefix))?;
     tags_tables
         .add_field(Field::new(
             "name",
@@ -636,28 +637,28 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
             FieldConstraint::new(),
             ValidationLevel::Strict,
         )?);
-    
+
     schema.add_table(tags_tables)?;
 
-    
     // 文章标签
-    let mut post_tags_tables = Table::new(&format!("{}post_tags",db_prefix))?;
+    let mut post_tags_tables = Table::new(&format!("{}post_tags", db_prefix))?;
     post_tags_tables
         .add_field(Field::new(
             "post_id",
             FieldType::Integer(false),
             FieldConstraint::new()
                 .not_null()
-                .foreign_key(format!("{}posts",db_prefix), "id".to_string())
+                .foreign_key(format!("{}posts", db_prefix), "id".to_string())
                 .on_delete(ForeignKeyAction::Cascade)
                 .on_update(ForeignKeyAction::Cascade),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "tag_id",
             FieldType::VarChar(50),
             FieldConstraint::new()
                 .not_null()
-                .foreign_key(format!("{}tags",db_prefix), "name".to_string())
+                .foreign_key(format!("{}tags", db_prefix), "name".to_string())
                 .on_delete(ForeignKeyAction::Cascade)
                 .on_update(ForeignKeyAction::Cascade),
             ValidationLevel::Strict,
@@ -672,8 +673,8 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
     schema.add_table(post_tags_tables)?;
 
     // 分类表
-    
-    let mut categories_table = Table::new(&format!("{}categories",db_prefix))?;
+
+    let mut categories_table = Table::new(&format!("{}categories", db_prefix))?;
     categories_table
         .add_field(Field::new(
             "name",
@@ -685,21 +686,21 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
             "parent_id",
             FieldType::VarChar(50),
             FieldConstraint::new()
-                .foreign_key(format!("{}categories",db_prefix), "name".to_string()),
+                .foreign_key(format!("{}categories", db_prefix), "name".to_string()),
             ValidationLevel::Strict,
         )?);
 
     schema.add_table(categories_table)?;
 
     // 文章分类关联表
-    let mut post_categories_table = Table::new(&format!("{}post_categories",db_prefix))?;
+    let mut post_categories_table = Table::new(&format!("{}post_categories", db_prefix))?;
     post_categories_table
         .add_field(Field::new(
             "post_id",
             FieldType::Integer(false),
             FieldConstraint::new()
                 .not_null()
-                .foreign_key(format!("{}posts",db_prefix), "id".to_string())
+                .foreign_key(format!("{}posts", db_prefix), "id".to_string())
                 .on_delete(ForeignKeyAction::Cascade)
                 .on_update(ForeignKeyAction::Cascade),
             ValidationLevel::Strict,
@@ -709,7 +710,7 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
             FieldType::VarChar(50),
             FieldConstraint::new()
                 .not_null()
-                .foreign_key(format!("{}categories",db_prefix), "name".to_string())
+                .foreign_key(format!("{}categories", db_prefix), "name".to_string())
                 .on_delete(ForeignKeyAction::Cascade)
                 .on_update(ForeignKeyAction::Cascade),
             ValidationLevel::Strict,
@@ -724,7 +725,7 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
     schema.add_table(post_categories_table)?;
 
     // 资源库表
-    let mut resources_table = Table::new(&format!("{}resources",db_prefix))?;
+    let mut resources_table = Table::new(&format!("{}resources", db_prefix))?;
     resources_table
         .add_field(Field::new(
             "id",
@@ -737,7 +738,7 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
             FieldType::VarChar(100),
             FieldConstraint::new()
                 .not_null()
-                .foreign_key(format!("{}users",db_prefix), "username".to_string())
+                .foreign_key(format!("{}users", db_prefix), "username".to_string())
                 .on_delete(ForeignKeyAction::Cascade)
                 .on_update(ForeignKeyAction::Cascade),
             ValidationLevel::Strict,
@@ -791,7 +792,7 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
     schema.add_table(resources_table)?;
 
     // 配置表
-    let mut settings_table = Table::new(&format!("{}settings",db_prefix))?;
+    let mut settings_table = Table::new(&format!("{}settings", db_prefix))?;
     settings_table
         .add_field(Field::new(
             "name",
@@ -806,7 +807,7 @@ pub fn generate_schema(db_type: DatabaseType,db_prefix:SafeValue) -> CustomResul
             ValidationLevel::Strict,
         )?);
 
-    schema.add_table(settings_table)?; 
+    schema.add_table(settings_table)?;
 
     schema.build(db_type)
 }

@@ -1,17 +1,17 @@
+use super::DatabaseType;
 use crate::common::error::{CustomErrorInto, CustomResult};
 use chrono::{DateTime, Utc};
 use regex::Regex;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::hash::Hash;
-use crate::sql::schema::DatabaseType;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy, Serialize)]
 pub enum ValidationLevel {
     Strict,
     Standard,
     Relaxed,
-    Raw,   
+    Raw,
 }
 
 #[derive(Debug, Clone)]
@@ -82,10 +82,10 @@ impl TextValidator {
         let max_length = self
             .level_max_lengths
             .get(&level)
-            .ok_or("Invalid validation level".into_custom_error())?;
+            .ok_or("无效的验证级别".into_custom_error())?;
 
         if text.len() > *max_length {
-            return Err("Text exceeds maximum length".into_custom_error());
+            return Err("文本超出最大长度限制".into_custom_error());
         }
 
         if level == ValidationLevel::Relaxed {
@@ -103,7 +103,7 @@ impl TextValidator {
             .iter()
             .any(|&pattern| upper_text.contains(&pattern.to_uppercase()))
         {
-            return Err("Potentially dangerous SQL pattern detected".into_custom_error());
+            return Err("检测到潜在危险的SQL模式".into_custom_error());
         }
         Ok(())
     }
@@ -112,14 +112,14 @@ impl TextValidator {
         let allowed_chars = self
             .level_allowed_chars
             .get(&level)
-            .ok_or_else(|| "Invalid validation level".into_custom_error())?;
+            .ok_or_else(|| "无效的验证级别".into_custom_error())?;
 
         if let Some(invalid_char) = text
             .chars()
             .find(|&c| !c.is_alphanumeric() && !allowed_chars.contains(&c))
         {
             return Err(
-                format!("Invalid character '{}' for {:?} level", invalid_char, level)
+                format!("'{}'字符在{:?}验证级别中是无效的", invalid_char, level)
                     .into_custom_error(),
             );
         }
@@ -128,7 +128,7 @@ impl TextValidator {
 
     fn validate_special_chars(&self, text: &str) -> CustomResult<()> {
         if self.special_chars.iter().any(|&c| text.contains(c)) {
-            return Err("Invalid special character detected".into_custom_error());
+            return Err("检测到无效的特殊字符".into_custom_error());
         }
         Ok(())
     }
@@ -179,7 +179,6 @@ impl std::fmt::Display for SafeValue {
 }
 
 impl SafeValue {
-
     fn get_sql_type(&self) -> CustomResult<String> {
         let sql_type = match self {
             SafeValue::Null => "NULL",
@@ -192,7 +191,7 @@ impl SafeValue {
         Ok(sql_type.to_string())
     }
 
-    pub fn to_sql_string(&self) -> CustomResult<String> {
+    pub fn to_string(&self) -> CustomResult<String> {
         match self {
             SafeValue::Null => Ok("NULL".to_string()),
             SafeValue::Bool(b) => Ok(if *b { "true" } else { "false" }.to_string()),
@@ -225,9 +224,9 @@ pub struct Identifier(String);
 
 impl Identifier {
     pub fn new(value: String) -> CustomResult<Self> {
-        let valid_pattern = Regex::new(r"^[a-zA-Z][a-zA-Z0-9_\.]{0,63}$")?;
+        let valid_pattern = Regex::new(r"^[a-zA-Z][a-zA-Z0-9_.]{0,63}$")?;
         if !valid_pattern.is_match(&value) {
-            return Err("Invalid identifier format".into_custom_error());
+            return Err("标识符格式无效".into_custom_error());
         }
         Ok(Identifier(value))
     }
@@ -314,7 +313,11 @@ pub struct QueryBuilder {
 }
 
 impl QueryBuilder {
-    pub fn new(operation: SqlOperation, table: String, db_type: DatabaseType) -> CustomResult<Self> {
+    pub fn new(
+        operation: SqlOperation,
+        table: String,
+        db_type: DatabaseType,
+    ) -> CustomResult<Self> {
         Ok(QueryBuilder {
             operation,
             table: Identifier::new(table)?,
@@ -413,7 +416,7 @@ impl QueryBuilder {
             } else {
                 value.to_param_sql(params.len() + 1, self.db_type)?
             };
-            
+
             let set_sql = format!("{} = {}", field.as_str(), placeholder);
             if !matches!(value, SafeValue::Null) {
                 params.push(value.clone());
@@ -499,7 +502,7 @@ impl QueryBuilder {
                 } else {
                     value.to_param_sql(param_index, self.db_type)?
                 };
-                
+
                 let sql = format!(
                     "{} {} {}",
                     condition.field.as_str(),

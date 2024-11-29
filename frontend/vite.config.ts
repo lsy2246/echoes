@@ -2,9 +2,40 @@ import { vitePlugin as remix } from "@remix-run/dev";
 import { defineConfig, loadEnv } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { resolve } from "path";
+import { readEnvFile } from "./server/env";
+import { DEFAULT_CONFIG, EnvConfig } from "./app/env";
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "");
+// 修改为异步函数来读取最新的环境变量
+async function getLatestEnv() {
+  try {
+    const envData = await readEnvFile();
+    return {
+      ...DEFAULT_CONFIG,
+      ...envData,
+    } as EnvConfig;
+  } catch (error) {
+    console.error("读取环境变量失败:", error);
+    return DEFAULT_CONFIG;
+  }
+}
+
+const createDefineConfig = (config: EnvConfig) => {
+  return Object.entries(config).reduce(
+    (acc, [key, value]) => {
+      acc[`import.meta.env.${key}`] =
+        typeof value === "string" ? JSON.stringify(value) : value;
+      return acc;
+    },
+    {} as Record<string, any>,
+  );
+};
+
+
+export default defineConfig(async ({ mode }) => {
+  // 确保每次都读取最新的环境变量
+  const currentConfig = await getLatestEnv();
+  const env = loadEnv(mode, process.cwd(), "VITE_");
+
   return {
     plugins: [
       remix({
@@ -15,9 +46,12 @@ export default defineConfig(({ mode }) => {
           v3_singleFetch: true,
           v3_lazyRouteDiscovery: true,
         },
-        routes: (defineRoutes) => {
+        routes: async (defineRoutes) => {
+          // 每次路由配置时重新读取环境变量
+          const latestConfig = await getLatestEnv();
+
           return defineRoutes((route) => {
-            if (Number(env.VITE_INIT_STATUS??1)<4) {
+            if (Number(latestConfig.VITE_INIT_STATUS) < 3) {
               route("/", "init.tsx", { id: "index-route" });
               route("*", "init.tsx", { id: "catch-all-route" });
             } else {
@@ -29,22 +63,30 @@ export default defineConfig(({ mode }) => {
       }),
       tsconfigPaths(),
     ],
-    define: {
-      "import.meta.env.VITE_INIT_STATUS": JSON.stringify(1),
-      "import.meta.env.VITE_SERVER_API": JSON.stringify("localhost:22000"),
-      "import.meta.env.VITE_PORT": JSON.stringify(22100),
-      "import.meta.env.VITE_ADDRESS": JSON.stringify("localhost"),
-    },
+    define: createDefineConfig(currentConfig),
     server: {
       host: true,
-      address: "localhost",
-      port: Number(env.VITE_SYSTEM_PORT ?? 22100),
+      address: currentConfig.VITE_ADDRESS,
+      port: Number(env.VITE_SYSTEM_PORT ?? currentConfig.VITE_PORT),
       strictPort: true,
-      hmr: true, // 确保启用热更新
+      hmr: true,
       watch: {
-        usePolling: true, // 添加这个配置可以解决某些系统下热更新不工作的问题
+        usePolling: true,
+      },
+      proxy: {
+        "/__/api": {
+          target: currentConfig.VITE_API_BASE_URL,
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/__\/api/, ""),
+        },
+        "/__/express": {
+          target: `http://${currentConfig.VITE_ADDRESS}:${Number(currentConfig.VITE_PORT) + 1}`,
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/__\/express/, ""),
+        },
       },
     },
     publicDir: resolve(__dirname, "public"),
+    envPrefix: "VITE_",
   };
 });

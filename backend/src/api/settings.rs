@@ -1,12 +1,10 @@
 use super::SystemToken;
-use crate::storage::{sql, sql::builder};
 use crate::common::error::{AppResult, AppResultInto, CustomResult};
+use crate::storage::{sql, sql::builder};
 use crate::AppState;
-use rocket::data;
 use rocket::{
     get,
     http::Status,
-    response::status,
     serde::json::{Json, Value},
     State,
 };
@@ -51,8 +49,11 @@ pub async fn get_setting(
 
     let where_clause = builder::WhereClause::Condition(name_condition);
 
-    let mut sql_builder =
-        builder::QueryBuilder::new(builder::SqlOperation::Select, sql.table_name("settings"),sql.get_type())?;
+    let mut sql_builder = builder::QueryBuilder::new(
+        builder::SqlOperation::Select,
+        sql.table_name("settings"),
+        sql.get_type(),
+    )?;
 
     sql_builder
         .add_condition(where_clause)
@@ -69,8 +70,11 @@ pub async fn insert_setting(
     name: String,
     data: Json<Value>,
 ) -> CustomResult<()> {
-    let mut builder =
-        builder::QueryBuilder::new(builder::SqlOperation::Insert,  sql.table_name("settings"),sql.get_type())?;
+    let mut builder = builder::QueryBuilder::new(
+        builder::SqlOperation::Insert,
+        sql.table_name("settings"),
+        sql.get_type(),
+    )?;
     builder.set_value(
         "name".to_string(),
         builder::SafeValue::Text(
@@ -80,7 +84,7 @@ pub async fn insert_setting(
     )?;
     builder.set_value(
         "data".to_string(),
-        builder::SafeValue::Text(data.to_string(),builder::ValidationLevel::Relaxed),
+        builder::SafeValue::Text(data.to_string(), builder::ValidationLevel::Relaxed),
     )?;
     sql.get_db().execute_query(&builder).await?;
     Ok(())
@@ -92,7 +96,7 @@ pub async fn system_config_get(
     _token: SystemToken,
 ) -> AppResult<Json<Value>> {
     let sql = state.sql_get().await.into_app_result()?;
-    let settings = get_setting(&sql, "system".to_string(),  sql.table_name("settings"))
+    let settings = get_setting(&sql, "system".to_string(), sql.table_name("settings"))
         .await
         .into_app_result()?;
     Ok(settings)
