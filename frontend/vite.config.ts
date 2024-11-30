@@ -30,7 +30,6 @@ const createDefineConfig = (config: EnvConfig) => {
   );
 };
 
-
 export default defineConfig(async ({ mode }) => {
   // 确保每次都读取最新的环境变量
   const currentConfig = await getLatestEnv();

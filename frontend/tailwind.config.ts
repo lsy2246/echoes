@@ -5,6 +5,7 @@ export default {
     "./app/**/*.{js,jsx,ts,tsx}",
     "./common/**/*.{js,jsx,ts,tsx}",
     "./core/**/*.{js,jsx,ts,tsx}",
+    "./hooks/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
@@ -14,22 +15,27 @@ export default {
       colors: {
         custom: {
           bg: {
-            light: "#F5F5FB",
-            dark: "#0F172A",
+            light: "#FAFAFA", // 更柔和的背景色
+            dark: "#111827", // 更深邃的暗色背景
           },
           box: {
             light: "#FFFFFF",
             dark: "#1E293B",
           },
           p: {
-            light: "#4b5563",
-            dark: "#94A3B8",
+            light: "#374151", // 更清晰的文本颜色
+            dark: "#D1D5DB", // 更亮的暗色文本，提高可读性
           },
           title: {
             light: "#111827",
-            dark: "#F1F5F9",
+            dark: "#F8FAFC", // 更亮的标题颜色
           },
         },
+      },
+      animation: {
+        hide: 'hide 100ms ease-in',
+        slideIn: 'slideIn 150ms cubic-bezier(0.16, 1, 0.3, 1)',
+        swipeOut: 'swipeOut 100ms ease-out',
       },
     },
   },

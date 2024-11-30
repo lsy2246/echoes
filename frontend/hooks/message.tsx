@@ -4,6 +4,7 @@ interface Message {
   id: number;
   type: "success" | "error" | "info" | "warning";
   content: string;
+  title?: string;
   duration?: number;
 }
 
@@ -17,6 +18,7 @@ interface MessageContextType {
   addMessage: (
     type: Message["type"],
     content: string,
+    title?: string,
     duration?: number,
   ) => void;
 }
@@ -38,12 +40,13 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({
   const addMessage = (
     type: Message["type"],
     content: string,
+    title?: string,
     duration = 3000,
   ) => {
     const id = Date.now();
 
     setMessages((prevMessages) => {
-      const newMessages = [...prevMessages, { id, type, content }];
+      const newMessages = [...prevMessages, { id, type, content, title }];
       return newMessages;
     });
 
@@ -100,17 +103,26 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({
                 alignItems: "center",
               }}
             >
-              <span
-                style={{
-                  fontSize: "14px",
-                  lineHeight: "1.5",
-                  marginRight: "12px",
-                  flex: 1,
-                  wordBreak: "break-word",
-                }}
-              >
-                {msg.content}
-              </span>
+              <div style={{ flex: 1 }}>
+                {msg.title && (
+                  <div style={{
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    marginBottom: "4px",
+                  }}>
+                    {msg.title}
+                  </div>
+                )}
+                <span
+                  style={{
+                    fontSize: "14px",
+                    lineHeight: "1.5",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {msg.content}
+                </span>
+              </div>
               <button
                 onClick={() => removeMessage(msg.id)}
                 style={{
@@ -180,7 +192,7 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({
 
 // 修改全局消息实例的实现
 let globalAddMessage:
-  | ((type: Message["type"], content: string, duration?: number) => void)
+  | ((type: Message["type"], content: string, title?: string, duration?: number) => void)
   | null = null;
 
 export const MessageContainer: React.FC = () => {
@@ -198,32 +210,32 @@ export const MessageContainer: React.FC = () => {
 
 // 修改消息方法的实现
 export const message = {
-  success: (content: string) => {
+  success: (content: string, title?: string) => {
     if (!globalAddMessage) {
       console.warn("Message system not initialized");
       return;
     }
-    globalAddMessage("success", content);
+    globalAddMessage("success", content, title);
   },
-  error: (content: string) => {
+  error: (content: string, title?: string) => {
     if (!globalAddMessage) {
       console.warn("Message system not initialized");
       return;
     }
-    globalAddMessage("error", content);
+    globalAddMessage("error", content, title);
   },
-  warning: (content: string) => {
+  warning: (content: string, title?: string) => {
     if (!globalAddMessage) {
       console.warn("Message system not initialized");
       return;
     }
-    globalAddMessage("warning", content);
+    globalAddMessage("warning", content, title);
   },
-  info: (content: string) => {
+  info: (content: string, title?: string) => {
     if (!globalAddMessage) {
       console.warn("Message system not initialized");
       return;
     }
-    globalAddMessage("info", content);
+    globalAddMessage("info", content, title);
   },
 };

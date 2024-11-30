@@ -33,7 +33,7 @@ pub async fn setup_sql(
         .into_app_result()?;
 
     config::Config::write(config).into_app_result()?;
-    state.restart_server().await.into_app_result()?;
+    state.trigger_restart().await.into_app_result()?;
     Ok("Database installation successful".to_string())
 }
 
@@ -123,7 +123,7 @@ pub async fn setup_account(
     .into_app_result()?;
     config.init.administrator = true;
     config::Config::write(config).into_app_result()?;
-    state.restart_server().await.into_app_result()?;
+    state.trigger_restart().await.into_app_result()?;
 
     Ok(status::Custom(
         Status::Ok,

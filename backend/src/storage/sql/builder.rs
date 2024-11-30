@@ -77,7 +77,7 @@ impl Default for TextValidator {
 impl TextValidator {
     pub fn validate(&self, text: &str, level: ValidationLevel) -> CustomResult<()> {
         if level == ValidationLevel::Raw {
-            return self.validate_sql_patterns(text);
+            return Ok(());
         }
         let max_length = self
             .level_max_lengths

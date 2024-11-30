@@ -131,7 +131,7 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
           default: return field;
         }
       });
-      message.error(`请填写以下必填项：${fieldNames.join('、')}`);
+      message.error(`请填写以下必填项：${fieldNames.join('、')}`, '验证失败');
       return false;
     }
     return true;
@@ -180,11 +180,11 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
 
       Object.assign( newEnv)
 
-      message.success('数据库配置成功！');
+      message.success('数据库配置已保存', '配置成功');
       setTimeout(() => onNext(), 1000);
     } catch (error: any) {
       console.error( error);
-      message.error(error.message );
+      message.error(error.message , error.title || '配置失败');
     } finally {
       setLoading(false);
     }
@@ -369,11 +369,11 @@ const AdminConfig: React.FC<StepProps> = ({ onNext }) => {
         body: JSON.stringify(newEnv),
       });
 
-      message.success('管理员账号创建成功！');
+      message.success('管理员账号已创建，即将进入下一步', '创建成功');
       onNext();
     } catch (error: any) {
       console.error(error);
-      message.error(error.message);
+      message.error(error.message, error.title || '创建失败');
     } finally {
       setLoading(false);
     }

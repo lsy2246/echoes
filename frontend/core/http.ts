@@ -1,3 +1,8 @@
+export interface ErrorResponse {
+  title: string;
+  message: string;
+}
+
 export class HttpClient {
   private static instance: HttpClient;
   private timeout: number;
@@ -20,7 +25,7 @@ export class HttpClient {
       headers.set("Content-Type", "application/json");
     }
 
-    const token = localStorage.getItem("auth_token");
+    const token = localStorage.getItem("token");
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
@@ -31,20 +36,26 @@ export class HttpClient {
   private async handleResponse(response: Response): Promise<any> {
     if (!response.ok) {
       const contentType = response.headers.get("content-type");
-      let message = `${response.statusText} (${response.status})`;
+      let message = `${response.statusText}`;
 
       try {
         if (contentType?.includes("application/json")) {
           const error = await response.json();
           message = error.message || message;
         } else {
-          message = this.getErrorMessage(response.status);
+          const textError = await response.text();
+          message = (response.status != 404 && textError) || message;
         }
       } catch (e) {
         console.error("解析响应错误:", e);
       }
 
-      throw new Error(message);
+      const errorResponse: ErrorResponse = {
+        title: this.getErrorMessage(response.status),
+        message: message
+      };
+      
+      throw errorResponse;
     }
 
     const contentType = response.headers.get("content-type");
@@ -56,6 +67,7 @@ export class HttpClient {
   private getErrorMessage(status: number): string {
     const messages: Record<number, string> = {
       0: "网络连接失败",
+      400: "请求错误",
       401: "未授权访问",
       403: "禁止访问",
       404: "资源不存在",
@@ -65,7 +77,7 @@ export class HttpClient {
       503: "服务不可用",
       504: "网关超时",
     };
-    return messages[status] || `请求失败 (${status})`;
+    return messages[status] || `请求失败`;
   }
 
   private async request<T>(
@@ -91,7 +103,21 @@ export class HttpClient {
 
       return await this.handleResponse(response);
     } catch (error: any) {
-      throw error.name === "AbortError" ? new Error("请求超时") : error;
+      if (error.name === "AbortError") {
+        const errorResponse: ErrorResponse = {
+          title: "请求超时",
+          message: "服务器响应时间过长，请稍后重试"
+        };
+        throw errorResponse;
+      }
+      if ((error as ErrorResponse).title && (error as ErrorResponse).message) {
+        throw error;
+      }
+      const errorResponse: ErrorResponse = {
+        title: "未知错误",
+        message: error.message || "发生未知错误"
+      };
+      throw errorResponse;
     } finally {
       clearTimeout(timeoutId);
     }
@@ -138,5 +164,15 @@ export class HttpClient {
     options: RequestInit = {},
   ): Promise<T> {
     return this.api<T>(endpoint, { ...options, method: "DELETE" });
+  }
+
+  public async systemToken<T>(): Promise<T> {
+
+    const formData = {
+    "username": import.meta.env.VITE_API_USERNAME,
+    "password": import.meta.env.VITE_API_PASSWORD
+  }
+  
+    return this.api<T>("/auth/token/system", {  method: "POST",body: JSON.stringify(formData), });
   }
 }

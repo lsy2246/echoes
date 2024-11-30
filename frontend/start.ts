@@ -1,9 +1,9 @@
 import { spawn } from "child_process";
 import path from "path";
-import { EventEmitter } from 'events'
+import { EventEmitter } from "events";
 
 // 设置全局最大监听器数量
-EventEmitter.defaultMaxListeners = 20
+EventEmitter.defaultMaxListeners = 20;
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

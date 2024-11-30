@@ -3,6 +3,7 @@ import { HttpClient } from "core/http";
 import { RouteManager } from "core/route";
 import { createServiceContext } from "hooks/createServiceContext";
 import { ReactNode } from "react";
+import { StyleProvider } from "hooks/stylesProvider";
 
 export const { CapabilityProvider, useCapability } = createServiceContext(
   "Capability",
@@ -20,7 +21,9 @@ export const { HttpProvider, useHttp } = createServiceContext("Http", () =>
 export const BaseProvider = ({ children }: { children: ReactNode }) => (
   <HttpProvider>
     <CapabilityProvider>
-      <RouteProvider>{children}</RouteProvider>
+      <StyleProvider>
+        <RouteProvider>{children}</RouteProvider>
+      </StyleProvider>
     </CapabilityProvider>
   </HttpProvider>
 );

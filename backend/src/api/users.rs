@@ -1,6 +1,7 @@
 use crate::common::error::{CustomErrorInto, CustomResult};
 use crate::security::bcrypt;
 use crate::storage::{sql, sql::builder};
+use regex::Regex;
 use rocket::{get, http::Status, post, response::status, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 
@@ -29,6 +30,12 @@ pub async fn insert_user(sql: &sql::Database, data: RegisterData) -> CustomResul
     };
 
     let password_hash = bcrypt::generate_hash(&data.password)?;
+
+    let re = Regex::new(r"([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)")?;
+
+    if false == re.is_match(&data.email) {
+        return Err("邮箱格式不正确".into_custom_error());
+    }
 
     let mut builder = builder::QueryBuilder::new(
         builder::SqlOperation::Insert,

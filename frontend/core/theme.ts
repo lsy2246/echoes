@@ -1,6 +1,5 @@
-import { Configuration, PathDescription } from "common/serializableType";
-import { ApiService } from "core/api";
-import { Template } from "core/template";
+import { Configuration, PathDescription } from "commons/serializableType";
+import { HttpClient } from "core/http";
 
 export interface ThemeConfig {
   name: string;
@@ -29,13 +28,13 @@ export interface ThemeConfig {
 export class ThemeService {
   private static instance: ThemeService;
   private currentTheme?: ThemeConfig;
-  private api: ApiService;
+  private http: HttpClient;
 
-  private constructor(api: ApiService) {
-    this.api = api;
+  private constructor(api: HttpClient) {
+    this.http = api;
   }
 
-  public static getInstance(api?: ApiService): ThemeService {
+  public static getInstance(api?: HttpClient): ThemeService {
     if (!ThemeService.instance && api) {
       ThemeService.instance = new ThemeService(api);
     }
@@ -44,7 +43,7 @@ export class ThemeService {
 
   public async getCurrentTheme(): Promise<void> {
     try {
-      const themeConfig = await this.api.request<ThemeConfig>("/theme", {
+      const themeConfig = await this.http.api<ThemeConfig>("/theme", {
         method: "GET",
       });
       this.currentTheme = themeConfig;
@@ -63,7 +62,7 @@ export class ThemeService {
     name: string,
   ): Promise<void> {
     try {
-      const updatedConfig = await this.api.request<ThemeConfig>(`/theme/`, {
+      const updatedConfig = await this.http.api<ThemeConfig>(`/theme/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
