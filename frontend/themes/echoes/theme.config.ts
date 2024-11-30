@@ -1,12 +1,17 @@
-import { ThemeConfig } from "contracts/themeContract";
+import { ThemeConfig } from "interface/theme";
 
-export const themeConfig: ThemeConfig = {
-  name: "default",
+const themeConfig: ThemeConfig = {
+  name: "echoes",
   displayName: "默认主题",
   version: "1.0.0",
   description: "一个简约风格的博客主题",
   author: "lsy",
-  entry: "default",
+  configuration: {
+
+  },
+  globalSettings:{
+    layout:"layout.tsx"
+  },
   templates: new Map([
     [
       "page",
@@ -19,9 +24,15 @@ export const themeConfig: ThemeConfig = {
   ]),
 
   routes: {
+    article:"",
     post: "",
     tag: "",
     category: "",
-    page: "",
+    error: "",
+    page: new Map<string, string>([
+      
+    ]),
   },
 };
+
+export default themeConfig;

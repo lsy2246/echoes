@@ -8,11 +8,6 @@ interface Message {
   duration?: number;
 }
 
-interface MessageOptions {
-  content: string;
-  duration?: number;
-}
-
 interface MessageContextType {
   messages: Message[];
   addMessage: (

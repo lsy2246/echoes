@@ -29,7 +29,7 @@ export default {
           title: {
             light: "#111827",
             dark: "#F8FAFC", // 更亮的标题颜色
-          },
+          }
         },
       },
       animation: {

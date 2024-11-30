@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from "react";
-import {useHttp} from 'hooks/servicesProvider'
-import { message} from "hooks/message";
+import { message } from "hooks/message";
 import {DEFAULT_CONFIG} from "app/env"
+import { useHub } from "core/hub";
 
 
 interface SetupContextType {
@@ -94,7 +94,7 @@ const Introduction: React.FC<StepProps> = ({ onNext }) => (
 const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
   const [dbType, setDbType] = useState("postgresql");
   const [loading, setLoading] = useState(false);
-  const api = useHttp();
+  const http = useHub().http;
 
   const validateForm = () => {
     const getRequiredFields = () => {
@@ -131,7 +131,7 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
           default: return field;
         }
       });
-      message.error(`请填写以下必填项：${fieldNames.join('、')}`, '验证失败');
+      message.error(`请填写以下必填项：${fieldNames.join('、')}`);
       return false;
     }
     return true;
@@ -154,37 +154,33 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
         db_name: (document.querySelector('[name="db_name"]') as HTMLInputElement)?.value?.trim()??"",
       };
 
-      await api.post('/sql', formData);
+      await http.post('/sql', formData);
 
-      let oldEnv = import.meta.env?? DEFAULT_CONFIG
-
-
+      let oldEnv = import.meta.env ?? DEFAULT_CONFIG;
       const viteEnv = Object.entries(oldEnv).reduce((acc, [key, value]) => {
-              if (key.startsWith('VITE_')) {
-                acc[key] = value;
-              }
-              return acc;
-            }, {} as Record<string, any>);
-      
+        if (key.startsWith('VITE_')) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as Record<string, any>);
       
       const newEnv = {
         ...viteEnv,
         VITE_INIT_STATUS: '2'
       };
 
-
-      await api.dev("/env", {
+      await http.dev("/env", {
         method: "POST",
         body: JSON.stringify(newEnv),
       });
 
-      Object.assign( newEnv)
+      Object.assign(import.meta.env, newEnv);
 
-      message.success('数据库配置已保存', '配置成功');
+      message.success('数据库配置成功！');
       setTimeout(() => onNext(), 1000);
     } catch (error: any) {
       console.error( error);
-      message.error(error.message , error.title || '配置失败');
+      message.error(error.message );
     } finally {
       setLoading(false);
     }
@@ -331,7 +327,7 @@ interface InstallReplyData {
 
 const AdminConfig: React.FC<StepProps> = ({ onNext }) => {
   const [loading, setLoading] = useState(false);
-  const api = useHttp();
+  const http = useHub().http;
 
   const handleNext = async () => {
     setLoading(true);
@@ -342,7 +338,7 @@ const AdminConfig: React.FC<StepProps> = ({ onNext }) => {
         email: (document.querySelector('[name="admin_email"]') as HTMLInputElement)?.value,
       };
 
-      const response = await api.post('/administrator', formData) as InstallReplyData;
+      const response = await http.post('/administrator', formData) as InstallReplyData;
       const data = response;
       
       localStorage.setItem('token', data.token);
@@ -358,22 +354,22 @@ const AdminConfig: React.FC<StepProps> = ({ onNext }) => {
       const newEnv = {
         ...viteEnv,
         VITE_INIT_STATUS: '3',
-        VITE_API_USERNAME:data.username,
-        VITE_API_PASSWORD:data.password
+        VITE_API_USERNAME: data.username,
+        VITE_API_PASSWORD: data.password
       };
 
-      
-
-      await api.dev("/env", {
+      await http.dev("/env", {
         method: "POST",
         body: JSON.stringify(newEnv),
       });
 
-      message.success('管理员账号已创建，即将进入下一步', '创建成功');
+      Object.assign(import.meta.env, newEnv);
+
+      message.success('管理员账号创建成功！');
       onNext();
     } catch (error: any) {
       console.error(error);
-      message.error(error.message, error.title || '创建失败');
+      message.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -392,7 +388,7 @@ const AdminConfig: React.FC<StepProps> = ({ onNext }) => {
 };
 
 const SetupComplete: React.FC = () => {
-  const api = useHttp();
+  const http = useHub().http;
   
 
 
@@ -458,9 +454,9 @@ const ThemeToggle: React.FC = () => {
 };
 
 export default function SetupPage() {
-  let step = Number(import.meta.env.VITE_INIT_STATUS)+1;
-  
-  const [currentStep, setCurrentStep] = useState(step);
+  const [currentStep, setCurrentStep] = useState(() => {
+    return Number(import.meta.env.VITE_INIT_STATUS ?? 0) + 1;
+  });
 
   return (
     <div className="relative min-h-screen w-full bg-custom-bg-light dark:bg-custom-bg-dark">

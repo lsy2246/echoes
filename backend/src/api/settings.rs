@@ -25,7 +25,7 @@ impl Default for SystemConfigure {
     fn default() -> Self {
         Self {
             author_name: "lsy".to_string(),
-            current_theme: "default".to_string(),
+            current_theme: "echoes".to_string(),
             site_keyword: "echoes".to_string(),
             site_description: "echoes是一个高效、可扩展的博客平台".to_string(),
             admin_path: "admin".to_string(),

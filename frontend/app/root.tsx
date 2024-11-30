@@ -6,8 +6,8 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
-import { BaseProvider } from "hooks/servicesProvider";
-
+import { HubProvider } from "core/hub";
+import { MessageProvider, MessageContainer } from "hooks/message";
 
 import "~/index.css";
 
@@ -16,47 +16,56 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="generator" content="echoes" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1"
+        />
+        <meta
+          name="generator"
+          content="echoes"
+        />
         <Meta />
         <Links />
       </head>
       <body suppressHydrationWarning={true}>
-        <BaseProvider>
+        <HubProvider>
+          <MessageProvider>
+            <MessageContainer />
             <Outlet />
-        </BaseProvider>
+          </MessageProvider>
+        </HubProvider>
 
-          <ScrollRestoration />
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function() {
-                  function getInitialColorMode() {
-                    const persistedColorPreference = window.localStorage.getItem('theme');
-                    const hasPersistedPreference = typeof persistedColorPreference === 'string';
-                    if (hasPersistedPreference) {
-                      return persistedColorPreference;
-                    }
-                    const mql = window.matchMedia('(prefers-color-scheme: dark)');
-                    const hasMediaQueryPreference = typeof mql.matches === 'boolean';
-                    if (hasMediaQueryPreference) {
-                      return mql.matches ? 'dark' : 'light';
-                    }
-                    return 'light';
-                  }
-                  const colorMode = getInitialColorMode();
-                  document.documentElement.classList.toggle('dark', colorMode === 'dark');
-                  
-                  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                    const newColorMode = e.matches ? 'dark' : 'light';
-                    document.documentElement.classList.toggle('dark', newColorMode === 'dark');
-                    localStorage.setItem('theme', newColorMode);
-                  });
-                })()
-              `,
-            }}
-          />
-          <Scripts />
+        <ScrollRestoration />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function() {
+              // 立即应用系统主题
+              function applyTheme(isDark) {
+                document.documentElement.classList.toggle('dark', isDark);
+              }
+
+              // 获取系统主题并立即应用
+              const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+              applyTheme(darkModeMediaQuery.matches);
+
+              // 添加主题变化监听
+              try {
+                // 现代浏览器的方式
+                darkModeMediaQuery.addEventListener('change', (e) => {
+                  applyTheme(e.matches);
+                });
+              } catch (e) {
+                // 兼容旧版浏览器
+                darkModeMediaQuery.addListener((e) => {
+                  applyTheme(e.matches);
+                });
+              }
+            })()
+          `,
+          }}
+        />
+        <Scripts />
       </body>
     </html>
   );
