@@ -2,7 +2,7 @@ use super::{
     builder::{self, SafeValue},
     schema, DatabaseTrait,
 };
-use crate::common::error::CustomResult;
+use crate::common::error::{CustomResult,CustomErrorInto};
 use crate::config;
 use async_trait::async_trait;
 use serde_json::Value;
@@ -16,13 +16,34 @@ pub struct Postgresql {
 
 #[async_trait]
 impl DatabaseTrait for Postgresql {
-    async fn connect(db_config: &config::SqlConfig) -> CustomResult<Self> {
-        let connection_str = format!(
-            "postgres://{}:{}@{}:{}/{}",
-            db_config.user, db_config.password, db_config.host, db_config.port, db_config.db_name
-        );
+    async fn connect(db_config: &config::SqlConfig, db: bool) -> CustomResult<Self> {
+        let connection_str;
+        if db {
+            connection_str = format!(
+                "postgres://{}:{}@{}:{}/{}",
+                db_config.user,
+                db_config.password,
+                db_config.host,
+                db_config.port,
+                db_config.db_name
+            );
+        } else {
+            connection_str = format!(
+                "postgres://{}:{}@{}:{}",
+                db_config.user, db_config.password, db_config.host, db_config.port
+            );
+        }
 
-        let pool = PgPool::connect(&connection_str).await?;
+
+        let pool = tokio::time::timeout(
+            std::time::Duration::from_secs(5),
+            PgPool::connect(&connection_str)
+        ).await.map_err(|_| "连接超时".into_custom_error())??;
+
+        if let Err(e) = pool.acquire().await{
+            pool.close().await;
+        return Err(format!("数据库连接测试失败: {}", e).into_custom_error());
+        }
 
         Ok(Postgresql { pool })
     }
@@ -81,23 +102,24 @@ impl DatabaseTrait for Postgresql {
         );
         let grammar = schema::generate_schema(super::DatabaseType::PostgreSQL, db_prefix)?;
 
-        let connection_str = format!(
-            "postgres://{}:{}@{}:{}",
-            db_config.user, db_config.password, db_config.host, db_config.port
-        );
-        let pool = PgPool::connect(&connection_str).await?;
+        let pool = Self::connect(&db_config, false).await?.pool;
 
         pool.execute(format!("CREATE DATABASE {}", db_config.db_name).as_str())
             .await?;
 
-        let new_connection_str = format!(
-            "postgres://{}:{}@{}:{}/{}",
-            db_config.user, db_config.password, db_config.host, db_config.port, db_config.db_name
-        );
-        let new_pool = PgPool::connect(&new_connection_str).await?;
+        let new_pool = Self::connect(&db_config, true).await?.pool;
 
         new_pool.execute(grammar.as_str()).await?;
+        new_pool.close().await;
 
+        Ok(())
+    }
+
+    async fn close(&self) -> CustomResult<()> {
+        self.pool.close().await;
+        while !self.pool.is_closed() {
+            tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
+        }
         Ok(())
     }
 }

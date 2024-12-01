@@ -28,7 +28,7 @@ impl std::fmt::Display for DatabaseType {
 
 #[async_trait]
 pub trait DatabaseTrait: Send + Sync {
-    async fn connect(database: &config::SqlConfig) -> CustomResult<Self>
+    async fn connect(database: &config::SqlConfig,db:bool) -> CustomResult<Self>
     where
         Self: Sized;
     async fn execute_query<'a>(
@@ -38,6 +38,7 @@ pub trait DatabaseTrait: Send + Sync {
     async fn initialization(database: config::SqlConfig) -> CustomResult<()>
     where
         Self: Sized;
+    async fn close(&self) -> CustomResult<()>;
 }
 
 #[derive(Clone)]
@@ -66,9 +67,9 @@ impl Database {
 
     pub async fn link(database: &config::SqlConfig) -> CustomResult<Self> {
         let db: Box<dyn DatabaseTrait> = match database.db_type.to_lowercase().as_str() {
-            "postgresql" => Box::new(postgresql::Postgresql::connect(database).await?),
-            "mysql" => Box::new(mysql::Mysql::connect(database).await?),
-            "sqllite" => Box::new(sqllite::Sqlite::connect(database).await?),
+            "postgresql" => Box::new(postgresql::Postgresql::connect(database,true).await?),
+            "mysql" => Box::new(mysql::Mysql::connect(database,true).await?),
+            "sqllite" => Box::new(sqllite::Sqlite::connect(database,true).await?),
             _ => return Err("unknown database type".into_custom_error()),
         };
 
@@ -76,7 +77,7 @@ impl Database {
             db: Arc::new(db),
             prefix: Arc::new(database.db_prefix.clone()),
             db_type: Arc::new(match database.db_type.to_lowercase().as_str() {
-                "postgresql" => DatabaseType::PostgreSQL,
+                // "postgresql" => DatabaseType::PostgreSQL,
                 "mysql" => DatabaseType::MySQL,
                 "sqllite" => DatabaseType::SQLite,
                 _ => return Err("unknown database type".into_custom_error()),

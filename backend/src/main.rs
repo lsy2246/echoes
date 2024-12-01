@@ -50,6 +50,9 @@ impl AppState {
 
     pub async fn trigger_restart(&self) -> CustomResult<()> {
         *self.restart_progress.lock().await = true;
+        if let Ok(db) = self.sql_get().await{
+            db.get_db().close().await?;
+        }        
         self.shutdown
             .lock()
             .await

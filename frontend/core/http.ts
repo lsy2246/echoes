@@ -36,22 +36,29 @@ export class HttpClient {
   private async handleResponse(response: Response): Promise<any> {
     if (!response.ok) {
       const contentType = response.headers.get("content-type");
-      let message = `${response.statusText}`;
+      let message;
 
       try {
         if (contentType?.includes("application/json")) {
           const error = await response.json();
-          message = error.message || message;
+          message = error.message || "";
         } else {
           const textError = await response.text();
-          message = (response.status != 404 && textError) || message;
+          message = textError || "";
         }
       } catch (e) {
         console.error("解析响应错误:", e);
       }
 
+      switch (response.status){
+        case 404:
+          message="请求的资源不存在";
+          break
+      } 
+
+
       const errorResponse: ErrorResponse = {
-        title: this.getErrorMessage(response.status),
+        title: `${response.status} ${response.statusText}`,
         message: message
       };
       
@@ -64,21 +71,6 @@ export class HttpClient {
       : response.text();
   }
 
-  private getErrorMessage(status: number): string {
-    const messages: Record<number, string> = {
-      0: "网络连接失败",
-      400: "请求错误",
-      401: "未授权访问",
-      403: "禁止访问",
-      404: "资源不存在",
-      405: "方法不允许",
-      500: "服务器错误",
-      502: "网关错误",
-      503: "服务不可用",
-      504: "网关超时",
-    };
-    return messages[status] || `请求失败`;
-  }
 
   private async request<T>(
     endpoint: string,

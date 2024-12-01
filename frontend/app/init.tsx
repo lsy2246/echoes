@@ -180,7 +180,7 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
       setTimeout(() => onNext(), 1000);
     } catch (error: any) {
       console.error( error);
-      message.error(error.message );
+      message.error(error.message,error.title);
     } finally {
       setLoading(false);
     }
@@ -369,7 +369,7 @@ const AdminConfig: React.FC<StepProps> = ({ onNext }) => {
       onNext();
     } catch (error: any) {
       console.error(error);
-      message.error(error.message);
+      message.error(error.message,error.title);
     } finally {
       setLoading(false);
     }

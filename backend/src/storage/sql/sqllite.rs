@@ -17,7 +17,7 @@ pub struct Sqlite {
 
 #[async_trait]
 impl DatabaseTrait for Sqlite {
-    async fn connect(db_config: &config::SqlConfig) -> CustomResult<Self> {
+    async fn connect(db_config: &config::SqlConfig, db: bool) -> CustomResult<Self> {
         let db_file = env::current_dir()?
             .join("assets")
             .join("sqllite")
@@ -31,7 +31,17 @@ impl DatabaseTrait for Sqlite {
             .to_str()
             .ok_or("无法获取SQLite路径".into_custom_error())?;
         let connection_str = format!("sqlite:///{}", path);
-        let pool = SqlitePool::connect(&connection_str).await?;
+
+        let pool = tokio::time::timeout(
+            std::time::Duration::from_secs(5),
+            SqlitePool::connect(&connection_str)
+        ).await.map_err(|_| "连接超时".into_custom_error())??;
+
+        if let Err(e) = pool.acquire().await{
+            pool.close().await;
+        return Err(format!("数据库连接测试失败: {}", e).into_custom_error());
+        }
+
 
         Ok(Sqlite { pool })
     }
@@ -95,18 +105,20 @@ impl DatabaseTrait for Sqlite {
         let db_file = sqlite_dir.join(&db_config.db_name);
         std::fs::File::create(&db_file)?;
 
-        let path = db_file
-            .to_str()
-            .ok_or("Unable to get sqllite path".into_custom_error())?;
         let grammar = schema::generate_schema(super::DatabaseType::SQLite, db_prefix)?;
 
-        println!("\n{}\n", grammar);
-
-        let connection_str = format!("sqlite:///{}", path);
-        let pool = SqlitePool::connect(&connection_str).await?;
+        let pool = Self::connect(&db_config, false).await?.pool;
 
         pool.execute(grammar.as_str()).await?;
+        pool.close();
 
+        Ok(())
+    }
+    async fn close(&self) -> CustomResult<()> {
+        self.pool.close().await;
+        while !self.pool.is_closed() {
+            tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
+        }
         Ok(())
     }
 }
