@@ -1,15 +1,15 @@
-import { Template } from 'core/template';
+import { Template } from 'interface/template';
 
 export default new Template(
-  "page",
   {
     layout: "default",
   },
-  ({ http }) => {
+  ({ http,args }) => {
     return (
       <div>
         Hello World
       </div>
     );
-  }
+  },
+
 ); 

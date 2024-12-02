@@ -1,4 +1,4 @@
-import { Configuration, PathDescription } from "commons/serializableType";
+import { Configuration, PathDescription } from "interface/serializableType";
 
 export interface PluginConfig {
   name: string;

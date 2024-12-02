@@ -1,3 +1,117 @@
+@import "@radix-ui/themes/styles.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --transition-duration: 150ms;
+  --transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --logo-path-length: 1000;
+}
+
+/* 基础过渡效果 */
+.radix-themes {
+  transition:
+    background-color var(--transition-duration) var(--transition-easing),
+    color var(--transition-duration) var(--transition-easing);
+}
+
+/* 主题过渡效果 */
+.dark body,
+body {
+  transition: background-color var(--transition-duration) var(--transition-easing);
+}
+
+/* 基础布局样式 */
+html, 
+body {
+  height: 100%;
+}
+
+/* 响应式调整 */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* Logo 动画 */
+@keyframes logo-anim {
+  0% {
+    stroke-dashoffset: var(--logo-path-length);
+    stroke-dasharray: var(--logo-path-length) var(--logo-path-length);
+    opacity: 0;
+    fill: transparent;
+  }
+
+  5% {
+    opacity: 1;
+    stroke-dashoffset: var(--logo-path-length);
+    stroke-dasharray: var(--logo-path-length) var(--logo-path-length);
+  }
+
+  /* 慢速绘画过程 */
+  45% {
+    stroke-dashoffset: 0;
+    stroke-dasharray: var(--logo-path-length) var(--logo-path-length);
+    fill: transparent;
+  }
+
+  /* 慢慢填充效果 */
+  50% {
+    stroke-dashoffset: 0;
+    stroke-dasharray: var(--logo-path-length) var(--logo-path-length);
+    fill: currentColor;
+    opacity: 1;
+  }
+
+  /* 保持填充状态 */
+  75% {
+    stroke-dashoffset: 0;
+    stroke-dasharray: var(--logo-path-length) var(--logo-path-length);
+    fill: currentColor;
+    opacity: 1;
+  }
+
+  /* 变回线条 */
+  85% {
+    stroke-dashoffset: 0;
+    stroke-dasharray: var(--logo-path-length) var(--logo-path-length);
+    fill: transparent;
+    opacity: 1;
+  }
+
+  /* 线条消失 */
+  95% {
+    stroke-dashoffset: var(--logo-path-length);
+    stroke-dasharray: var(--logo-path-length) var(--logo-path-length);
+    fill: transparent;
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: var(--logo-path-length);
+    stroke-dasharray: var(--logo-path-length) var(--logo-path-length);
+    fill: transparent;
+    opacity: 0;
+  }
+}
+
+#logo-anim,
+#logo-anim path {
+  fill: transparent;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-dashoffset: var(--logo-path-length);
+  stroke-dasharray: var(--logo-path-length) var(--logo-path-length);
+  animation: logo-anim 15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform-origin: center;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 确保 Logo 在暗色模式下的颜色正确 */
+.dark #logo-anim,
+.dark #logo-anim path {
+  stroke: currentColor;
+}

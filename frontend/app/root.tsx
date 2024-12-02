@@ -5,15 +5,35 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-
-import { HubProvider } from "core/hub";
-import { MessageProvider, MessageContainer } from "hooks/message";
+import { NotificationProvider } from "hooks/notification";
+import { Theme } from '@radix-ui/themes';
+import { useEffect, useState } from "react";
 
 import "~/index.css";
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export function Layout() {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    // 初始化主题
+    const isDark = document.documentElement.classList.contains('dark');
+    setTheme(isDark ? 'dark' : 'light');
+
+    // 监听主题变化
+    const handleThemeChange = (event: CustomEvent<{ theme: 'light' | 'dark' }>) => {
+      setTheme(event.detail.theme);
+    };
+
+    window.addEventListener('theme-change', handleThemeChange as EventListener);
+    return () => window.removeEventListener('theme-change', handleThemeChange as EventListener);
+  }, []);
+
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className="h-full"
+      suppressHydrationWarning={true}
+    >
       <head>
         <meta charSet="utf-8" />
         <meta
@@ -26,54 +46,45 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <Meta />
         <Links />
-      </head>
-      <body suppressHydrationWarning={true}>
-        <HubProvider>
-          <MessageProvider>
-            <MessageContainer />
-            <Outlet />
-          </MessageProvider>
-        </HubProvider>
-
-        <ScrollRestoration />
         <script
           dangerouslySetInnerHTML={{
             __html: `
-            (function() {
-              // 立即应用系统主题
-              function applyTheme(isDark) {
-                document.documentElement.classList.toggle('dark', isDark);
-              }
-
-              // 获取系统主题并立即应用
-              const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-              applyTheme(darkModeMediaQuery.matches);
-
-              // 添加主题变化监听
-              try {
-                // 现代浏览器的方式
-                darkModeMediaQuery.addEventListener('change', (e) => {
-                  applyTheme(e.matches);
-                });
-              } catch (e) {
-                // 兼容旧版浏览器
-                darkModeMediaQuery.addListener((e) => {
-                  applyTheme(e.matches);
-                });
-              }
-            })()
-          `,
+              (function() {
+                document.documentElement.classList.remove('dark');
+                const savedTheme = localStorage.getItem('theme-preference');
+                if (savedTheme) {
+                  document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+                } else {
+                  const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                  document.documentElement.classList.toggle('dark', darkModeMediaQuery.matches);
+                }
+              })()
+            `,
           }}
         />
+      </head>
+      <body
+        className="h-full"
+        suppressHydrationWarning={true}
+      >
+        <Theme 
+          appearance={theme}
+          accentColor="blue"
+          grayColor="slate"
+          radius="medium"
+          scaling="100%"
+        >
+          <NotificationProvider>
+            <Outlet />
+          </NotificationProvider>
+        </Theme>
+        <ScrollRestoration />
         <Scripts />
       </body>
     </html>
   );
 }
+
 export default function App() {
-  return (
-    <Layout>
-      <Outlet />
-    </Layout>
-  );
+  return <Layout />;
 }

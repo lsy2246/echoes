@@ -105,6 +105,8 @@ export class HttpClient {
       if ((error as ErrorResponse).title && (error as ErrorResponse).message) {
         throw error;
       }
+      console.log(error);
+      
       const errorResponse: ErrorResponse = {
         title: "未知错误",
         message: error.message || "发生未知错误"

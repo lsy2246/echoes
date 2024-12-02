@@ -1,16 +1,12 @@
 import ErrorPage from 'hooks/error';
-import { useEffect } from 'react';
-
-const MyComponent = () => {
-  return <div>Hello, World!</div>;
-};
+import Layout from 'themes/echoes/layout';
 
 export default function Routes() {
-
-
-  return (
-    <div>
-      <ErrorPage />
-    </div>
-  );
+  return Layout.render({
+    children: <></>,
+    args: {
+      title: "我的页面",
+      theme: "dark"
+    }
+  });
 }

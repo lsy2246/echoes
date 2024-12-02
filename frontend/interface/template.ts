@@ -1,24 +1,26 @@
 import { HttpClient } from 'core/http';
 import { CapabilityService } from 'core/capability';
+import { Serializable } from 'interface/serializableType';
 
 export class Template {
   constructor(
-    public name: string,
     public config: {
       layout?: string;
       styles?: string[];
       scripts?: string[];
+      description?: string;
     },
     public element: (services: {
       http: HttpClient;
       capability: CapabilityService;
-    }) => React.ReactNode,
-    public description?: string,
+      args: Serializable;
+    }) => React.ReactNode
   ) {}
 
   render(services: {
     http: HttpClient;
     capability: CapabilityService;
+    args: Serializable;
   }) {
     return this.element(services);
   }

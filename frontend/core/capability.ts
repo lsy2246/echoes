@@ -15,7 +15,7 @@ export class CapabilityService {
 
   private static instance: CapabilityService;
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): CapabilityService {
     if (!this.instance) {
