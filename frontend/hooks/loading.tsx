@@ -26,7 +26,9 @@ export const LoadingProvider: React.FC<{ children: React.ReactNode }> = ({
       {isLoading && (
         <div className="fixed inset-0 flex flex-col items-center justify-center bg-black/25 dark:bg-black/40 z-[999999]">
           <div className="loading-spinner mb-2" />
-          <div className="text-custom-p-light dark:text-custom-p-dark text-sm">加载中...</div>
+          <div className="text-custom-p-light dark:text-custom-p-dark text-sm">
+            加载中...
+          </div>
         </div>
       )}
       <style>{`

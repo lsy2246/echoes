@@ -6,74 +6,42 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import { NotificationProvider } from "hooks/notification";
-import { Theme } from '@radix-ui/themes';
+import { Theme } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 
 import "~/index.css";
 
 export function Layout() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-
-  useEffect(() => {
-    // 初始化主题
-    const isDark = document.documentElement.classList.contains('dark');
-    setTheme(isDark ? 'dark' : 'light');
-
-    // 监听主题变化
-    const handleThemeChange = (event: CustomEvent<{ theme: 'light' | 'dark' }>) => {
-      setTheme(event.detail.theme);
-    };
-
-    window.addEventListener('theme-change', handleThemeChange as EventListener);
-    return () => window.removeEventListener('theme-change', handleThemeChange as EventListener);
-  }, []);
-
   return (
-    <html
-      lang="en"
-      className="h-full"
-      suppressHydrationWarning={true}
-    >
+    <html lang="en" className="h-full light" suppressHydrationWarning={true}>
       <head>
         <meta charSet="utf-8" />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        />
-        <meta
-          name="generator"
-          content="echoes"
-        />
-        <Meta />
-        <Links />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="generator" content="echoes" />
+        <title>Echoes</title>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                document.documentElement.classList.remove('dark');
-                const savedTheme = localStorage.getItem('theme-preference');
-                if (savedTheme) {
-                  document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-                } else {
-                  const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-                  document.documentElement.classList.toggle('dark', darkModeMediaQuery.matches);
+                function getInitialTheme() {
+                  const savedTheme = localStorage.getItem('theme-preference');
+                  if (savedTheme) return savedTheme;
+                  
+                  return window.matchMedia('(prefers-color-scheme: dark)').matches 
+                    ? 'dark' 
+                    : 'light';
                 }
-              })()
+
+                document.documentElement.className = getInitialTheme();
+              })();
             `,
           }}
         />
+        <Meta />
+        <Links />
       </head>
-      <body
-        className="h-full"
-        suppressHydrationWarning={true}
-      >
-        <Theme 
-          appearance={theme}
-          accentColor="blue"
-          grayColor="slate"
-          radius="medium"
-          scaling="100%"
-        >
+      <body className="h-full" suppressHydrationWarning={true}>
+        <Theme grayColor="slate" radius="medium" scaling="100%">
           <NotificationProvider>
             <Outlet />
           </NotificationProvider>

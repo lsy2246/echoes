@@ -2,7 +2,7 @@ use super::{
     builder::{self, SafeValue},
     schema, DatabaseTrait,
 };
-use crate::common::error::{CustomResult,CustomErrorInto};
+use crate::common::error::{CustomErrorInto, CustomResult};
 use crate::config;
 use async_trait::async_trait;
 use serde_json::Value;
@@ -34,15 +34,16 @@ impl DatabaseTrait for Postgresql {
             );
         }
 
-
         let pool = tokio::time::timeout(
             std::time::Duration::from_secs(5),
-            PgPool::connect(&connection_str)
-        ).await.map_err(|_| "连接超时".into_custom_error())??;
+            PgPool::connect(&connection_str),
+        )
+        .await
+        .map_err(|_| "连接超时".into_custom_error())??;
 
-        if let Err(e) = pool.acquire().await{
+        if let Err(e) = pool.acquire().await {
             pool.close().await;
-        return Err(format!("数据库连接测试失败: {}", e).into_custom_error());
+            return Err(format!("数据库连接测试失败: {}", e).into_custom_error());
         }
 
         Ok(Postgresql { pool })

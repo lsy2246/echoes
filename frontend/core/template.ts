@@ -15,6 +15,5 @@ export class TemplateManager {
     return TemplateManager.instance;
   }
 
-// 读取主题和模板中的模板
-
+  // 读取主题和模板中的模板
 }

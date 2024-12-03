@@ -28,7 +28,7 @@ impl std::fmt::Display for DatabaseType {
 
 #[async_trait]
 pub trait DatabaseTrait: Send + Sync {
-    async fn connect(database: &config::SqlConfig,db:bool) -> CustomResult<Self>
+    async fn connect(database: &config::SqlConfig, db: bool) -> CustomResult<Self>
     where
         Self: Sized;
     async fn execute_query<'a>(
@@ -67,9 +67,9 @@ impl Database {
 
     pub async fn link(database: &config::SqlConfig) -> CustomResult<Self> {
         let db: Box<dyn DatabaseTrait> = match database.db_type.to_lowercase().as_str() {
-            "postgresql" => Box::new(postgresql::Postgresql::connect(database,true).await?),
-            "mysql" => Box::new(mysql::Mysql::connect(database,true).await?),
-            "sqllite" => Box::new(sqllite::Sqlite::connect(database,true).await?),
+            "postgresql" => Box::new(postgresql::Postgresql::connect(database, true).await?),
+            "mysql" => Box::new(mysql::Mysql::connect(database, true).await?),
+            "sqllite" => Box::new(sqllite::Sqlite::connect(database, true).await?),
             _ => return Err("unknown database type".into_custom_error()),
         };
 

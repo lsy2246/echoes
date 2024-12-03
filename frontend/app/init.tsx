@@ -1,10 +1,20 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
-import {DEFAULT_CONFIG} from "app/env"
+import React, { createContext, useState } from "react";
+import { DEFAULT_CONFIG } from "app/env";
 import { HttpClient } from "core/http";
 import { ThemeModeToggle } from "hooks/themeMode";
-import { Theme, Button, Select, Flex, Container, Heading, Text, Box } from '@radix-ui/themes';
-import { toast } from 'hooks/notification';
-import { Echoes } from "hooks/echo";
+import {
+  Theme,
+  Button,
+  Select,
+  Flex,
+  Container,
+  Heading,
+  Text,
+  Box,
+  TextField,
+} from "@radix-ui/themes";
+import { toast } from "hooks/notification";
+import { Echoes } from "hooks/echoes";
 
 interface SetupContextType {
   currentStep: number;
@@ -25,27 +35,28 @@ const StepContainer: React.FC<{ title: string; children: React.ReactNode }> = ({
   title,
   children,
 }) => (
-  <Container size="2" className="w-full max-w-[90%] md:max-w-[600px] mx-auto px-4">
-    <Heading size="5" mb="4">{title}</Heading>
+  <Box style={{ width: "90%", maxWidth: "600px", margin: "0 auto" }}>
+    <Heading size="5" mb="4" weight="bold">
+      {title}
+    </Heading>
     <Flex direction="column" gap="4">
       {children}
     </Flex>
-  </Container>
+  </Box>
 );
 
 // 通用的导航按钮组件
-const NavigationButtons: React.FC<StepProps & { loading?: boolean; disabled?: boolean }> = ({ 
-  onNext, 
-  loading = false,
-  disabled = false 
-}) => (
-  <Flex justify="end" mt="4" className="w-full">
-    <Button 
-      onClick={onNext}
+const NavigationButtons: React.FC<
+  StepProps & { loading?: boolean; disabled?: boolean }
+> = ({ onNext, loading = false, disabled = false }) => (
+  <Flex justify="end" mt="4">
+    <Button
+      size="3"
       disabled={loading || disabled}
-      className="w-full md:w-auto"
+      onClick={onNext}
+      style={{ width: "100%" }}
     >
-      {loading ? '处理中...' : '下一步'}
+      {loading ? "处理中..." : "下一步"}
     </Button>
   </Flex>
 );
@@ -58,28 +69,31 @@ const InputField: React.FC<{
   hint?: string;
   required?: boolean;
 }> = ({ label, name, defaultValue, hint, required = true }) => (
-  <Box mb="6" className="w-full">
-    <Text as="label" size="2" weight="medium" mb="2" className="block">
+  <Box mb="4">
+    <Text as="label" size="2" weight="medium" className="block mb-2">
       {label} {required && <Text color="red">*</Text>}
     </Text>
-    <input
+    <TextField.Root
       name={name}
       defaultValue={defaultValue?.toString()}
       required={required}
-      className="w-full h-[40px] px-3 rounded-md border border-gray-200 dark:border-gray-700 text-sm"
-    />
-    {hint && <Text size="1" color="gray" mt="1" className="text-xs">{hint}</Text>}
+    >
+      <TextField.Slot></TextField.Slot>
+    </TextField.Root>
+    {hint && (
+      <Text color="gray" size="1" mt="1">
+        {hint}
+      </Text>
+    )}
   </Box>
 );
 
 const Introduction: React.FC<StepProps> = ({ onNext }) => (
   <StepContainer title="安装说明">
-    <div className="space-y-6">
-      <p className="text-base text-custom-p-light dark:text-custom-p-dark">
-        欢迎使用 Echoes
-      </p>
-      <NavigationButtons onNext={onNext} />
-    </div>
+    <Text size="3" style={{ lineHeight: 1.6 }}>
+      欢迎使用 Echoes
+    </Text>
+    <NavigationButtons onNext={onNext} />
   </StepContainer>
 );
 
@@ -91,11 +105,18 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
   const validateForm = () => {
     const getRequiredFields = () => {
       switch (dbType) {
-        case 'sqllite':
-          return ['db_prefix', 'db_name'];
-        case 'postgresql':
-        case 'mysql':
-          return ['db_host', 'db_prefix', 'db_port', 'db_user', 'db_password', 'db_name'];
+        case "sqllite":
+          return ["db_prefix", "db_name"];
+        case "postgresql":
+        case "mysql":
+          return [
+            "db_host",
+            "db_prefix",
+            "db_port",
+            "db_user",
+            "db_password",
+            "db_name",
+          ];
         default:
           return [];
       }
@@ -104,26 +125,35 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
     const requiredFields = getRequiredFields();
     const emptyFields: string[] = [];
 
-    requiredFields.forEach(field => {
-      const input = document.querySelector(`[name="${field}"]`) as HTMLInputElement;
-      if (input && (!input.value || input.value.trim() === '')) {
+    requiredFields.forEach((field) => {
+      const input = document.querySelector(
+        `[name="${field}"]`,
+      ) as HTMLInputElement;
+      if (input && (!input.value || input.value.trim() === "")) {
         emptyFields.push(field);
       }
     });
 
     if (emptyFields.length > 0) {
-      const fieldNames = emptyFields.map(field => {
+      const fieldNames = emptyFields.map((field) => {
         switch (field) {
-          case 'db_host': return '数据库地址';
-          case 'db_prefix': return '数据库前缀';
-          case 'db_port': return '端口';
-          case 'db_user': return '用户名';
-          case 'db_password': return '密码';
-          case 'db_name': return '数据库名';
-          default: return field;
+          case "db_host":
+            return "数据库地址";
+          case "db_prefix":
+            return "数据库前缀";
+          case "db_port":
+            return "端口";
+          case "db_user":
+            return "用户名";
+          case "db_password":
+            return "密码";
+          case "db_name":
+            return "数据库名";
+          default:
+            return field;
         }
       });
-      toast.error(`请填写以下必填项：${fieldNames.join('、')}`);
+      toast.error(`请填写以下必填项：${fieldNames.join("、")}`);
       return false;
     }
     return true;
@@ -139,27 +169,49 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
     try {
       const formData = {
         db_type: dbType,
-        host: (document.querySelector('[name="db_host"]') as HTMLInputElement)?.value?.trim()??"",
-        db_prefix: (document.querySelector('[name="db_prefix"]') as HTMLInputElement)?.value?.trim()??"",
-        port: Number((document.querySelector('[name="db_port"]') as HTMLInputElement)?.value?.trim()??0),
-        user: (document.querySelector('[name="db_user"]') as HTMLInputElement)?.value?.trim()??"",
-        password: (document.querySelector('[name="db_password"]') as HTMLInputElement)?.value?.trim()??"",
-        db_name: (document.querySelector('[name="db_name"]') as HTMLInputElement)?.value?.trim()??"",
+        host:
+          (
+            document.querySelector('[name="db_host"]') as HTMLInputElement
+          )?.value?.trim() ?? "",
+        db_prefix:
+          (
+            document.querySelector('[name="db_prefix"]') as HTMLInputElement
+          )?.value?.trim() ?? "",
+        port: Number(
+          (
+            document.querySelector('[name="db_port"]') as HTMLInputElement
+          )?.value?.trim() ?? 0,
+        ),
+        user:
+          (
+            document.querySelector('[name="db_user"]') as HTMLInputElement
+          )?.value?.trim() ?? "",
+        password:
+          (
+            document.querySelector('[name="db_password"]') as HTMLInputElement
+          )?.value?.trim() ?? "",
+        db_name:
+          (
+            document.querySelector('[name="db_name"]') as HTMLInputElement
+          )?.value?.trim() ?? "",
       };
 
-      await http.post('/sql', formData);
+      await http.post("/sql", formData);
 
       let oldEnv = import.meta.env ?? DEFAULT_CONFIG;
-      const viteEnv = Object.entries(oldEnv).reduce((acc, [key, value]) => {
-        if (key.startsWith('VITE_')) {
-          acc[key] = value;
-        }
-        return acc;
-      }, {} as Record<string, any>);
-      
+      const viteEnv = Object.entries(oldEnv).reduce(
+        (acc, [key, value]) => {
+          if (key.startsWith("VITE_")) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, any>,
+      );
+
       const newEnv = {
         ...viteEnv,
-        VITE_INIT_STATUS: '2'
+        VITE_INIT_STATUS: "2",
       };
 
       await http.dev("/env", {
@@ -169,8 +221,8 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
 
       Object.assign(import.meta.env, newEnv);
 
-      toast.success('数据库配置成功！');
-      
+      toast.success("数据库配置成功！");
+
       setTimeout(() => onNext(), 1000);
     } catch (error: any) {
       console.error(error);
@@ -302,8 +354,8 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
             />
           </>
         )}
-        <NavigationButtons 
-          onNext={handleNext} 
+        <NavigationButtons
+          onNext={handleNext}
           loading={loading}
           disabled={loading}
         />
@@ -312,13 +364,11 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
   );
 };
 
-
 interface InstallReplyData {
-  token: string,
-  username: string,
-  password: string,
+  token: string;
+  username: string;
+  password: string;
 }
-
 
 const AdminConfig: React.FC<StepProps> = ({ onNext }) => {
   const [loading, setLoading] = useState(false);
@@ -328,29 +378,41 @@ const AdminConfig: React.FC<StepProps> = ({ onNext }) => {
     setLoading(true);
     try {
       const formData = {
-        username: (document.querySelector('[name="admin_username"]') as HTMLInputElement)?.value,
-        password: (document.querySelector('[name="admin_password"]') as HTMLInputElement)?.value,
-        email: (document.querySelector('[name="admin_email"]') as HTMLInputElement)?.value,
+        username: (
+          document.querySelector('[name="admin_username"]') as HTMLInputElement
+        )?.value,
+        password: (
+          document.querySelector('[name="admin_password"]') as HTMLInputElement
+        )?.value,
+        email: (
+          document.querySelector('[name="admin_email"]') as HTMLInputElement
+        )?.value,
       };
 
-      const response = await http.post('/administrator', formData) as InstallReplyData;
+      const response = (await http.post(
+        "/administrator",
+        formData,
+      )) as InstallReplyData;
       const data = response;
-      
-      localStorage.setItem('token', data.token);
-      
+
+      localStorage.setItem("token", data.token);
+
       let oldEnv = import.meta.env ?? DEFAULT_CONFIG;
-      const viteEnv = Object.entries(oldEnv).reduce((acc, [key, value]) => {
-        if (key.startsWith('VITE_')) {
-          acc[key] = value;
-        }
-        return acc;
-      }, {} as Record<string, any>);
-      
+      const viteEnv = Object.entries(oldEnv).reduce(
+        (acc, [key, value]) => {
+          if (key.startsWith("VITE_")) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, any>,
+      );
+
       const newEnv = {
         ...viteEnv,
-        VITE_INIT_STATUS: '3',
+        VITE_INIT_STATUS: "3",
         VITE_API_USERNAME: data.username,
-        VITE_API_PASSWORD: data.password
+        VITE_API_PASSWORD: data.password,
       };
 
       await http.dev("/env", {
@@ -360,7 +422,7 @@ const AdminConfig: React.FC<StepProps> = ({ onNext }) => {
 
       Object.assign(import.meta.env, newEnv);
 
-      toast.success('管理员账号创建成功！');
+      toast.success("管理员账号创建成功！");
       onNext();
     } catch (error: any) {
       console.error(error);
@@ -382,62 +444,46 @@ const AdminConfig: React.FC<StepProps> = ({ onNext }) => {
   );
 };
 
-const SetupComplete: React.FC = () => {
-
-  return (
-    <StepContainer title="安装完成">
-      <div className="text-center">
-        <p className="text-xl text-custom-p-light dark:text-custom-p-dark mb-4">
-          恭喜！安装已完成
-        </p>
-        <p className="text-base text-custom-p-light dark:text-custom-p-dark">
-          系统正在重启中，请稍候...
-        </p>
-        <div className="mt-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-        </div>
-      </div>
-    </StepContainer>
-  );
-};
+const SetupComplete: React.FC = () => (
+  <StepContainer title="安装完成">
+    <Flex direction="column" align="center" gap="4">
+      <Text size="5" weight="medium">
+        恭喜！安装已完成
+      </Text>
+      <Text size="3">系统正在重启中，请稍候...</Text>
+      <Box mt="4">
+        <Flex justify="center">
+          <Box className="animate-spin rounded-full h-8 w-8 border-b-2 border-current"></Box>
+        </Flex>
+      </Box>
+    </Flex>
+  </StepContainer>
+);
 
 export default function SetupPage() {
   const [currentStep, setCurrentStep] = useState(() => {
     return Number(import.meta.env.VITE_INIT_STATUS ?? 0) + 1;
   });
 
-  const [appearance, setAppearance] = useState<'light' | 'dark'>('light');
-
-  useEffect(() => {
-    // 在客户端运行时检查主题
-    const isDark = document.documentElement.classList.contains('dark');
-    setAppearance(isDark ? 'dark' : 'light');
-
-    // 监听主题变化
-    const handleThemeChange = (event: CustomEvent<{ theme: 'light' | 'dark' }>) => {
-      setAppearance(event.detail.theme);
-    };
-
-    window.addEventListener('theme-change', handleThemeChange as EventListener);
-    return () => window.removeEventListener('theme-change', handleThemeChange as EventListener);
-  }, []);
-
   return (
-    <Theme 
-      accentColor="blue" 
-      grayColor="slate" 
+    <Theme
+      grayColor="gray"
+      accentColor="gray"
       radius="medium"
-      appearance={appearance}
+      panelBackground="solid"
+      appearance="inherit"
     >
-      <div className="min-h-screen w-full">
-        <div className="fixed top-2 right-4 z-10">
+      <Box className="min-h-screen w-full">
+        <Box position="fixed" top="2" right="4">
           <ThemeModeToggle />
-        </div>
-        <div className="flex justify-center pt-2">
-          <div className="w-20 h-20 md:w-24 md:h-24">
+        </Box>
+
+        <Flex justify="center" pt="2">
+          <Box className="w-20 h-20">
             <Echoes />
-          </div>
-        </div>
+          </Box>
+        </Flex>
+
         <Flex direction="column" className="min-h-screen w-full pb-4">
           <Container className="w-full">
             <SetupContext.Provider value={{ currentStep, setCurrentStep }}>
@@ -445,20 +491,18 @@ export default function SetupPage() {
                 <Introduction onNext={() => setCurrentStep(currentStep + 1)} />
               )}
               {currentStep === 2 && (
-                <DatabaseConfig 
+                <DatabaseConfig
                   onNext={() => setCurrentStep(currentStep + 1)}
                 />
               )}
               {currentStep === 3 && (
-                <AdminConfig 
-                  onNext={() => setCurrentStep(currentStep + 1)}
-                />
+                <AdminConfig onNext={() => setCurrentStep(currentStep + 1)} />
               )}
               {currentStep === 4 && <SetupComplete />}
             </SetupContext.Provider>
           </Container>
         </Flex>
-      </div>
+      </Box>
     </Theme>
   );
 }

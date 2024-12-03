@@ -14,7 +14,7 @@ export interface ThemeConfig {
   };
   configuration: Configuration;
   routes: {
-    article:string;
+    article: string;
     post: string;
     tag: string;
     category: string;

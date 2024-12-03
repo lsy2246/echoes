@@ -1,86 +1,135 @@
 import { Layout } from "interface/layout";
 import { ThemeModeToggle } from "hooks/themeMode";
-import { Echoes } from "hooks/echo";
-import { Container, Flex, Box, Link } from "@radix-ui/themes";
+import { Echoes } from "hooks/echoes";
+import Tide from "hooks/tide";
+import {
+  Container,
+  Flex,
+  Box,
+  Link,
+  TextField,
+  DropdownMenu,
+} from "@radix-ui/themes";
+import {
+  MagnifyingGlassIcon,
+  HamburgerMenuIcon,
+  Cross1Icon,
+  PersonIcon,
+  CheckIcon,
+  AvatarIcon,
+} from "@radix-ui/react-icons";
+import { Theme } from "@radix-ui/themes";
+import { useState } from "react";
 
 export default new Layout(({ children, args }) => {
+  const [moreState, setMoreState] = useState(false);
+  const [loginState, setLoginState] = useState(false);
   return (
-    <Box className="min-h-screen flex flex-col">
-      {/* 导航栏 */}
-      <Box asChild className="fixed top-0 w-full border-b backdrop-blur-sm z-50">
-        <nav>
-          <Container size="4" className="mx-auto">
-            <Flex justify="between" align="center" className="h-16">
+    <Theme
+      grayColor="gray"
+      accentColor="gray"
+      radius="medium"
+      panelBackground="solid"
+    >
+      <Box className="min-h-screen flex flex-col">
+        {/* 导航栏 */}
+        <Box
+          asChild
+          className="fixed top-0 w-full backdrop-blur-sm border-b border-[--gray-a5] z-50"
+          id="nav"
+        >
+          <Container size="4">
+            <Flex justify="between" align="center" className="h-16 px-4">
               {/* Logo 区域 */}
-              <Flex align="center" gap="4">
-                <Link 
-                  href="/"
-                  className="text-xl font-bold flex items-center hover:opacity-80 transition-opacity"
-                >
-                  <Echoes/>
+              <Flex align="center">
+                <Link href="/" className="flex items-center">
+                  <Box className="w-20 h-20">
+                    <Echoes />
+                  </Box>
                 </Link>
               </Flex>
 
-              {/* 导航链接 */}
-              <Flex align="center" gap="6">
-                <Flex gap="4">
-                  <Link 
-                    href="/posts" 
-                    className="hover:opacity-80 transition-opacity font-medium"
+              {/* 右侧导航链接 */}
+              <Flex align="center" gap="5">
+                {/* 桌面端搜索框和用户图标 */}
+                <Box
+                  id="nav-desktop"
+                  className="hidden lg:flex items-center gap-5"
+                >
+                  <TextField.Root
+                    size="2"
+                    variant="surface"
+                    placeholder="搜索..."
+                    className="w-[200px]"
                   >
-                    文章
-                  </Link>
-                  <Link 
-                    href="/about" 
-                    className="hover:opacity-80 transition-opacity font-medium"
+                    <TextField.Slot>
+                      <MagnifyingGlassIcon className="h-4 w-4 text-[--accent-a11]" />
+                    </TextField.Slot>
+                  </TextField.Root>
+
+                  <DropdownMenu.Root>
+                    <DropdownMenu.Trigger>
+                      <Box className="hover:opacity-70 transition-opacity p-2">
+                        {loginState ? (
+                          <AvatarIcon className="w-5 h-5 text-current opacity-70" />
+                        ) : (
+                          <div>
+                            <PersonIcon className="w-5 h-5 text-current opacity-80" />
+                          </div>
+                        )}
+                      </Box>
+                    </DropdownMenu.Trigger>
+                  </DropdownMenu.Root>
+                </Box>
+
+                {/* 移动端菜单按钮和下拉搜索框 */}
+                <Box id="nav-mobile" className="lg:hidden">
+                  <DropdownMenu.Root
+                    onOpenChange={() => setMoreState(!moreState)}
                   >
-                    关于
-                  </Link>
-                </Flex>
+                    <DropdownMenu.Trigger>
+                      <Box className="hover:opacity-70 transition-opacity p-2">
+                        {moreState ? (
+                          <Cross1Icon className="h-5 w-5 text-[--accent-a11]" />
+                        ) : (
+                          <HamburgerMenuIcon className="h-5 w-5 text-[--accent-a11]" />
+                        )}
+                      </Box>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Content
+                      align="end"
+                      className="mt-2 p-3 min-w-[250px]"
+                    >
+                      <TextField.Root
+                        size="2"
+                        variant="surface"
+                        placeholder="搜索..."
+                      >
+                        <TextField.Slot>
+                          <MagnifyingGlassIcon className="h-4 w-4 text-[--accent-a11]" />
+                        </TextField.Slot>
+                      </TextField.Root>
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Root>
+                </Box>
+
+                {/* 主题切换按钮 */}
                 <Box>
                   <ThemeModeToggle />
                 </Box>
               </Flex>
             </Flex>
           </Container>
-        </nav>
-      </Box>
+        </Box>
 
-      {/* 主要内容区域 */}
-      <Box className="flex-1 w-full mt-16">
-        <Container size="4" className="py-8">
-          <main>
-            {children}
-          </main>
-        </Container>
-      </Box>
-
-      {/* 页脚 */}
-      <Box asChild className="w-full border-t mt-auto">
-        <footer>
+        {/* 主要内容区域 */}
+        <Box className="flex-1 w-full mt-16">
           <Container size="4" className="py-8">
-            <Flex direction="column" align="center" gap="4">
-              <Flex gap="6" className="text-sm">
-                <Link href="/terms" className="hover:opacity-80 transition-opacity">
-                  使用条款
-                </Link>
-                <Link href="/privacy" className="hover:opacity-80 transition-opacity">
-                  隐私政策
-                </Link>
-                <Link href="/contact" className="hover:opacity-80 transition-opacity">
-                  联系我们
-                </Link>
-              </Flex>
-              <Box className="text-sm text-center opacity-85">
-                <p>© {new Date().getFullYear()} Echoes. All rights reserved.</p>
-                <p className="mt-1 text-xs opacity-75">
-                  Powered by Echoes Framework
-                </p>
-              </Box>
-            </Flex>
+            <Tide />
+            <main>{children}</main>
           </Container>
-        </footer>
+        </Box>
       </Box>
-    </Box>
+    </Theme>
   );
 });

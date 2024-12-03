@@ -3,7 +3,7 @@ import path from "path";
 import { EventEmitter } from "events";
 
 // 设置全局最大监听器数量
-EventEmitter.defaultMaxListeners = 20;
+// EventEmitter.defaultMaxListeners = 20;
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -23,8 +23,8 @@ const startServers = async () => {
   });
 
   // 等待内部服务器启动
-  console.log("等待内部服务器启动...");
-  await delay(2000);
+  // console.log("等待内部服务器启动...");
+  // await delay(2000);
 
   // 然后启动 Vite
   const viteProcess = spawn("npm", ["run", "dev"], {

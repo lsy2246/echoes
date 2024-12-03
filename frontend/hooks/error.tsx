@@ -29,8 +29,8 @@ const ErrorPage = () => {
         <p className="text-custom-p-light dark:text-custom-p-dark text-xl">
           抱歉，您访问的页面已经离家出走了
         </p>
-        <button 
-          onClick={() => window.location.href = '/'}
+        <button
+          onClick={() => (window.location.href = "/")}
           className="mt-8 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-300"
         >
           返回首页

@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { MoonIcon, SunIcon } from "@radix-ui/react-icons"
+import { MoonIcon, SunIcon } from "@radix-ui/react-icons";
 import { Button } from "@radix-ui/themes";
 
 const THEME_KEY = "theme-preference";
 
 export const ThemeModeToggle: React.FC = () => {
-  const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(true);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     const saved = localStorage.getItem(THEME_KEY);
+    const initialTheme =
+      saved ||
+      (window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light");
+    setIsDark(initialTheme === "dark");
     if (saved) {
-      setIsDark(saved === "dark");
-      document.documentElement.classList.toggle("dark", saved === "dark");
+      document.documentElement.className = saved;
     } else {
-      const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setIsDark(systemDark);
-      document.documentElement.classList.toggle("dark", systemDark);
+      document.documentElement.className = initialTheme;
     }
 
-    // 添加滚动监听
     let lastScroll = 0;
     const handleScroll = () => {
       const currentScroll = window.scrollY;
@@ -29,20 +31,16 @@ export const ThemeModeToggle: React.FC = () => {
       lastScroll = currentScroll;
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const toggleTheme = () => {
     const newIsDark = !isDark;
     setIsDark(newIsDark);
-    localStorage.setItem(THEME_KEY, newIsDark ? "dark" : "light");
-    document.documentElement.classList.toggle("dark", newIsDark);
-
-    const event = new CustomEvent("theme-change", {
-      detail: { theme: newIsDark ? "dark" : "light" },
-    });
-    window.dispatchEvent(event);
+    const newTheme = newIsDark ? "dark" : "light";
+    document.documentElement.className = newTheme;
+    localStorage.setItem(THEME_KEY, newTheme);
   };
 
   if (!mounted) return null;
@@ -52,15 +50,50 @@ export const ThemeModeToggle: React.FC = () => {
       variant="ghost"
       onClick={toggleTheme}
       className={`p-2 rounded-lg transition-all duration-300 transform ${
-        visible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+        visible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
       }`}
       aria-label="Toggle theme"
     >
       {isDark ? (
-        <SunIcon width="24" height="24" className="text-yellow-400" /> 
+        <SunIcon width="24" height="24" />
       ) : (
-        <MoonIcon width="24" height="24" /> 
+        <MoonIcon width="24" height="24" />
       )}
     </Button>
   );
+};
+
+export const useThemeMode = () => {
+  const [mode, setMode] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved) {
+        setMode(saved as "light" | "dark");
+      } else {
+        const isDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+        setMode(isDark ? "dark" : "light");
+      }
+
+      // 监听主题变化事件
+      const handleThemeChange = (e: CustomEvent) => {
+        setMode(e.detail.theme);
+      };
+
+      window.addEventListener(
+        "theme-change",
+        handleThemeChange as EventListener,
+      );
+      return () =>
+        window.removeEventListener(
+          "theme-change",
+          handleThemeChange as EventListener,
+        );
+    }
+  }, []);
+
+  return { mode };
 };

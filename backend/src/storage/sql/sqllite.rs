@@ -34,14 +34,15 @@ impl DatabaseTrait for Sqlite {
 
         let pool = tokio::time::timeout(
             std::time::Duration::from_secs(5),
-            SqlitePool::connect(&connection_str)
-        ).await.map_err(|_| "连接超时".into_custom_error())??;
+            SqlitePool::connect(&connection_str),
+        )
+        .await
+        .map_err(|_| "连接超时".into_custom_error())??;
 
-        if let Err(e) = pool.acquire().await{
+        if let Err(e) = pool.acquire().await {
             pool.close().await;
-        return Err(format!("数据库连接测试失败: {}", e).into_custom_error());
+            return Err(format!("数据库连接测试失败: {}", e).into_custom_error());
         }
-
 
         Ok(Sqlite { pool })
     }

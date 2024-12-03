@@ -50,18 +50,17 @@ export class HttpClient {
         console.error("解析响应错误:", e);
       }
 
-      switch (response.status){
+      switch (response.status) {
         case 404:
-          message="请求的资源不存在";
-          break
-      } 
-
+          message = "请求的资源不存在";
+          break;
+      }
 
       const errorResponse: ErrorResponse = {
         title: `${response.status} ${response.statusText}`,
-        message: message
+        message: message,
       };
-      
+
       throw errorResponse;
     }
 
@@ -70,7 +69,6 @@ export class HttpClient {
       ? response.json()
       : response.text();
   }
-
 
   private async request<T>(
     endpoint: string,
@@ -98,7 +96,7 @@ export class HttpClient {
       if (error.name === "AbortError") {
         const errorResponse: ErrorResponse = {
           title: "请求超时",
-          message: "服务器响应时间过长，请稍后重试"
+          message: "服务器响应时间过长，请稍后重试",
         };
         throw errorResponse;
       }
@@ -106,10 +104,10 @@ export class HttpClient {
         throw error;
       }
       console.log(error);
-      
+
       const errorResponse: ErrorResponse = {
         title: "未知错误",
-        message: error.message || "发生未知错误"
+        message: error.message || "发生未知错误",
       };
       throw errorResponse;
     } finally {
@@ -161,12 +159,14 @@ export class HttpClient {
   }
 
   public async systemToken<T>(): Promise<T> {
-
     const formData = {
-    "username": import.meta.env.VITE_API_USERNAME,
-    "password": import.meta.env.VITE_API_PASSWORD
-  }
-  
-    return this.api<T>("/auth/token/system", {  method: "POST",body: JSON.stringify(formData), });
+      username: import.meta.env.VITE_API_USERNAME,
+      password: import.meta.env.VITE_API_PASSWORD,
+    };
+
+    return this.api<T>("/auth/token/system", {
+      method: "POST",
+      body: JSON.stringify(formData),
+    });
   }
 }

@@ -2,7 +2,7 @@ use super::{
     builder::{self, SafeValue},
     schema, DatabaseTrait,
 };
-use crate::common::error::{CustomResult,CustomErrorInto};
+use crate::common::error::{CustomErrorInto, CustomResult};
 use crate::config;
 use async_trait::async_trait;
 use serde_json::Value;
@@ -37,14 +37,15 @@ impl DatabaseTrait for Mysql {
 
         let pool = tokio::time::timeout(
             std::time::Duration::from_secs(5),
-            MySqlPool::connect(&connection_str)
-        ).await.map_err(|_| "连接超时".into_custom_error())??;
+            MySqlPool::connect(&connection_str),
+        )
+        .await
+        .map_err(|_| "连接超时".into_custom_error())??;
 
-        if let Err(e) = pool.acquire().await{
+        if let Err(e) = pool.acquire().await {
             pool.close().await;
-        return Err(format!("数据库连接测试失败: {}", e).into_custom_error());
+            return Err(format!("数据库连接测试失败: {}", e).into_custom_error());
         }
-
 
         Ok(Mysql { pool })
     }
@@ -101,7 +102,6 @@ impl DatabaseTrait for Mysql {
             builder::ValidationLevel::Strict,
         );
         let grammar = schema::generate_schema(super::DatabaseType::MySQL, db_prefix)?;
-
 
         let pool = Self::connect(&db_config, false).await?.pool;
 

@@ -38,9 +38,7 @@ impl AppState {
                 *self.db.lock().await = Some(db);
                 Ok(())
             }
-            Err(e) => {
-                Err(e)
-            }
+            Err(e) => Err(e),
         }
     }
 
@@ -50,9 +48,9 @@ impl AppState {
 
     pub async fn trigger_restart(&self) -> CustomResult<()> {
         *self.restart_progress.lock().await = true;
-        if let Ok(db) = self.sql_get().await{
+        if let Ok(db) = self.sql_get().await {
             db.get_db().close().await?;
-        }        
+        }
         self.shutdown
             .lock()
             .await
@@ -61,7 +59,6 @@ impl AppState {
             .notify();
         Ok(())
     }
-
 }
 
 #[rocket::main]
@@ -111,6 +108,6 @@ async fn main() -> CustomResult<()> {
             eprintln!("获取当前可执行文件路径失败");
         }
     }
-    
+
     std::process::exit(0);
 }

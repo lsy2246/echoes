@@ -6,8 +6,10 @@ export default {
     "./common/**/*.{js,jsx,ts,tsx}",
     "./core/**/*.{js,jsx,ts,tsx}",
     "./hooks/**/*.{js,jsx,ts,tsx}",
+    "./themes/**/*.{js,jsx,ts,tsx}",
   ],
-  darkMode: 'class',
+  darkMode: ["class", '[data-theme="dark"]'],
+  important: true,
   theme: {
     extend: {
       fontFamily: {
@@ -15,13 +17,13 @@ export default {
       },
       keyframes: {
         progress: {
-          from: { transform: 'scaleX(1)' },
-          to: { transform: 'scaleX(0)' }
-        }
+          from: { transform: "scaleX(1)" },
+          to: { transform: "scaleX(0)" },
+        },
       },
       animation: {
-        progress: 'progress 3s linear'
-      }
+        progress: "progress 3s linear",
+      },
     },
   },
 } satisfies Config;

@@ -6,11 +6,9 @@ const themeConfig: ThemeConfig = {
   version: "1.0.0",
   description: "一个简约风格的博客主题",
   author: "lsy",
-  configuration: {
-
-  },
-  globalSettings:{
-    layout:"layout.tsx"
+  configuration: {},
+  globalSettings: {
+    layout: "layout.tsx",
   },
   templates: new Map([
     [
@@ -24,14 +22,12 @@ const themeConfig: ThemeConfig = {
   ]),
 
   routes: {
-    article:"",
+    article: "",
     post: "",
     tag: "",
     category: "",
     error: "",
-    page: new Map<string, string>([
-      
-    ]),
+    page: new Map<string, string>([]),
   },
 };
 

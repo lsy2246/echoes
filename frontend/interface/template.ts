@@ -1,6 +1,6 @@
-import { HttpClient } from 'core/http';
-import { CapabilityService } from 'core/capability';
-import { Serializable } from 'interface/serializableType';
+import { HttpClient } from "core/http";
+import { CapabilityService } from "core/capability";
+import { Serializable } from "interface/serializableType";
 
 export class Template {
   constructor(
@@ -14,7 +14,7 @@ export class Template {
       http: HttpClient;
       capability: CapabilityService;
       args: Serializable;
-    }) => React.ReactNode
+    }) => React.ReactNode,
   ) {}
 
   render(services: {
