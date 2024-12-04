@@ -42,8 +42,10 @@ const createErrorParticles = (width: number, height: number) => {
       const randomY = y + (Math.random() - 0.5) * randomOffset;
 
       // 缩放到适合容器的大小
-      const scaledX = randomX * (width * 0.3);
-      const scaledY = randomY * (height * 0.3);
+      const size = Math.min(width, height);
+      const scaleFactor = size * 0.3;
+      const scaledX = randomX * scaleFactor;
+      const scaledY = randomY * scaleFactor;
 
       particles.push({
         x: scaledX,
@@ -57,9 +59,9 @@ const createErrorParticles = (width: number, height: number) => {
 
       // 随机初始位置
       positionArray.push(
-        (Math.random() - 0.5) * width * 2,
-        (Math.random() - 0.5) * height * 2,
-        (Math.random() - 0.5) * 100
+        (Math.random() - 0.5) * size * 2,
+        (Math.random() - 0.5) * size * 2,
+        (Math.random() - 0.5) * 50
       );
 
       // 随机初始颜色
@@ -67,21 +69,29 @@ const createErrorParticles = (width: number, height: number) => {
     }
   });
 
-  return { particles, positionArray, colorArray };
+  const size = Math.min(width, height);
+  const scale = size / 200;
+  const particleSize = Math.max(1.2, scale * 1.2);
+  
+  return { particles, positionArray, colorArray, particleSize };
 };
 
-// 添加笑脸粒子生成函数
+// 修改 createSmileParticles 函数
 const createSmileParticles = (width: number, height: number) => {
   const particles: Particle[] = [];
   const positionArray: number[] = [];
   const colorArray: number[] = [];
   
-  // 调整笑脸参数
-  const radius = Math.min(width, height) * 0.35; // 脸部大小
-  const particlesCount = 400; // 轮廓粒子数量
+  // 根据容器大小动态调整参数
+  const size = Math.min(width, height);
+  const scale = size / 200; // 基准子
   
-  // 修改颜色为更深的金色
-  const particleColor = new THREE.Color(0.8, 0.6, 0); // 更深的金色
+  // 调整笑脸参数
+  const radius = size * 0.25; // 更合理的脸部大小比例
+  const particlesCount = Math.floor(150 * scale); // 减少粒子数量
+  const particleSize = Math.max(1.2, scale * 1.2); // 确保粒子大小适应屏幕
+  
+  const particleColor = new THREE.Color(0.8, 0.6, 0);
 
   // 创建圆形脸部轮廓
   for (let i = 0; i < particlesCount / 2; i++) {
@@ -98,24 +108,25 @@ const createSmileParticles = (width: number, height: number) => {
     });
 
     positionArray.push(
-      (Math.random() - 0.5) * width * 2,
-      (Math.random() - 0.5) * height * 2,
-      (Math.random() - 0.5) * 100
+      (Math.random() - 0.5) * size * 4,
+      (Math.random() - 0.5) * size * 4,
+      (Math.random() - 0.5) * 150
     );
     colorArray.push(particleColor.r, particleColor.g, particleColor.b);
   }
 
-  // 眼睛参数
-  const eyeOffset = radius * 0.2; // 眼睛水平间距
-  const eyeY = radius * 0.2; // 眼睛垂直位置
-  const eyeSize = radius * 0.08; // 眼睛大小
+  // 眼睛参数调整
+  const eyeOffset = radius * 0.3; // 增加眼睛间距
+  const eyeY = radius * 0.15; // 调整眼睛垂直位置
+  const eyeSize = radius * 0.12; // 增加眼睛大小
   
-  // 创建实心眼睛
+  // 眼睛粒子数量也要根据比例调整
+  const eyeParticles = Math.floor(20 * scale);
+  
   [-1, 1].forEach(side => {
-    // 创建密集的点来填充眼睛
-    for (let i = 0; i < 30; i++) {
-      const r = Math.random() * eyeSize; // 随机半径
-      const angle = Math.random() * Math.PI * 2; // 随机角度
+    for (let i = 0; i < eyeParticles; i++) {
+      const r = Math.random() * eyeSize;
+      const angle = Math.random() * Math.PI * 2;
       const x = side * eyeOffset + Math.cos(angle) * r;
       const y = eyeY + Math.sin(angle) * r;
 
@@ -128,18 +139,18 @@ const createSmileParticles = (width: number, height: number) => {
       });
 
       positionArray.push(
-        (Math.random() - 0.5) * width * 2,
-        (Math.random() - 0.5) * height * 2,
-        (Math.random() - 0.5) * 100
+        (Math.random() - 0.5) * size * 4,
+        (Math.random() - 0.5) * size * 4,
+        (Math.random() - 0.5) * 150
       );
       colorArray.push(particleColor.r, particleColor.g, particleColor.b);
     }
   });
 
-  // 嘴巴参数
-  const smileWidth = radius * 0.5; // 嘴巴宽度
-  const smileY = -radius * 0.3; // 将嘴巴位置向下移动更多
-  const smilePoints = 40; // 嘴巴粒子数量
+  // 嘴巴参数调整
+  const smileWidth = radius * 0.6; // 增加嘴巴宽度
+  const smileY = -radius * 0.25; // 调整嘴巴位置
+  const smilePoints = Math.floor(30 * scale); // 根据大小调整嘴巴粒子数量
 
   // 创建微笑
   for (let i = 0; i < smilePoints; i++) {
@@ -158,14 +169,14 @@ const createSmileParticles = (width: number, height: number) => {
     });
 
     positionArray.push(
-      (Math.random() - 0.5) * width * 2,
-      (Math.random() - 0.5) * height * 2,
-      (Math.random() - 0.5) * 100
+      (Math.random() - 0.5) * size * 4,
+      (Math.random() - 0.5) * size * 4,
+      (Math.random() - 0.5) * 150
     );
     colorArray.push(particleColor.r, particleColor.g, particleColor.b);
   }
 
-  return { particles, positionArray, colorArray };
+  return { particles, positionArray, colorArray, particleSize };
 };
 
 // 在文件开头添加新的 helper 函数
@@ -179,33 +190,104 @@ const customEase = (t: number) => {
     : 1 - Math.pow(-2 * t + 2, 3) / 2;
 };
 
-export const ParticleImage = ({ src, onLoad, onError }: { 
+interface ParticleImageProps {
   src?: string;
   onLoad?: () => void;
   onError?: () => void;
-}) => {
+  performanceMode?: boolean; // 新增性能模式开关
+}
+
+export const ParticleImage = ({ 
+  src, 
+  onLoad, 
+  onError,
+  performanceMode = false // 默认关闭
+}: ParticleImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene>();
   const cameraRef = useRef<THREE.OrthographicCamera>();
   const rendererRef = useRef<THREE.WebGLRenderer>();
   const animationFrameRef = useRef<number>();
 
-  // 添加 resize 处理函数
+  const width = containerRef.current?.offsetWidth || 0;
+  const height = containerRef.current?.offsetHeight || 0;
+  const size = Math.min(width, height);
+  const scale = size / 200; // 基准因子
+
+  // 在性能模式下使用更保守的参数
+  const particleCount = performanceMode ? 
+    Math.floor(100 * scale) : 
+    Math.floor(200 * scale);
+    
+  // 添 resize 处理函数
   const handleResize = useCallback(() => {
-    if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
+    if (!containerRef.current || !cameraRef.current || !rendererRef.current || !sceneRef.current) return;
 
     const width = containerRef.current.offsetWidth;
     const height = containerRef.current.offsetHeight;
 
     const camera = cameraRef.current;
-    camera.left = width / -2.1;
-    camera.right = width / 2.1;
-    camera.top = height / 2.1;
-    camera.bottom = height / -2.1;
+    camera.left = width / -2;
+    camera.right = width / 2;
+    camera.top = height / 2;
+    camera.bottom = height / -2;
     camera.updateProjectionMatrix();
 
     rendererRef.current.setSize(width, height);
-  }, []);
+
+    // 重新生成粒子
+    if (src === '') {
+      // 清除现有的 GSAP 动画
+      gsap.killTweensOf('*');
+      
+      // 重新生成笑脸
+      const { particles, positionArray, colorArray, particleSize } = createSmileParticles(width, height);
+      
+      const material = new THREE.PointsMaterial({
+        size: particleSize,
+        vertexColors: true,
+        transparent: true,
+        opacity: 1,
+        sizeAttenuation: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        depthTest: false
+      });
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positionArray, 3));
+      geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorArray, 3));
+
+      sceneRef.current.clear();
+      const points = new THREE.Points(geometry, material);
+      sceneRef.current.add(points);
+
+      // 修改这部分，添加动画而不是直接设置位置
+      const positionAttribute = geometry.attributes.position;
+      
+      particles.forEach((particle, i) => {
+        const i3 = i * 3;
+        const distanceToCenter = Math.sqrt(
+          Math.pow(particle.originalX, 2) + 
+          Math.pow(particle.originalY, 2)
+        );
+        const maxDistance = Math.sqrt(Math.pow(width/2, 2) + Math.pow(height/2, 2));
+        const normalizedDistance = distanceToCenter / maxDistance;
+        
+        gsap.to(positionAttribute.array, {
+          duration: 0.8,
+          delay: normalizedDistance * 0.6,
+          [i3]: particle.originalX,
+          [i3 + 1]: particle.originalY,
+          [i3 + 2]: 0,
+          ease: "sine.inOut",
+          onUpdate: () => {
+            positionAttribute.needsUpdate = true;
+          }
+        });
+      });
+    }
+  }, [src]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -218,14 +300,15 @@ export const ParticleImage = ({ src, onLoad, onError }: {
     sceneRef.current = scene;
     
     const camera = new THREE.OrthographicCamera(
-      width / -1.5,  // 扩大视野范围，从 -2 改为 -1.5
-      width / 1.5,   // 扩大视野范围，从 2 改为 1.5
-      height / 1.5,  // 扩大视野范围
-      height / -1.5, // 扩大视野范围
+      width / -2,
+      width / 2,
+      height / 2,
+      height / -2,
       1,
       1000
     );
-    camera.position.z = 100;
+    camera.position.z = 500;
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
     cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ 
@@ -237,40 +320,49 @@ export const ParticleImage = ({ src, onLoad, onError }: {
     rendererRef.current = renderer;
     containerRef.current.appendChild(renderer.domElement);
 
-    const geometry = new THREE.BufferGeometry();
-    const material = new THREE.PointsMaterial({
-      size: 1.2,
-      vertexColors: true,
-      transparent: true,
-      opacity: 1,
-      sizeAttenuation: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      depthTest: false
-    });
-
     // 检查是否应该显示笑脸
     if (src === '') {
       console.log('Showing smile animation');
-      const { particles, positionArray, colorArray } = createSmileParticles(width, height);
+      const { particles, positionArray, colorArray, particleSize } = createSmileParticles(width, height);
       
+      const material = new THREE.PointsMaterial({
+        size: particleSize,
+        vertexColors: true,
+        transparent: true,
+        opacity: 1,
+        sizeAttenuation: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        depthTest: false
+      });
+      
+      const geometry = new THREE.BufferGeometry();
       geometry.setAttribute('position', new THREE.Float32BufferAttribute(positionArray, 3));
       geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorArray, 3));
 
       const points = new THREE.Points(geometry, material);
       scene.add(points);
 
+      // 修改动画效果
       const positionAttribute = geometry.attributes.position;
       
+      // 计算到中心的距离用于延迟
       particles.forEach((particle, i) => {
         const i3 = i * 3;
+        const distanceToCenter = Math.sqrt(
+          Math.pow(particle.originalX, 2) + 
+          Math.pow(particle.originalY, 2)
+        );
+        const maxDistance = Math.sqrt(Math.pow(width/2, 2) + Math.pow(height/2, 2));
+        const normalizedDistance = distanceToCenter / maxDistance;
+        
         gsap.to(positionAttribute.array, {
-          duration: 1,
-          delay: Math.random() * 0.3,
+          duration: 0.8,
+          delay: normalizedDistance * 0.6,
           [i3]: particle.originalX,
           [i3 + 1]: particle.originalY,
           [i3 + 2]: 0,
-          ease: "back.out(1.7)",
+          ease: "sine.inOut",
           onUpdate: () => {
             positionAttribute.needsUpdate = true;
           }
@@ -286,19 +378,56 @@ export const ParticleImage = ({ src, onLoad, onError }: {
       };
       animate();
 
-      return;
+      // 添加 resize 监听
+      const resizeObserver = new ResizeObserver(() => {
+        if (containerRef.current) {
+          handleResize();
+        }
+      });
+      resizeObserver.observe(containerRef.current);
+
+      // 添加窗口 resize 监听
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+        if (renderer && containerRef.current) {
+          containerRef.current.removeChild(renderer.domElement);
+          renderer.dispose();
+        }
+        gsap.killTweensOf('*');
+        if (containerRef.current) {
+          resizeObserver.unobserve(containerRef.current);
+        }
+        window.removeEventListener('resize', handleResize);
+      };
     }
 
     // 创建错误动画函数
     const showErrorAnimation = () => {
       if (!scene) return;
       
-      const { particles, positionArray, colorArray } = createErrorParticles(width, height);
+      const { particles, positionArray, colorArray, particleSize } = createErrorParticles(width, height);
+      
+      const material = new THREE.PointsMaterial({
+        size: particleSize,
+        vertexColors: true,
+        transparent: true,
+        opacity: 1,
+        sizeAttenuation: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        depthTest: false
+      });
+
+      const geometry = new THREE.BufferGeometry();
       geometry.setAttribute('position', new THREE.Float32BufferAttribute(positionArray, 3));
       geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorArray, 3));
 
       const points = new THREE.Points(geometry, material);
-      scene.clear(); // 清除现有内容
+      scene.clear();
       scene.add(points);
 
       const positionAttribute = geometry.attributes.position;
@@ -360,14 +489,14 @@ export const ParticleImage = ({ src, onLoad, onError }: {
           offsetX = (width - drawWidth) / 2;
         }
         
-        // 绘制图片
+        // 绘制片
         ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
         const imageData = ctx.getImageData(0, 0, width, height);
         
         const particles: Particle[] = [];
         const positionArray = [];
         const colorArray = [];
-        const samplingGap = Math.ceil(Math.max(width, height) / 100); // 动态采样间隔，确保粒子数量适中
+        const samplingGap = Math.ceil(Math.max(width, height) / 80); // 减少采样密度
 
         // 采样图片像素
         for (let y = 0; y < height; y += samplingGap) {
@@ -412,6 +541,22 @@ export const ParticleImage = ({ src, onLoad, onError }: {
             }
           }
         }
+        const size = Math.min(width, height);
+        const scale = size / 200;
+        const particleSize = Math.max(1.2, scale * 1.2);
+
+        const geometry = new THREE.BufferGeometry();
+        const material = new THREE.PointsMaterial({
+          size: particleSize,
+          vertexColors: true,
+          transparent: true,
+          opacity: 1,
+          sizeAttenuation: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+          depthTest: false
+        });
+
 
         scene.clear();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(positionArray, 3));
@@ -487,6 +632,8 @@ export const ParticleImage = ({ src, onLoad, onError }: {
               duration: 0.8
             }, "-=0.6"); // 提前开始消失
         }
+
+        return { particles, positionArray, colorArray, particleSize };
       }
     };
 
@@ -523,7 +670,7 @@ export const ParticleImage = ({ src, onLoad, onError }: {
         renderer.dispose();
       }
       // 清除所有 GSAP 动画
-      gsap.killTweensOf(geometry.attributes.position?.array);
+      gsap.killTweensOf('*');
       
       // 移除 resize 监听
       if (containerRef.current) {
