@@ -6,10 +6,13 @@ const themeConfig: ThemeConfig = {
   version: "1.0.0",
   description: "一个简约风格的博客主题",
   author: "lsy",
-  configuration: {},
-  globalSettings: {
-    layout: "layout.tsx",
+  configuration: {
+    "nav": {
+      title: "导航配置",
+      data: '<a href="h">你好</a> <a href="h">不好</a>'
+    }
   },
+  layout: "layout.tsx",
   templates: new Map([
     [
       "page",
@@ -21,14 +24,7 @@ const themeConfig: ThemeConfig = {
     ],
   ]),
 
-  routes: {
-    article: "",
-    post: "",
-    tag: "",
-    category: "",
-    error: "",
-    page: new Map<string, string>([]),
-  },
+  routes: new Map<string, string>([])
 };
 
 export default themeConfig;

@@ -14,9 +14,10 @@ import { useState, useEffect } from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import throttle from "lodash/throttle";
 import "./styles/layouts.css";
+import parse from 'html-react-parser';
 
 // 直接导出 Layout 实例
-const EchoesLayout = new Layout(({ children, args }) => {
+export default new Layout(({ children, args }) => {
   const [moreState, setMoreState] = useState(false);
   const [loginState, setLoginState] = useState(true);
   const [device, setDevice] = useState("");
@@ -34,6 +35,7 @@ const EchoesLayout = new Layout(({ children, args }) => {
     const handleResize = throttle(() => {
       if (window.innerWidth >= 1024) {
         setDevice("desktop");
+        setMoreState(false);
       } else {
         setDevice("mobile");
       }
@@ -47,6 +49,8 @@ const EchoesLayout = new Layout(({ children, args }) => {
     };
   }, []);
 
+  const navString = typeof args === 'object' && args && 'nav' in args ? args.nav as string : '';
+
   return (
     <Theme
       grayColor="gray"
@@ -54,7 +58,10 @@ const EchoesLayout = new Layout(({ children, args }) => {
       radius="large"
       panelBackground="solid"
     >
-      <Box className="min-h-screen flex flex-col" id="nav">
+      <Box
+        className="min-h-screen flex flex-col"
+        id="nav"
+      >
         {/* 导航栏 */}
         <Box
           asChild
@@ -103,7 +110,7 @@ const EchoesLayout = new Layout(({ children, args }) => {
                       </TextField.Root>
 
                       <Box className="flex items-center gap-6">
-                        <a href="h">首页</a>
+                      {parse(navString)}
                       </Box>
 
                       <DropdownMenuPrimitive.Root>
@@ -125,8 +132,8 @@ const EchoesLayout = new Layout(({ children, args }) => {
                           >
                             <DropdownMenuPrimitive.Content
                               align="end"
-                              sideOffset={5}
-                              className="mt-2 p-1 min-w-[180px] rounded-md bg-[--color-background] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
+                              sideOffset={10}
+                              className="mt-3 p-1 min-w-[180px] rounded-md bg-[--color-background] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
                             >
                               {loginState ? (
                                 <>
@@ -182,8 +189,7 @@ const EchoesLayout = new Layout(({ children, args }) => {
                               className="mt-2 p-3 min-w-[280px] rounded-md bg-[--color-background] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
                             >
                               <Box className="flex flex-col gap-2">
-                                <a href="h" >首页</a>
-                                <a href="h">首页</a>
+                                {parse(navString)}
                               </Box>
                               <Box className="mt-3 pt-3 border-t border-[--gray-a5]">
                                 <TextField.Root
@@ -191,15 +197,13 @@ const EchoesLayout = new Layout(({ children, args }) => {
                                   variant="surface"
                                   placeholder="搜索..."
                                   className="w-full [&_input]:pl-3"
+                                  id="search"
                                 >
                                   <TextField.Slot
                                     side="right"
                                     className="p-2"
                                   >
-                                    <MagnifyingGlassIcon
-                                      className="h-4 w-4 text-[--gray-a12]"
-                                      id="search"
-                                    />
+                                    <MagnifyingGlassIcon className="h-4 w-4 text-[--gray-a12]" />
                                   </TextField.Slot>
                                 </TextField.Root>
                               </Box>
@@ -234,4 +238,3 @@ const EchoesLayout = new Layout(({ children, args }) => {
   );
 });
 
-export default EchoesLayout;

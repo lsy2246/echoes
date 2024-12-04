@@ -8,17 +8,8 @@ export interface ThemeConfig {
   description?: string;
   author?: string;
   templates: Map<string, PathDescription>;
-  globalSettings?: {
-    layout?: string;
-    css?: string;
-  };
+  layout?: string;
   configuration: Configuration;
-  routes: {
-    article: string;
-    post: string;
-    tag: string;
-    category: string;
-    error: string;
-    page: Map<string, string>;
-  };
+  error?: string;
+  routes: Map<string, string>;
 }
