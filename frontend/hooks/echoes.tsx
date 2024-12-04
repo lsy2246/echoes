@@ -1,4 +1,5 @@
 import React from "react";
+import "styles/echoes.css"
 
 export const Echoes: React.FC = () => {
   return (

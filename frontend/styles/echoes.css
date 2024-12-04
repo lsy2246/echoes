@@ -1,0 +1,72 @@
+.animated-text {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .animated-text path {
+    fill: transparent;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-dasharray: var(--path-length);
+    stroke-dashoffset: var(--path-length);
+    animation: logo-anim 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    transform-origin: center;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  
+  @keyframes logo-anim {
+    0% {
+      stroke-dashoffset: var(--path-length);
+      stroke-dasharray: var(--path-length) var(--path-length);
+      fill: transparent;
+      opacity: 0;
+    }
+  
+    5% {
+      opacity: 1;
+      stroke-dashoffset: var(--path-length);
+      stroke-dasharray: var(--path-length) var(--path-length);
+    }
+  
+    50% {
+      stroke-dashoffset: 0;
+      stroke-dasharray: var(--path-length) var(--path-length);
+      fill: transparent;
+    }
+  
+    60%, 75% {
+      stroke-dashoffset: 0;
+      stroke-dasharray: var(--path-length) var(--path-length);
+      fill: currentColor;
+      opacity: 1;
+    }
+  
+    85% {
+      stroke-dashoffset: 0;
+      stroke-dasharray: var(--path-length) var(--path-length);
+      fill: transparent;
+      opacity: 1;
+    }
+  
+    95% {
+      stroke-dashoffset: var(--path-length);
+      stroke-dasharray: var(--path-length) var(--path-length);
+      fill: transparent;
+      opacity: 1;
+    }
+  
+    100% {
+      stroke-dashoffset: var(--path-length);
+      stroke-dasharray: var(--path-length) var(--path-length);
+      fill: transparent;
+      opacity: 0;
+    }
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .animated-text path {
+      stroke: currentColor;
+    }
+  }
+  

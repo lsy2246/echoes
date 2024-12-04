@@ -1,131 +1,231 @@
 import { Layout } from "interface/layout";
 import { ThemeModeToggle } from "hooks/themeMode";
 import { Echoes } from "hooks/echoes";
-import Tide from "hooks/tide";
-import {
-  Container,
-  Flex,
-  Box,
-  Link,
-  TextField,
-  DropdownMenu,
-} from "@radix-ui/themes";
+import { Container, Flex, Box, Link, TextField } from "@radix-ui/themes";
 import {
   MagnifyingGlassIcon,
   HamburgerMenuIcon,
   Cross1Icon,
   PersonIcon,
-  CheckIcon,
   AvatarIcon,
 } from "@radix-ui/react-icons";
 import { Theme } from "@radix-ui/themes";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
+import throttle from "lodash/throttle";
+import "./styles/layouts.css";
 
-export default new Layout(({ children, args }) => {
+// 直接导出 Layout 实例
+const EchoesLayout = new Layout(({ children, args }) => {
   const [moreState, setMoreState] = useState(false);
-  const [loginState, setLoginState] = useState(false);
+  const [loginState, setLoginState] = useState(true);
+  const [device, setDevice] = useState("");
+
+  // 添加窗口尺寸变化监听
+  useEffect(() => {
+    // 立即执行一次设备检测
+    if (window.innerWidth >= 1024) {
+      setDevice("desktop");
+    } else {
+      setDevice("mobile");
+    }
+
+    // 创建节流函数，200ms 内只执行一次
+    const handleResize = throttle(() => {
+      if (window.innerWidth >= 1024) {
+        setDevice("desktop");
+      } else {
+        setDevice("mobile");
+      }
+    }, 200);
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      handleResize.cancel();
+    };
+  }, []);
+
   return (
     <Theme
       grayColor="gray"
       accentColor="gray"
-      radius="medium"
+      radius="large"
       panelBackground="solid"
     >
-      <Box className="min-h-screen flex flex-col">
+      <Box className="min-h-screen flex flex-col" id="nav">
         {/* 导航栏 */}
         <Box
           asChild
-          className="fixed top-0 w-full backdrop-blur-sm border-b border-[--gray-a5] z-50"
-          id="nav"
+          className="fixed top-0 w-full backdrop-blur-sm border-b border-[--gray-a5] z-60"
         >
-          <Container size="4">
-            <Flex justify="between" align="center" className="h-16 px-4">
-              {/* Logo 区域 */}
-              <Flex align="center">
-                <Link href="/" className="flex items-center">
-                  <Box className="w-20 h-20">
-                    <Echoes />
-                  </Box>
-                </Link>
-              </Flex>
+          <nav>
+            <Container size="4">
+              <Flex
+                justify="between"
+                align="center"
+                className="h-16 px-4"
+              >
+                {/* Logo 区域 */}
+                <Flex align="center">
+                  <Link
+                    href="/"
+                    className="flex items-center hover:opacity-80 transition-all"
+                  >
+                    <Box className="w-16 h-16">
+                      <Echoes />
+                    </Box>
+                  </Link>
+                </Flex>
 
-              {/* 右侧导航链接 */}
-              <Flex align="center" gap="5">
-                {/* 桌面端搜索框和用户图标 */}
-                <Box
-                  id="nav-desktop"
-                  className="hidden lg:flex items-center gap-5"
+                {/* 右侧导航链接 */}
+                <Flex
+                  align="center"
+                  gap="5"
                 >
-                  <TextField.Root
-                    size="2"
-                    variant="surface"
-                    placeholder="搜索..."
-                    className="w-[200px]"
-                  >
-                    <TextField.Slot>
-                      <MagnifyingGlassIcon className="h-4 w-4 text-[--accent-a11]" />
-                    </TextField.Slot>
-                  </TextField.Root>
-
-                  <DropdownMenu.Root>
-                    <DropdownMenu.Trigger>
-                      <Box className="hover:opacity-70 transition-opacity p-2">
-                        {loginState ? (
-                          <AvatarIcon className="w-5 h-5 text-current opacity-70" />
-                        ) : (
-                          <div>
-                            <PersonIcon className="w-5 h-5 text-current opacity-80" />
-                          </div>
-                        )}
-                      </Box>
-                    </DropdownMenu.Trigger>
-                  </DropdownMenu.Root>
-                </Box>
-
-                {/* 移动端菜单按钮和下拉搜索框 */}
-                <Box id="nav-mobile" className="lg:hidden">
-                  <DropdownMenu.Root
-                    onOpenChange={() => setMoreState(!moreState)}
-                  >
-                    <DropdownMenu.Trigger>
-                      <Box className="hover:opacity-70 transition-opacity p-2">
-                        {moreState ? (
-                          <Cross1Icon className="h-5 w-5 text-[--accent-a11]" />
-                        ) : (
-                          <HamburgerMenuIcon className="h-5 w-5 text-[--accent-a11]" />
-                        )}
-                      </Box>
-                    </DropdownMenu.Trigger>
-                    <DropdownMenu.Content
-                      align="end"
-                      className="mt-2 p-3 min-w-[250px]"
-                    >
+                  {/* 桌面端导航 */}
+                  {device === "desktop" && (
+                    <Box className="flex items-center gap-6">
                       <TextField.Root
                         size="2"
                         variant="surface"
                         placeholder="搜索..."
+                        className="w-[240px] [&_input]:pl-3"
+                        id="search"
                       >
-                        <TextField.Slot>
-                          <MagnifyingGlassIcon className="h-4 w-4 text-[--accent-a11]" />
+                        <TextField.Slot
+                          side="right"
+                          className="p-2"
+                        >
+                          <MagnifyingGlassIcon className="h-4 w-4 text-[--gray-a12]" />
                         </TextField.Slot>
                       </TextField.Root>
-                    </DropdownMenu.Content>
-                  </DropdownMenu.Root>
-                </Box>
 
-                {/* 主题切换按钮 */}
-                <Box>
-                  <ThemeModeToggle />
-                </Box>
+                      <Box className="flex items-center gap-6">
+                        <a href="h">首页</a>
+                      </Box>
+
+                      <DropdownMenuPrimitive.Root>
+                        <DropdownMenuPrimitive.Trigger asChild>
+                          <button className="hover:opacity-70 transition-opacity cursor-pointer">
+                            {loginState ? (
+                              <AvatarIcon className="w-6 h-6 text-[--gray-a12]" />
+                            ) : (
+                              <PersonIcon className="w-6 h-6 text-[--gray-a12]" />
+                            )}
+                          </button>
+                        </DropdownMenuPrimitive.Trigger>
+                        <DropdownMenuPrimitive.Portal>
+                          <Theme
+                            grayColor="gray"
+                            accentColor="gray"
+                            radius="large"
+                            panelBackground="solid"
+                          >
+                            <DropdownMenuPrimitive.Content
+                              align="end"
+                              sideOffset={5}
+                              className="mt-2 p-1 min-w-[180px] rounded-md bg-[--color-background] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
+                            >
+                              {loginState ? (
+                                <>
+                                  <DropdownMenuPrimitive.Item className="py-1.5 px-2 outline-none cursor-pointer hover:bg-[--gray-a3] rounded">
+                                    个人中心
+                                  </DropdownMenuPrimitive.Item>
+                                  <DropdownMenuPrimitive.Item className="py-1.5 px-2 outline-none cursor-pointer hover:bg-[--gray-a3] rounded">
+                                    设置
+                                  </DropdownMenuPrimitive.Item>
+                                  <DropdownMenuPrimitive.Separator className="h-px bg-[--gray-a5] my-1" />
+                                  <DropdownMenuPrimitive.Item className="py-1.5 px-2 outline-none cursor-pointer hover:bg-[--gray-a3] rounded">
+                                    退出登录
+                                  </DropdownMenuPrimitive.Item>
+                                </>
+                              ) : (
+                                <DropdownMenuPrimitive.Item className="py-1.5 px-2 outline-none cursor-pointer hover:bg-[--gray-a3] rounded">
+                                  登录/注册
+                                </DropdownMenuPrimitive.Item>
+                              )}
+                            </DropdownMenuPrimitive.Content>
+                          </Theme>
+                        </DropdownMenuPrimitive.Portal>
+                      </DropdownMenuPrimitive.Root>
+                    </Box>
+                  )}
+
+                  {/* 移动端菜单 */}
+                  {device === "mobile" && (
+                    <Box className="flex gap-3">
+                      <DropdownMenuPrimitive.Root
+                        open={moreState}
+                        onOpenChange={setMoreState}
+                      >
+                        <DropdownMenuPrimitive.Trigger asChild>
+                          <button className="hover:opacity-70 transition-opacity p-2">
+                            {moreState ? (
+                              <Cross1Icon className="h-6 w-6 text-[--gray-a12]" />
+                            ) : (
+                              <HamburgerMenuIcon className="h-6 w-6 text-[--gray-a12]" />
+                            )}
+                          </button>
+                        </DropdownMenuPrimitive.Trigger>
+                        <DropdownMenuPrimitive.Portal>
+                          <Theme
+                            grayColor="gray"
+                            accentColor="gray"
+                            radius="large"
+                            panelBackground="solid"
+                          >
+                            <DropdownMenuPrimitive.Content
+                              align="end"
+                              sideOffset={5}
+                              className="mt-2 p-3 min-w-[280px] rounded-md bg-[--color-background] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
+                            >
+                              <Box className="flex flex-col gap-2">
+                                <a href="h" >首页</a>
+                                <a href="h">首页</a>
+                              </Box>
+                              <Box className="mt-3 pt-3 border-t border-[--gray-a5]">
+                                <TextField.Root
+                                  size="2"
+                                  variant="surface"
+                                  placeholder="搜索..."
+                                  className="w-full [&_input]:pl-3"
+                                >
+                                  <TextField.Slot
+                                    side="right"
+                                    className="p-2"
+                                  >
+                                    <MagnifyingGlassIcon
+                                      className="h-4 w-4 text-[--gray-a12]"
+                                      id="search"
+                                    />
+                                  </TextField.Slot>
+                                </TextField.Root>
+                              </Box>
+                            </DropdownMenuPrimitive.Content>
+                          </Theme>
+                        </DropdownMenuPrimitive.Portal>
+                      </DropdownMenuPrimitive.Root>
+                    </Box>
+                  )}
+
+                  {/* 主题切换按钮 */}
+                  <Box className="w-6 h-6 flex items-center justify-center">
+                    <ThemeModeToggle />
+                  </Box>
+                </Flex>
               </Flex>
-            </Flex>
-          </Container>
+            </Container>
+          </nav>
         </Box>
 
         {/* 主要内容区域 */}
         <Box className="flex-1 w-full mt-16">
-          <Container size="4" className="py-8">
-            <Tide />
+          <Container
+            size="4"
+            className="py-8"
+          >
             <main>{children}</main>
           </Container>
         </Box>
@@ -133,3 +233,5 @@ export default new Layout(({ children, args }) => {
     </Theme>
   );
 });
+
+export default EchoesLayout;

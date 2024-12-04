@@ -6,7 +6,6 @@ const THEME_KEY = "theme-preference";
 
 export const ThemeModeToggle: React.FC = () => {
   const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(true);
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -24,15 +23,7 @@ export const ThemeModeToggle: React.FC = () => {
       document.documentElement.className = initialTheme;
     }
 
-    let lastScroll = 0;
-    const handleScroll = () => {
-      const currentScroll = window.scrollY;
-      setVisible(currentScroll <= lastScroll || currentScroll < 50);
-      lastScroll = currentScroll;
-    };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const toggleTheme = () => {
@@ -49,15 +40,13 @@ export const ThemeModeToggle: React.FC = () => {
     <Button
       variant="ghost"
       onClick={toggleTheme}
-      className={`p-2 rounded-lg transition-all duration-300 transform ${
-        visible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
-      }`}
+      className="w-full h-full p-0 rounded-lg transition-all duration-300 transform"
       aria-label="Toggle theme"
     >
       {isDark ? (
-        <SunIcon width="24" height="24" />
+        <SunIcon className="w-full h-full"/>
       ) : (
-        <MoonIcon width="24" height="24" />
+        <MoonIcon className="w-full h-full" />
       )}
     </Button>
   );
