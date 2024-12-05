@@ -5,7 +5,7 @@ export interface Post {
   title?: string; // 标题
   metaKeywords: string; // 元关键词
   metaDescription: string; // 元描述
-  content: string; // 内容
+  content: string; // Markdown 格式的内容
   status: string; // 状态
   isEditor: boolean; // 是否为编辑器
   draftContent?: string; // 草稿内容

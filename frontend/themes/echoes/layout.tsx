@@ -130,7 +130,7 @@ export default new Layout(({ children, args }) => {
                             <DropdownMenuPrimitive.Content
                               align="end"
                               sideOffset={10}
-                              className="mt-3 p-1 min-w-[180px] rounded-md bg-[--color-panel] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
+                              className="mt-3 p-1 min-w-[180px] rounded-md bg-[--gray-1] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
                             >
                               {loginState ? (
                                 <>

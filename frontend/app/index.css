@@ -6,18 +6,38 @@
 :root {
   --transition-duration: 150ms;
   --transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --hljs-theme: 'github';
 }
 
-/* 基础过渡效果 */
+:root[class~="dark"] {
+  --hljs-theme: 'github-dark';
+}
+
+/* 确保 Radix UI 主题类包裹整个应用 */
 .radix-themes {
   transition:
     background-color var(--transition-duration) var(--transition-easing),
     color var(--transition-duration) var(--transition-easing);
+  min-height: 100%;
 }
 
 /* 基础布局样式 */
 html, 
 body {
   height: 100%;
+}
+
+/* 添加暗色模式支持 */
+.radix-themes-dark {
+  @apply dark;
+}
+
+/* 隐藏不活跃的主题样式 */
+[data-theme="light"] .hljs-dark {
+  display: none;
+}
+
+[data-theme="dark"] .hljs-light {
+  display: none;
 }
 

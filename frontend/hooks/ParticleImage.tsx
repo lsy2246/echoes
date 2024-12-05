@@ -200,6 +200,19 @@ interface ParticleImageProps {
   onAnimationComplete?: () => void;
 }
 
+// 修改 BG_CONFIG，添加尺寸配置
+const BG_CONFIG = {
+  colors: {
+    from: 'rgb(10,37,77)',
+    via: 'rgb(8,27,57)', 
+    to: 'rgb(2,8,23)'
+  },
+  className: 'bg-gradient-to-br from-[rgb(248,250,252)] via-[rgb(241,245,249)] to-[rgb(236,241,247)] dark:from-[rgb(10,37,77)] dark:via-[rgb(8,27,57)] dark:to-[rgb(2,8,23)]',
+  size: {
+    container: 'w-[120px] md:w-[140px] h-[120px] md:h-[140px]'
+  }
+};
+
 export const ParticleImage = ({ 
   src, 
   status,
@@ -230,7 +243,7 @@ export const ParticleImage = ({
     // 更新渲染器大小
     rendererRef.current.setSize(width, height);
 
-    // 只有当尺寸变化超过阈值时才重生成粒子
+    // 只有当尺寸变化超���阈值时才重生成粒子
     const currentSize = Math.min(width, height);
     const previousSize = sceneRef.current.userData.previousSize || currentSize;
     const sizeChange = Math.abs(currentSize - previousSize) / previousSize;
@@ -324,7 +337,7 @@ export const ParticleImage = ({
     rendererRef.current = renderer;
     containerRef.current.appendChild(renderer.domElement);
 
-    // 检查是否应该显示笑脸
+    // 检查是否应该显示笑
     if (src === '') {
       const { particles, positionArray, colorArray, particleSize } = createSmileParticles(width, height);
       
@@ -408,7 +421,7 @@ export const ParticleImage = ({
       };
     }
 
-    // 建错误动��函数
+    // 建错误动函数
     const showErrorAnimation = () => {
       if (!scene) return;
       
@@ -451,7 +464,7 @@ export const ParticleImage = ({
       });
     };
 
-    // 加载图���
+    // 加载图
     const img = new Image();
     img.crossOrigin = 'anonymous';
     
@@ -650,7 +663,7 @@ export const ParticleImage = ({
 
     img.src = src || '';
 
-    // 动画循环
+    // 画循环
     const animate = () => {
       if (renderer && scene && camera) {
         renderer.render(scene, camera);
@@ -771,16 +784,15 @@ export const ImageLoader = ({
   }, [src, preloadImage]);
 
   return (
-    <div className="relative w-[140px] md:w-[180px] h-[140px] md:h-[180px] shrink-0 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-[rgb(10,37,77)] via-[rgb(8,27,57)] to-[rgb(2,8,23)] rounded-lg overflow-hidden">
+    <div className={`relative ${BG_CONFIG.size.container} shrink-0 overflow-hidden`}>
+      <div className={`absolute inset-0 ${BG_CONFIG.className} rounded-lg overflow-hidden`}>
         <ParticleImage 
           src={src} 
           status={status}
           onLoad={() => {
-            // 粒子动画完成后，延迟显示图片
             setTimeout(() => {
               setShowImage(true);
-            }, 800); // 延迟时间可以根据需要调整
+            }, 800);
           }}
           onAnimationComplete={() => {
             setShowImage(true);

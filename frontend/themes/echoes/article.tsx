@@ -149,64 +149,65 @@ export default new Template({}, ({ http, args }) => {
 
   return (
     <Container size="3" className="pt-2 pb-4 md:pb-6 relative">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 px-4 md:px-0">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 px-4 md:px-0">
         {articleData.map((article) => (
           <Card
             key={article.id}
             className="group cursor-pointer hover:shadow-lg transition-all duration-300 border border-[--gray-5] hover:border-[--accent-8] relative overflow-hidden"
           >
-            <div className={`p-5 relative flex gap-4`}>
-              <ImageLoader
-                src={article.coverImage}
-                alt={article.title || ""}
-                className="group-hover:scale-105 transition-transform duration-500 relative z-[1] w-[140px] h-[140px] md:w-[180px] md:h-[180px] object-cover rounded-lg shrink-0"
-              />
+            <div className="p-4 relative flex flex-col gap-4">
+              <div className="flex gap-4">
+                <ImageLoader
+                  src={article.coverImage}
+                  alt={article.title || ""}
+                  className="group-hover:scale-105 transition-transform duration-500 relative z-[1] object-cover rounded-lg shrink-0"
+                />
 
-              <div className="flex-1 flex flex-col min-w-0">
-                <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex-1 min-w-0">
                   <Heading
                     size="3"
-                    className="group-hover:text-[--accent-9] transition-colors duration-200 line-clamp-2 text-base md:text-lg flex-1"
+                    className="group-hover:text-[--accent-9] transition-colors duration-200 line-clamp-2 text-base mb-2"
                   >
                     {article.title}
                   </Heading>
+
+                  <Text className="text-[--gray-11] text-xs md:text-sm line-clamp-2 leading-relaxed">
+                    {article.content}
+                  </Text>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-2">
                   <Text
                     size="1"
-                    className={`px-2 py-0.5 rounded-full shrink-0 ${article.categoryColor.bg} ${article.categoryColor.text}`}
+                    className={`px-2 py-0.5 rounded-full font-medium ${article.categoryColor.bg} ${article.categoryColor.text}`}
                   >
                     {article.category}
                   </Text>
+
+                  <Flex gap="2" align="center" className="text-[--gray-11]">
+                    <CalendarIcon className="w-3 h-3" />
+                    <Text size="1">
+                      {article.publishedAt?.toLocaleDateString("zh-CN", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </Text>
+                    <span className="mx-1">·</span>
+                    <Text size="1" weight="medium">
+                      {article.authorName}
+                    </Text>
+                  </Flex>
                 </div>
 
-                <Flex
-                  gap="2"
-                  align="center"
-                  className="text-[--gray-11] mb-3 flex-wrap"
-                >
-                  <CalendarIcon className="w-3 h-3" />
-                  <Text size="1">
-                    {article.publishedAt?.toLocaleDateString("zh-CN", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </Text>
-                  <span className="mx-1">·</span>
-                  <Text size="1" weight="medium">
-                    {article.authorName}
-                  </Text>
-                </Flex>
-
-                <Text className="text-[--gray-11] text-xs md:text-sm line-clamp-2 md:line-clamp-3 leading-relaxed">
-                  {article.content}
-                </Text>
-
-                <Flex gap="2" className="mt-auto pt-3 flex-wrap">
+                <Flex gap="2" className="flex-wrap">
                   {article.tags.map((tag) => (
                     <Text
                       key={tag.name}
                       size="1"
-                      className={`px-2 py-0.5 rounded-full ${tag.color.bg} ${tag.color.text}`}
+                      className={`px-2 py-0.5 rounded-full border border-current ${tag.color.text} hover:bg-[--gray-a3] transition-colors`}
                     >
                       {tag.name}
                     </Text>
