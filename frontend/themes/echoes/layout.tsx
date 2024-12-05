@@ -1,7 +1,7 @@
 import { Layout } from "interface/layout";
 import { ThemeModeToggle } from "hooks/themeMode";
 import { Echoes } from "hooks/echoes";
-import { Container, Flex, Box, Link, TextField } from "@radix-ui/themes";
+import { Container, Flex, Box, Link, TextField, Button } from "@radix-ui/themes";
 import {
   MagnifyingGlassIcon,
   HamburgerMenuIcon,
@@ -59,13 +59,13 @@ export default new Layout(({ children, args }) => {
       panelBackground="solid"
     >
       <Box
-        className="min-h-screen flex flex-col"
+        className="h-screen flex flex-col overflow-hidden"
         id="nav"
       >
         {/* 导航栏 */}
         <Box
           asChild
-          className="fixed top-0 w-full backdrop-blur-sm border-b border-[--gray-a5] z-60"
+          className="w-full backdrop-blur-sm border-b border-[--gray-a5] z-60"
         >
           <nav>
             <Container size="4">
@@ -98,14 +98,14 @@ export default new Layout(({ children, args }) => {
                         size="2"
                         variant="surface"
                         placeholder="搜索..."
-                        className="w-[240px] [&_input]:pl-3"
+                        className="w-[240px] [&_input]:pl-3 hover:opacity-70 transition-opacity"
                         id="search"
                       >
                         <TextField.Slot
                           side="right"
                           className="p-2"
                         >
-                          <MagnifyingGlassIcon className="h-4 w-4 text-[--gray-a12]" />
+                          <MagnifyingGlassIcon className="h-4 w-4 text-[--gray-a11]" />
                         </TextField.Slot>
                       </TextField.Root>
 
@@ -115,25 +115,22 @@ export default new Layout(({ children, args }) => {
 
                       <DropdownMenuPrimitive.Root>
                         <DropdownMenuPrimitive.Trigger asChild>
-                          <button className="hover:opacity-70 transition-opacity cursor-pointer">
+                          <Button 
+                            variant="ghost" 
+                            className="w-10 h-10 p-0 hover:opacity-70 transition-opacity flex items-center justify-center"
+                          >
                             {loginState ? (
-                              <AvatarIcon className="w-6 h-6 text-[--gray-a12]" />
+                              <AvatarIcon className="w-6 h-6 text-[--gray-a11]" />
                             ) : (
-                              <PersonIcon className="w-6 h-6 text-[--gray-a12]" />
+                              <PersonIcon className="w-6 h-6 text-[--gray-a11]" />
                             )}
-                          </button>
+                          </Button>
                         </DropdownMenuPrimitive.Trigger>
                         <DropdownMenuPrimitive.Portal>
-                          <Theme
-                            grayColor="gray"
-                            accentColor="gray"
-                            radius="large"
-                            panelBackground="solid"
-                          >
                             <DropdownMenuPrimitive.Content
                               align="end"
                               sideOffset={10}
-                              className="mt-3 p-1 min-w-[180px] rounded-md bg-[--color-background] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
+                              className="mt-3 p-1 min-w-[180px] rounded-md bg-[--color-panel] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
                             >
                               {loginState ? (
                                 <>
@@ -154,7 +151,6 @@ export default new Layout(({ children, args }) => {
                                 </DropdownMenuPrimitive.Item>
                               )}
                             </DropdownMenuPrimitive.Content>
-                          </Theme>
                         </DropdownMenuPrimitive.Portal>
                       </DropdownMenuPrimitive.Root>
                     </Box>
@@ -168,13 +164,16 @@ export default new Layout(({ children, args }) => {
                         onOpenChange={setMoreState}
                       >
                         <DropdownMenuPrimitive.Trigger asChild>
-                          <button className="hover:opacity-70 transition-opacity p-2">
+                          <Button 
+                            variant="ghost"
+                            className="w-10 h-10 p-0 hover:opacity-70 transition-opacity flex items-center justify-center"
+                          >
                             {moreState ? (
-                              <Cross1Icon className="h-6 w-6 text-[--gray-a12]" />
+                              <Cross1Icon className="h-5 w-5 text-[--gray-a11]" />
                             ) : (
-                              <HamburgerMenuIcon className="h-6 w-6 text-[--gray-a12]" />
+                              <HamburgerMenuIcon className="h-5 w-5 text-[--gray-a11]" />
                             )}
-                          </button>
+                          </Button>
                         </DropdownMenuPrimitive.Trigger>
                         <DropdownMenuPrimitive.Portal>
                           <Theme
@@ -186,7 +185,7 @@ export default new Layout(({ children, args }) => {
                             <DropdownMenuPrimitive.Content
                               align="end"
                               sideOffset={5}
-                              className="mt-2 p-3 min-w-[280px] rounded-md bg-[--color-background] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
+                              className="mt-2 p-3 min-w-[280px] rounded-md bg-[--color-panel] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
                             >
                               <Box className="flex flex-col gap-2">
                                 {parse(navString)}
@@ -215,8 +214,10 @@ export default new Layout(({ children, args }) => {
                   )}
 
                   {/* 主题切换按钮 */}
-                  <Box className="w-6 h-6 flex items-center justify-center">
-                    <ThemeModeToggle />
+                  <Box className="flex items-center">
+                    <Box className="w-6 h-6 flex items-center justify-center">
+                      <ThemeModeToggle />
+                    </Box>
                   </Box>
                 </Flex>
               </Flex>
@@ -225,7 +226,7 @@ export default new Layout(({ children, args }) => {
         </Box>
 
         {/* 主要内容区域 */}
-        <Box className="flex-1 w-full mt-16">
+        <Box className="flex-1 w-full overflow-auto">
           <Container
             size="4"
             className="py-8"

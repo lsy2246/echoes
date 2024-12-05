@@ -10,6 +10,8 @@ export class Layout {
     public element: (props: {
       children: React.ReactNode;
       args?: Serializable;
+      onTouchStart?: (e: TouchEvent) => void;
+      onTouchEnd?: (e: TouchEvent) => void;
     }) => React.ReactNode,
     services?: {
       http?: HttpClient;
@@ -20,7 +22,16 @@ export class Layout {
     this.capability = services?.capability || CapabilityService.getInstance();
   }
 
-  render(props: { children: React.ReactNode; args?: Serializable }) {
-    return this.element(props);
+  render(props: { 
+    children: React.ReactNode; 
+    args?: Serializable;
+    onTouchStart?: (e: TouchEvent) => void;
+    onTouchEnd?: (e: TouchEvent) => void;
+  }) {
+    return this.element({
+      ...props,
+      onTouchStart: props.onTouchStart,
+      onTouchEnd: props.onTouchEnd
+    });
   }
 }

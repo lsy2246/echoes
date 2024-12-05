@@ -25,8 +25,8 @@ export default {
         progress: "progress 3s linear",
       },
       zIndex: {
-        '-10': '-10',
-      }
+        "-10": "-10",
+      },
     },
   },
 } satisfies Config;

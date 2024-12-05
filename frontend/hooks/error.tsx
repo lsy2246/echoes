@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { Template } from "interface/template";
 
-const ErrorPage = () => {
+export default new Template({}, ({ args }) => {
   const [text, setText] = useState("");
   const fullText = "404 - 页面不见了 :(";
   const typingSpeed = 100;
@@ -38,6 +39,4 @@ const ErrorPage = () => {
       </div>
     </div>
   );
-};
-
-export default ErrorPage;
+});

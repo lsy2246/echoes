@@ -1,6 +1,13 @@
 .animated-text {
     max-width: 100%;
     height: auto;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   
   .animated-text path {
@@ -13,6 +20,8 @@
     transform-origin: center;
     stroke-linecap: round;
     stroke-linejoin: round;
+    animation-play-state: running !important;
+    will-change: transform;
   }
   
   @keyframes logo-anim {
@@ -67,6 +76,13 @@
   @media (prefers-color-scheme: dark) {
     .animated-text path {
       stroke: currentColor;
+    }
+  }
+  
+  @media (hover: none) and (pointer: coarse) {
+    .animated-text {
+      touch-action: manipulation;
+      cursor: pointer;
     }
   }
   

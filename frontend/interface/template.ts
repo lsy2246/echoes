@@ -21,7 +21,7 @@ export class Template {
     services?: {
       http?: HttpClient;
       capability?: CapabilityService;
-    }
+    },
   ) {
     this.http = services?.http || HttpClient.getInstance();
     this.capability = services?.capability || CapabilityService.getInstance();
