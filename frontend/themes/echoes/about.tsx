@@ -6,9 +6,9 @@ import {
   LinkedInLogoIcon,
   EnvelopeClosedIcon,
 } from "@radix-ui/react-icons";
-import { ParticleImage } from "hooks/ParticleImage";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { ParticleImage } from "hooks/ParticleImage";
 
 const socialLinks = [
   {

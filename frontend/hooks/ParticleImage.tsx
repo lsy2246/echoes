@@ -185,18 +185,26 @@ const customEase = (t: number) => {
     : 1 - Math.pow(-2 * t + 2, 3) / 2;
 };
 
+// 在文件开头添加新的 LoaderStatus 接口
+interface LoaderStatus {
+  isLoading: boolean;
+  hasError: boolean;
+  timeoutError: boolean;
+}
+
+// 修改 ParticleImage 组件的 props 接口
 interface ParticleImageProps {
   src?: string;
+  status?: LoaderStatus;
   onLoad?: () => void;
-  onError?: () => void;
-  performanceMode?: boolean; // 新增性能模式开关
+  onAnimationComplete?: () => void;
 }
 
 export const ParticleImage = ({ 
   src, 
-  onLoad, 
-  onError,
-  performanceMode = false 
+  status,
+  onLoad,
+  onAnimationComplete 
 }: ParticleImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene>();
@@ -222,7 +230,7 @@ export const ParticleImage = ({
     // 更新渲染器大小
     rendererRef.current.setSize(width, height);
 
-    // 只有当尺寸变化超过阈值时才重新生成粒子
+    // 只有当尺寸变化超过阈值时才重生成粒子
     const currentSize = Math.min(width, height);
     const previousSize = sceneRef.current.userData.previousSize || currentSize;
     const sizeChange = Math.abs(currentSize - previousSize) / previousSize;
@@ -400,7 +408,7 @@ export const ParticleImage = ({
       };
     }
 
-    // 创建错误动画函数
+    // 建错误动��函数
     const showErrorAnimation = () => {
       if (!scene) return;
       
@@ -441,11 +449,9 @@ export const ParticleImage = ({
           }
         });
       });
-
-      onError?.();
     };
 
-    // 加载图片
+    // 加载图���
     const img = new Image();
     img.crossOrigin = 'anonymous';
     
@@ -475,7 +481,7 @@ export const ParticleImage = ({
           sourceWidth = img.height * targetAspect;
           sourceX = (img.width - sourceWidth) / 2;
         } else {
-          // 图片较高，需要裁剪上下
+          // 图片较高，需要裁剪下
           sourceHeight = img.width / targetAspect;
           sourceY = (img.height - sourceHeight) / 2;
         }
@@ -574,7 +580,8 @@ export const ParticleImage = ({
         const checkComplete = () => {
           completedAnimations++;
           if (completedAnimations === totalAnimations) {
-            onLoad?.(); // 所有画完成后调用 onLoad
+            onLoad?.();
+            onAnimationComplete?.();
           }
         };
 
@@ -583,8 +590,8 @@ export const ParticleImage = ({
           
           // 位置动画
           gsap.to(positionAttribute.array, {
-            duration: 1.2 + Math.random() * 0.3, // 减少随机性范围
-            delay: particle.delay, // 使用基于距离的延迟
+            duration: 1.2 + Math.random() * 0.3,
+            delay: particle.delay,
             [i3]: particle.originalX,
             [i3 + 1]: particle.originalY,
             [i3 + 2]: 0,
@@ -598,7 +605,7 @@ export const ParticleImage = ({
           // 颜色动画
           gsap.to(colorAttribute.array, {
             duration: 1,
-            delay: particle.delay + 0.2, // 稍微延迟颜色变化
+            delay: particle.delay + 0.2,
             [i3]: particle.originalColor.r,
             [i3 + 1]: particle.originalColor.g,
             [i3 + 2]: particle.originalColor.b,
@@ -668,7 +675,7 @@ export const ParticleImage = ({
         containerRef.current.removeChild(renderer.domElement);
         renderer.dispose();
       }
-      // 清除所有 GSAP 动画
+      // 清所有 GSAP 动画
       gsap.killTweensOf('*');
       
       // 移除 resize 监听
@@ -677,45 +684,122 @@ export const ParticleImage = ({
       }
       window.removeEventListener('resize', handleResize);
     };
-  }, [src, onError, handleResize]);
+  }, [src, handleResize, onLoad, onAnimationComplete]);
 
   return <div ref={containerRef} className="w-full h-full" />;
 }; 
 
 // 图片加载组件
-export const ImageLoader = ({ src, alt, className }: { 
+export const ImageLoader = ({ 
+  src, 
+  alt,
+  className 
+}: { 
   src?: string; 
   alt: string; 
   className: string; 
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  const [status, setStatus] = useState<LoaderStatus>({
+    isLoading: true,
+    hasError: false,
+    timeoutError: false
+  });
+  const [showImage, setShowImage] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout>();
+  const loadingRef = useRef(false);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+
+  // 处理图片预加载
+  const preloadImage = useCallback(() => {
+    if (!src || loadingRef.current) return;
+    
+    loadingRef.current = true;
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    setStatus({
+      isLoading: true,
+      hasError: false,
+      timeoutError: false
+    });
+    setShowImage(false);
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    img.onload = () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      loadingRef.current = false;
+      // 图片加载成功后，不立即显示，等待粒子动画完成
+      imageRef.current = img;
+      setStatus({
+        isLoading: false,
+        hasError: false,
+        timeoutError: false
+      });
+    };
+
+    img.onerror = () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      loadingRef.current = false;
+      setStatus({
+        isLoading: false,
+        hasError: true,
+        timeoutError: false
+      });
+    };
+
+    img.src = src;
+  }, [src]);
+
+  useEffect(() => {
+    preloadImage();
+
+    return () => {
+      loadingRef.current = false;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [src, preloadImage]);
 
   return (
     <div className="relative w-[140px] md:w-[180px] h-[140px] md:h-[180px] shrink-0 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-[rgb(10,37,77)] via-[rgb(8,27,57)] to-[rgb(2,8,23)] rounded-lg overflow-hidden">
         <ParticleImage 
           src={src} 
-          onLoad={() => setIsLoading(false)}
-          onError={() => {
-            setIsLoading(false);
-            setHasError(true);
+          status={status}
+          onLoad={() => {
+            // 粒子动画完成后，延迟显示图片
+            setTimeout(() => {
+              setShowImage(true);
+            }, 800); // 延迟时间可以根据需要调整
+          }}
+          onAnimationComplete={() => {
+            setShowImage(true);
           }}
         />
       </div>
-      {!hasError && (
+      {!status.hasError && !status.timeoutError && imageRef.current && (
         <div className="absolute inset-0 rounded-lg overflow-hidden">
           <img 
-            src={src} 
+            src={imageRef.current.src}
             alt={alt}
             className={`
               w-full h-full object-cover
               transition-opacity duration-1000
               ${className}
-              ${isLoading ? 'opacity-0' : 'opacity-100'}
+              ${showImage ? 'opacity-100' : 'opacity-0'}
             `}
             style={{ 
-              visibility: isLoading ? 'hidden' : 'visible',
+              visibility: showImage ? 'visible' : 'hidden',
               objectFit: 'cover',
               objectPosition: 'center'
             }}
