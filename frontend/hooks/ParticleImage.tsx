@@ -718,6 +718,7 @@ export const ImageLoader = ({
   const timeoutRef = useRef<NodeJS.Timeout>();
   const loadingRef = useRef(false);
   const imageRef = useRef<HTMLImageElement | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // 处理图片预加载
   const preloadImage = useCallback(() => {
@@ -744,9 +745,51 @@ export const ImageLoader = ({
         clearTimeout(timeoutRef.current);
       }
 
+      // 在图片加载成功后，立即创建和缓存一个适应容器大小的图片
+      if (containerRef.current) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (ctx) {
+          const containerWidth = containerRef.current.offsetWidth;
+          const containerHeight = containerRef.current.offsetHeight;
+          
+          canvas.width = containerWidth;
+          canvas.height = containerHeight;
+          
+          // 保持比例绘制图片
+          const targetAspect = containerWidth / containerHeight;
+          const imgAspect = img.width / img.height;
+          
+          let sourceWidth = img.width;
+          let sourceHeight = img.height;
+          let sourceX = 0;
+          let sourceY = 0;
+          
+          if (imgAspect > targetAspect) {
+            sourceWidth = img.height * targetAspect;
+            sourceX = (img.width - sourceWidth) / 2;
+          } else {
+            sourceHeight = img.width / targetAspect;
+            sourceY = (img.height - sourceHeight) / 2;
+          }
+          
+          ctx.drawImage(
+            img,
+            sourceX, sourceY, sourceWidth, sourceHeight,
+            0, 0, containerWidth, containerHeight
+          );
+          
+          // 创建新的图片对象，使用调整后的canvas数据
+          const adjustedImage = new Image();
+          adjustedImage.src = canvas.toDataURL();
+          imageRef.current = adjustedImage;
+        }
+      } else {
+        imageRef.current = img;
+      }
+
       loadingRef.current = false;
-      // 图片加载成功后，不立即显示，等待粒子动画完成
-      imageRef.current = img;
       setStatus({
         isLoading: false,
         hasError: false,
@@ -766,7 +809,10 @@ export const ImageLoader = ({
       });
     };
 
-    img.src = src;
+    // 确保src存在再设置
+    if (src) {
+      img.src = src;
+    }
   }, [src]);
 
   useEffect(() => {
@@ -781,18 +827,23 @@ export const ImageLoader = ({
   }, [src, preloadImage]);
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
+    <div ref={containerRef} className="relative w-full h-full overflow-hidden">
       <div className={`absolute inset-0 ${BG_CONFIG.className} rounded-lg overflow-hidden`}>
         <ParticleImage 
           src={src} 
           status={status}
           onLoad={() => {
-            setTimeout(() => {
-              setShowImage(true);
-            }, 800);
+            // 确保图片已经准备好
+            if (imageRef.current) {
+              setTimeout(() => {
+                setShowImage(true);
+              }, 800);
+            }
           }}
           onAnimationComplete={() => {
-            setShowImage(true);
+            if (imageRef.current) {
+              setShowImage(true);
+            }
           }}
         />
       </div>

@@ -54,7 +54,7 @@ export default new Layout(({ children, args }) => {
   return (
     <Theme
       grayColor="gray"
-      accentColor="gray"
+      accentColor="indigo"
       radius="large"
       panelBackground="solid"
     >
@@ -78,9 +78,9 @@ export default new Layout(({ children, args }) => {
                 <Flex align="center">
                   <Link
                     href="/"
-                    className="flex items-center hover:opacity-80 transition-all"
+                    className="flex items-center group transition-all"
                   >
-                    <Box className="w-16 h-16">
+                    <Box className="w-16 h-16 [&_path]:transition-all [&_path]:duration-200 group-hover:[&_path]:stroke-[--accent-9]">
                       <Echoes />
                     </Box>
                   </Link>
@@ -98,31 +98,33 @@ export default new Layout(({ children, args }) => {
                         size="2"
                         variant="surface"
                         placeholder="搜索..."
-                        className="w-[240px] [&_input]:pl-3 hover:opacity-70 transition-opacity"
+                        className="w-[240px] [&_input]:pl-3 hover:border-[--accent-9] border transition-colors group"
                         id="search"
                       >
                         <TextField.Slot
                           side="right"
                           className="p-2"
                         >
-                          <MagnifyingGlassIcon className="h-4 w-4 text-[--gray-a11]" />
+                          <MagnifyingGlassIcon className="h-4 w-4 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
                         </TextField.Slot>
                       </TextField.Root>
 
                       <Box className="flex items-center gap-6">
-                      {parse(navString)}
+                        <Box className="flex items-center gap-6 [&>a]:text-[--gray-12] [&>a]:transition-colors [&>a:hover]:text-[--accent-9]">
+                          {parse(navString)}
+                        </Box>
                       </Box>
 
                       <DropdownMenuPrimitive.Root>
                         <DropdownMenuPrimitive.Trigger asChild>
                           <Button 
                             variant="ghost" 
-                            className="w-10 h-10 p-0 hover:opacity-70 transition-opacity flex items-center justify-center"
+                            className="w-10 h-10 p-0 hover:text-[--accent-9] transition-colors flex items-center justify-center group"
                           >
                             {loginState ? (
-                              <AvatarIcon className="w-6 h-6 text-[--gray-a11]" />
+                              <AvatarIcon className="w-6 h-6 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
                             ) : (
-                              <PersonIcon className="w-6 h-6 text-[--gray-a11]" />
+                              <PersonIcon className="w-6 h-6 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
                             )}
                           </Button>
                         </DropdownMenuPrimitive.Trigger>
@@ -134,19 +136,19 @@ export default new Layout(({ children, args }) => {
                             >
                               {loginState ? (
                                 <>
-                                  <DropdownMenuPrimitive.Item className="py-1.5 px-2 outline-none cursor-pointer hover:bg-[--gray-a3] rounded">
+                                  <DropdownMenuPrimitive.Item className="py-1.5 px-2 outline-none cursor-pointer hover:bg-[--gray-a3] rounded text-[--gray-12]">
                                     个人中心
                                   </DropdownMenuPrimitive.Item>
-                                  <DropdownMenuPrimitive.Item className="py-1.5 px-2 outline-none cursor-pointer hover:bg-[--gray-a3] rounded">
+                                  <DropdownMenuPrimitive.Item className="py-1.5 px-2 outline-none cursor-pointer hover:bg-[--gray-a3] rounded text-[--gray-12]">
                                     设置
                                   </DropdownMenuPrimitive.Item>
                                   <DropdownMenuPrimitive.Separator className="h-px bg-[--gray-a5] my-1" />
-                                  <DropdownMenuPrimitive.Item className="py-1.5 px-2 outline-none cursor-pointer hover:bg-[--gray-a3] rounded">
+                                  <DropdownMenuPrimitive.Item className="py-1.5 px-2 outline-none cursor-pointer hover:bg-[--gray-a3] rounded text-[--gray-12]">
                                     退出登录
                                   </DropdownMenuPrimitive.Item>
                                 </>
                               ) : (
-                                <DropdownMenuPrimitive.Item className="py-1.5 px-2 outline-none cursor-pointer hover:bg-[--gray-a3] rounded">
+                                <DropdownMenuPrimitive.Item className="py-1.5 px-2 outline-none cursor-pointer hover:bg-[--gray-a3] rounded text-[--gray-12]">
                                   登录/注册
                                 </DropdownMenuPrimitive.Item>
                               )}
@@ -166,12 +168,12 @@ export default new Layout(({ children, args }) => {
                         <DropdownMenuPrimitive.Trigger asChild>
                           <Button 
                             variant="ghost"
-                            className="w-10 h-10 p-0 hover:opacity-70 transition-opacity flex items-center justify-center"
+                            className="w-10 h-10 p-0 hover:text-[--accent-9] transition-colors flex items-center justify-center group"
                           >
                             {moreState ? (
-                              <Cross1Icon className="h-5 w-5 text-[--gray-a11]" />
+                              <Cross1Icon className="h-5 w-5 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
                             ) : (
-                              <HamburgerMenuIcon className="h-5 w-5 text-[--gray-a11]" />
+                              <HamburgerMenuIcon className="h-5 w-5 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
                             )}
                           </Button>
                         </DropdownMenuPrimitive.Trigger>
@@ -187,7 +189,7 @@ export default new Layout(({ children, args }) => {
                               sideOffset={5}
                               className="mt-2 p-3 min-w-[280px] rounded-md bg-[--color-panel] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
                             >
-                              <Box className="flex flex-col gap-2">
+                              <Box className="flex flex-col gap-2 [&>a]:text-[--gray-12] [&>a]:transition-colors [&>a:hover]:text-[--accent-9]">
                                 {parse(navString)}
                               </Box>
                               <Box className="mt-3 pt-3 border-t border-[--gray-a5]">
@@ -213,7 +215,7 @@ export default new Layout(({ children, args }) => {
                     </Box>
                   )}
 
-                  {/* 主题切换按钮 */}
+                  {/* 题切换按钮 */}
                   <Box className="flex items-center">
                     <Box className="w-6 h-6 flex items-center justify-center">
                       <ThemeModeToggle />
