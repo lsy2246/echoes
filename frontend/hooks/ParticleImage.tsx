@@ -207,10 +207,7 @@ const BG_CONFIG = {
     via: 'rgb(8,27,57)', 
     to: 'rgb(2,8,23)'
   },
-  className: 'bg-gradient-to-br from-[rgb(248,250,252)] via-[rgb(241,245,249)] to-[rgb(236,241,247)] dark:from-[rgb(10,37,77)] dark:via-[rgb(8,27,57)] dark:to-[rgb(2,8,23)]',
-  size: {
-    container: 'w-[120px] md:w-[140px] h-[120px] md:h-[140px]'
-  }
+  className: 'bg-gradient-to-br from-[rgb(248,250,252)] via-[rgb(241,245,249)] to-[rgb(236,241,247)] dark:from-[rgb(10,37,77)] dark:via-[rgb(8,27,57)] dark:to-[rgb(2,8,23)]'
 };
 
 export const ParticleImage = ({ 
@@ -243,7 +240,7 @@ export const ParticleImage = ({
     // 更新渲染器大小
     rendererRef.current.setSize(width, height);
 
-    // 只有当尺寸变化超���阈值时才重生成粒子
+    // 只有当尺寸变化超阈值时才重生成粒子
     const currentSize = Math.min(width, height);
     const previousSize = sceneRef.current.userData.previousSize || currentSize;
     const sizeChange = Math.abs(currentSize - previousSize) / previousSize;
@@ -784,7 +781,7 @@ export const ImageLoader = ({
   }, [src, preloadImage]);
 
   return (
-    <div className={`relative ${BG_CONFIG.size.container} shrink-0 overflow-hidden`}>
+    <div className="relative w-full h-full overflow-hidden">
       <div className={`absolute inset-0 ${BG_CONFIG.className} rounded-lg overflow-hidden`}>
         <ParticleImage 
           src={src} 

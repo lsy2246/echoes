@@ -157,11 +157,13 @@ export default new Template({}, ({ http, args }) => {
           >
             <div className="p-4 relative flex flex-col gap-4">
               <div className="flex gap-4">
-                <ImageLoader
-                  src={article.coverImage}
-                  alt={article.title || ""}
-                  className="group-hover:scale-105 transition-transform duration-500 relative z-[1] object-cover rounded-lg shrink-0"
-                />
+                <div className="w-[120px] md:w-[140px] h-[120px] md:h-[140px]">
+                  <ImageLoader
+                    src={article.coverImage}
+                    alt={article.title || ""}
+                    className="group-hover:scale-105 transition-transform duration-500 relative z-[1] object-cover rounded-lg"
+                  />
+                </div>
 
                 <div className="flex-1 min-w-0">
                   <Heading
