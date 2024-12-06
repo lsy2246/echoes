@@ -24,23 +24,24 @@ import {
   EyeOpenIcon,
   CodeIcon,
 } from "@radix-ui/react-icons";
-import { Post } from "interface/post";
+import { Post, Category, Tag, PostDisplay } from "interface/fields";
 import { useMemo, useState, useEffect } from "react";
 import type { Components } from 'react-markdown';
 import type { MetaFunction } from "@remix-run/node";
+import { getColorScheme, hashString } from "themes/echoes/utils/colorScheme";
 
 // 示例文章数据
-const mockPost: Post = {
+const mockPost: PostDisplay = {
   id: 1,
   title: "构建现代化的前端开发工作流",
   content: `
-# 构建现代化的前端开发工作流sssssssssssssssss
+# 构建现代化的前端开发工作流
 
 在现代前端开发中，一个高效的工作流程对于提高开发效率至关重要。本文将详细介绍如何建一个现代化的前端开发工作流。
 
 ## 工具链选择
 
-选择合适的工具链效工作流的第一步。我们需要考虑
+选择合适的工具链工作流的第一我们需要考虑
 
 - 包管理器：npm、yarn 或 pnpm
 - 构建工具：Vite、webpack 或 Rollup
@@ -86,6 +87,14 @@ let a=1
   isEditor: true,
   createdAt: new Date("2024-03-15"),
   updatedAt: new Date("2024-03-15"),
+  categories: [
+    { name: "前端开发" }
+  ],
+  tags: [
+    { name: "工程化" },
+    { name: "效率提升" },
+    { name: "开发工具" }
+  ]
 };
 
 // 添加标题项接口
@@ -95,14 +104,14 @@ interface TocItem {
   level: number;
 }
 
-// 在 TocItem 接口旁边添加
+// 在 TocItem 接口旁添加
 interface MarkdownCodeProps {
   inline?: boolean;
   className?: string;
   children: React.ReactNode;
 }
 
-// 添加 meta 函数
+// 添 meta 函数
 export const meta: MetaFunction = () => {
   return [
     { title: mockPost.title },
@@ -128,6 +137,32 @@ interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
   ordered?: boolean;
   children: React.ReactNode;
 }
+
+// 添加复制功能的接口
+interface CopyButtonProps {
+  code: string;
+}
+
+// 添加 CopyButton 组件
+const CopyButton: React.FC<CopyButtonProps> = ({ code }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Button 
+      variant="ghost" 
+      onClick={handleCopy}
+      className="h-7 px-2 text-xs hover:bg-[--gray-4]"
+    >
+      {copied ? '已复制' : '复制'}
+    </Button>
+  );
+};
 
 // 创建一 React 组件
 export default new Template({}, ({ http, args }) => {
@@ -196,21 +231,24 @@ export default new Template({}, ({ http, args }) => {
             <Box className="mb-8">
               <Heading 
                 size="8" 
-                className="mb-4 leading-tight text-[--gray-12] font-bold tracking-tight"
+                className="mb-6 leading-tight text-[--gray-12] font-bold tracking-tight"
               >
                 {mockPost.title}
               </Heading>
 
-              <Flex gap="4" align="center" className="text-[--gray-11]">
-                <Avatar
-                  size="3"
-                  fallback={mockPost.authorName[0]}
-                  className="border-2 border-[--gray-a5]"
-                />
-                <Text size="2" weight="medium">{mockPost.authorName}</Text>
-                <Text size="2">·</Text>
+              <Flex gap="6" className="items-center text-[--gray-11] flex-wrap">
+                {/* 作者名字 */}
+                <Text size="2" weight="medium">
+                  {mockPost.authorName}
+                </Text>
+                
+
+                {/* 分隔符 */}
+                <Box className="w-px h-4 bg-[--gray-6]" />
+
+                {/* 发布日期 */}
                 <Flex align="center" gap="2">
-                  <CalendarIcon className="w-4 h-4" />
+                  <CalendarIcon className="w-3.5 h-3.5" />
                   <Text size="2">
                     {mockPost.publishedAt?.toLocaleDateString("zh-CN", {
                       year: "numeric",
@@ -218,6 +256,55 @@ export default new Template({}, ({ http, args }) => {
                       day: "numeric",
                     })}
                   </Text>
+                </Flex>
+
+                {/* 分隔符 */}
+                <Box className="w-px h-4 bg-[--gray-6]" />
+
+                {/* 分类 */}
+                <Flex gap="2">
+                  {mockPost.categories?.map((category) => {
+                    const color = getColorScheme(category.name);
+                    return (
+                      <Text 
+                        key={category.name} 
+                        size="2" 
+                        className={`px-3 py-0.5 ${color.bg} ${color.text} rounded-md 
+                                    border ${color.border} font-medium ${color.hover}
+                                    transition-colors cursor-pointer`}
+                      >
+                        {category.name}
+                      </Text>
+                    );
+                  })}
+                </Flex>
+
+                {/* 分隔符 */}
+                <Box className="w-px h-4 bg-[--gray-6]" />
+
+                {/* 标签 */}
+                <Flex gap="2">
+                  {mockPost.tags?.map((tag) => {
+                    const color = getColorScheme(tag.name);
+                    return (
+                      <Text 
+                        key={tag.name} 
+                        size="2" 
+                        className={`px-3 py-1 ${color.bg} ${color.text} rounded-md 
+                                    border ${color.border} ${color.hover}
+                                    transition-colors cursor-pointer flex items-center gap-2`}
+                      >
+                        <span 
+                          className={`inline-block w-1.5 h-1.5 rounded-full ${color.dot}`}
+                          style={{ 
+                            flexShrink: 0,
+                            opacity: 0.8
+                          }}
+                        />
+                        {tag.name}
+                      </Text>
+                    );
+                  })}
                 </Flex>
               </Flex>
             </Box>
@@ -286,11 +373,14 @@ export default new Template({}, ({ http, args }) => {
                       </code>
                     ) : (
                       <pre className="relative my-6 rounded-lg border border-[--gray-6] bg-[--gray-2]">
-                        {lang && (
-                          <div className="absolute top-3 right-3 px-3 py-1 text-xs text-[--gray-11] bg-[--gray-3] rounded-full">
-                            {lang}
+                        <div className="flex justify-between items-center absolute top-0 left-0 right-0 h-9 px-4 border-b border-[--gray-6]">
+                          {/* 左侧语言类型 */}
+                          <div className="text-xs text-[--gray-11]">
+                            {lang || 'text'}
                           </div>
-                        )}
+                          {/* 右侧复制按钮 */}
+                          <CopyButton code={String(children)} />
+                        </div>
                         <SyntaxHighlighter
                           language={lang || 'text'}
                           PreTag="div"
@@ -313,7 +403,7 @@ export default new Template({}, ({ http, args }) => {
                           }}
                           customStyle={{
                             margin: 0,
-                            padding: '1.5rem',
+                            padding: '3rem 1.5rem 1.5rem',  // 增加顶部内边距，为头部工具栏留出空间
                             background: 'none',
                             fontSize: '0.95rem',
                             lineHeight: '1.6',

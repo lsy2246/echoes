@@ -9,14 +9,24 @@ const themeScript = `
   (function() {
     function getInitialTheme() {
       const savedTheme = localStorage.getItem("${THEME_KEY}");
-      if (savedTheme) return savedTheme;
+      if (savedTheme) {
+        document.documentElement.className = savedTheme;
+        return savedTheme;
+      }
       
       const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const theme = isDark ? "dark" : "light";
+      document.documentElement.className = theme;
       localStorage.setItem("${THEME_KEY}", theme);
       return theme;
     }
-    document.documentElement.className = getInitialTheme();
+    
+    // 确保在 DOM 内容加载前执行
+    if (document.documentElement) {
+      getInitialTheme();
+    } else {
+      document.addEventListener('DOMContentLoaded', getInitialTheme);
+    }
   })()
 `;
 
@@ -27,30 +37,39 @@ export const ThemeScript = () => {
 export const ThemeModeToggle: React.FC = () => {
   const [isDark, setIsDark] = useState<boolean | null>(null);
   
+  // 初始化主题状态
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem(THEME_KEY);
-      const initialIsDark = savedTheme === 'dark' || document.documentElement.className === 'dark';
-      setIsDark(initialIsDark);
-    }
-  }, []);
-
-  useEffect(() => {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          const isDarkTheme = document.documentElement.className === 'dark';
-          setIsDark(isDarkTheme);
+      const initTheme = () => {
+        const savedTheme = localStorage.getItem(THEME_KEY);
+        const currentTheme = document.documentElement.className;
+        
+        // 确保 localStorage 和 DOM 的主题状态一致
+        if (savedTheme && savedTheme !== currentTheme) {
+          document.documentElement.className = savedTheme;
         }
-      });
-    });
+        
+        setIsDark(savedTheme === 'dark' || currentTheme === 'dark');
+      };
 
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
-    return () => observer.disconnect();
+      initTheme();
+      
+      // 监听系统主题变化
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+        if (!localStorage.getItem(THEME_KEY)) {
+          const newTheme = e.matches ? 'dark' : 'light';
+          document.documentElement.className = newTheme;
+          setIsDark(e.matches);
+        }
+      };
+      
+      mediaQuery.addEventListener('change', handleSystemThemeChange);
+      
+      return () => {
+        mediaQuery.removeEventListener('change', handleSystemThemeChange);
+      };
+    }
   }, []);
 
   const toggleTheme = () => {

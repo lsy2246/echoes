@@ -1,11 +1,8 @@
-* {
-  color: var(--gray-a12);
-}
-
+/* 导航链接样式 */
 #nav a {
   position: relative;
   transition: all 0.2s ease;
-  color: var(--gray-11);
+  color: var(--gray-12);
 }
 
 #nav a:hover {
@@ -28,27 +25,64 @@
   transform: scaleX(1);
 }
 
-#search {
+/* 进度指示器动画 */
+@keyframes flow {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.progress-indicator {
+  color: var(--gray-11);
+  transition: all 0.3s ease;
+}
+
+.progress-indicator:hover {
+  background: linear-gradient(
+    90deg,
+    var(--accent-11) 0%,
+    var(--accent-9) 50%,
+    var(--accent-11) 100%
+  );
+  background-size: 200% auto;
+  animation: flow 2s linear infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+}
+
+/* 添加以下暗色主题的自定义变量 */
+.dark-theme-custom {
+  --gray-1: hsl(220, 15%, 12%);    /* 背景色，更柔和的深色 */
+  --gray-2: hsl(220, 15%, 14%);
+  --gray-3: hsl(220, 15%, 16%);
+  --gray-12: hsl(220, 15%, 85%);   /* 文本颜色，不要太白 */
+  
+  /* 减少对比度，使文字更柔和 */
+  --gray-11: hsl(220, 15%, 65%);
+  
+  /* 边框颜色调整 */
+  --gray-a5: hsla(220, 15%, 50%, 0.2);
+  
+  /* 重要：确保背景和文本的对比度适中 */
+  background-color: var(--gray-1);
   color: var(--gray-12);
+  
+  /* 添加微弱的蓝光过滤 */
+  filter: brightness(0.96) saturate(0.95);
 }
 
-a:not(#nav a) {
-  transition: color 0.2s ease;
-  color: var(--gray-12);
+/* 优化暗色主题下的阴影效果 */
+.dark-theme-custom [class*='shadow'] {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-a:not(#nav a):hover {
-  color: var(--accent-12);
-}
-
-button:hover {
-  color: var(--accent-12);
-}
-
-.card:hover {
-  border-color: var(--accent-9);
-}
-
-.card:hover .card-title {
-  color: var(--accent-12);
+/* 优化链接和交互元素的高亮颜色 */
+.dark-theme-custom a:hover,
+.dark-theme-custom button:hover {
+  --accent-9: hsl(226, 70%, 65%); /* 更柔和的强调色 */
 }

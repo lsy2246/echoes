@@ -8,7 +8,7 @@ import {
 } from "@radix-ui/react-icons";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import { ParticleImage } from "hooks/ParticleImage";
+import { ParticleImage } from "hooks/particleImage";
 
 const socialLinks = [
   {

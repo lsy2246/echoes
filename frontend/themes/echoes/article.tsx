@@ -1,18 +1,19 @@
 import { Template } from "interface/template";
-import { Container, Heading, Text, Flex, Card, Button } from "@radix-ui/themes";
+import { Container, Heading, Text, Flex, Card, Button, ScrollArea } from "@radix-ui/themes";
 import {
   CalendarIcon,
   PersonIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@radix-ui/react-icons";
-import { Post } from "interface/post";
+import { Post, PostDisplay, Tag } from "interface/fields";
 import { useMemo } from "react";
 
-import { ImageLoader } from "hooks/ParticleImage";
+import { ImageLoader } from "hooks/particleImage";
+import { getColorScheme, hashString } from "themes/echoes/utils/colorScheme";
 
-// 模拟文章列表数据
-const mockArticles: Post[] = [
+// 修改模拟文章列表数据
+const mockArticles: PostDisplay[] = [
   {
     id: 1,
     title: "构建现代化的前端开发工作流",
@@ -26,12 +27,19 @@ const mockArticles: Post[] = [
     isEditor: false,
     createdAt: new Date("2024-03-15"),
     updatedAt: new Date("2024-03-15"),
+    // 添加分类和标签
+    categories: [
+      { name: "前端开发" }
+    ],
+    tags: [
+      { name: "工程化" },
+      { name: "效率提升" }
+    ]
   },
   {
     id: 2,
     title: "React 18 新特性详解",
-    content:
-      "React 18 带来了许多令人兴奋的新特性，包括并发渲染、自动批处理更新...",
+    content: "React 18 带来了许多令人兴奋的新特性，包括并发渲染、自动批处理更新...",
     authorName: "李四",
     publishedAt: new Date("2024-03-14"),
     coverImage: "https://haowallpaper.com/link/common/file/previewFileIm",
@@ -41,12 +49,18 @@ const mockArticles: Post[] = [
     isEditor: false,
     createdAt: new Date("2024-03-14"),
     updatedAt: new Date("2024-03-14"),
+    categories: [
+      { name: "前端开发" }
+    ],
+    tags: [
+      { name: "React" },
+      { name: "JavaScript" }
+    ]
   },
   {
     id: 3,
     title: "JavaScript 性能优化技巧",
-    content:
-      "在这篇文章中，我们将探讨一些提高 JavaScript 性能的技巧和最佳实践...",
+    content: "在这篇文章中，我们将探讨一些提高 JavaScript 性能的技巧和最佳实践...",
     authorName: "王五",
     publishedAt: new Date("2024-03-13"),
     coverImage: "https://haowallpaper.com/link/common/file/previewFileImg/15789130517090624",
@@ -56,12 +70,18 @@ const mockArticles: Post[] = [
     isEditor: false,
     createdAt: new Date("2024-03-13"),
     updatedAt: new Date("2024-03-13"),
+    categories: [
+      { name: "性能优化" }
+    ],
+    tags: [
+      { name: "JavaScript" },
+      { name: "性能" }
+    ]
   },
   {
     id: 4,
-    title: "JavaScript 性能优化技巧",
-    content:
-      "在这篇文章中，我们将探讨一些提高 JavaScript 性能的技巧和最佳实践...",
+    title: "移动端适配最佳实践",
+    content: "移动端开发中的各种适配问题及解决方案...",
     authorName: "田六",
     publishedAt: new Date("2024-03-13"),
     coverImage: "https://avatars.githubusercontent.com/u/2?v=4",
@@ -71,126 +91,217 @@ const mockArticles: Post[] = [
     isEditor: false,
     createdAt: new Date("2024-03-13"),
     updatedAt: new Date("2024-03-13"),
+    categories: [
+      { name: "移动开发" }
+    ],
+    tags: [
+      { name: "移动端" },
+      { name: "响应式" }
+    ]
   },
-  // 可以添加更多模拟文章
+  {
+    id: 5,
+    title: "全栈开发：从前端到云原生的完整指南",
+    content: "本文将深入探讨现代全栈开发的各个方面，包括前端框架选择、后端架构设计、数据库优化、微服务部署以及云原生实践...",
+    authorName: "赵七",
+    publishedAt: new Date("2024-03-12"),
+    coverImage: "https://avatars.githubusercontent.com/u/3?v=4",
+    metaKeywords: "",
+    metaDescription: "",
+    status: "published",
+    isEditor: false,
+    createdAt: new Date("2024-03-12"),
+    updatedAt: new Date("2024-03-12"),
+    categories: [
+      { name: "全栈开发" },
+      { name: "云原生" },
+      { name: "微服务" },
+      { name: "DevOps" },
+      { name: "系统架构" }
+    ],
+    tags: [
+      { name: "React" },
+      { name: "Node.js" },
+      { name: "Docker" },
+      { name: "Kubernetes" },
+      { name: "MongoDB" },
+      { name: "微服务" },
+      { name: "CI/CD" },
+      { name: "云计算" }
+    ]
+  },
+  {
+    id: 6,
+    title: "深入浅出 TypeScript 高级特性",
+    content: "探索 TypeScript 的高级类型系统、装饰器、类型编程等特性，以及在大型项目中的最佳实践...",
+    authorName: "孙八",
+    publishedAt: new Date("2024-03-11"),
+    coverImage: "https://avatars.githubusercontent.com/u/4?v=4",
+    metaKeywords: "",
+    metaDescription: "",
+    status: "published",
+    isEditor: false,
+    createdAt: new Date("2024-03-11"),
+    updatedAt: new Date("2024-03-11"),
+    categories: [
+      { name: "TypeScript" },
+      { name: "编程语言" }
+    ],
+    tags: [
+      { name: "类型系统" },
+      { name: "泛型编程" },
+      { name: "装饰器" },
+      { name: "类型推导" }
+    ]
+  },
+  {
+    id: 7,
+    title: "Web 性能优化：从理论到实践",
+    content: "全面解析 Web 性能优化策略，包括资源加载优化、渲染性能优化、网络优化等多个维度...",
+    authorName: "周九",
+    publishedAt: new Date("2024-03-10"),
+    coverImage: "https://avatars.githubusercontent.com/u/5?v=4",
+    metaKeywords: "",
+    metaDescription: "",
+    status: "published",
+    isEditor: false,
+    createdAt: new Date("2024-03-10"),
+    updatedAt: new Date("2024-03-10"),
+    categories: [
+      { name: "性能优化" },
+      { name: "前端开发" }
+    ],
+    tags: [
+      { name: "性能监控" },
+      { name: "懒加载" },
+      { name: "缓存策略" },
+      { name: "代码分割" }
+    ]
+  },
+  {
+    id: 8,
+    title: "微前端架构实践指南",
+    content: "详细介绍微前端的架构设计、实现方案、应用集成以及实际项目中的经验总结...",
+    authorName: "吴十",
+    publishedAt: new Date("2024-03-09"),
+    coverImage: "https://avatars.githubusercontent.com/u/6?v=4",
+    metaKeywords: "",
+    metaDescription: "",
+    status: "published",
+    isEditor: false,
+    createdAt: new Date("2024-03-09"),
+    updatedAt: new Date("2024-03-09"),
+    categories: [
+      { name: "架构设计" },
+      { name: "微前端" }
+    ],
+    tags: [
+      { name: "qiankun" },
+      { name: "single-spa" },
+      { name: "模块联邦" },
+      { name: "应用通信" }
+    ]
+  }
 ];
-
-// 修改颜色组合数组，增加更多颜色选项
-const colorSchemes = [
-  { bg: "bg-blue-100", text: "text-blue-600" },
-  { bg: "bg-green-100", text: "text-green-600" },
-  { bg: "bg-purple-100", text: "text-purple-600" },
-  { bg: "bg-pink-100", text: "text-pink-600" },
-  { bg: "bg-orange-100", text: "text-orange-600" },
-  { bg: "bg-teal-100", text: "text-teal-600" },
-  { bg: "bg-red-100", text: "text-red-600" },
-  { bg: "bg-indigo-100", text: "text-indigo-600" },
-  { bg: "bg-yellow-100", text: "text-yellow-600" },
-  { bg: "bg-cyan-100", text: "text-cyan-600" },
-];
-
-const categories = ["前端开发", "后端开发", "UI设计", "移动开发", "人工智能"];
-const tags = [
-  "React",
-  "TypeScript",
-  "Vue",
-  "Node.js",
-  "Flutter",
-  "Python",
-  "Docker",
-];
-
-// 定义 SlideGeometry 类
 
 export default new Template({}, ({ http, args }) => {
-  const articleData = useMemo(() => {
-    return mockArticles.map((article) => {
-      // 使用更复杂的散列函数来生成看起来更随机的索引
-      const hash = (str: string) => {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-          const char = str.charCodeAt(i);
-          hash = (hash << 5) - hash + char;
-          hash = hash & hash;
-        }
-        return Math.abs(hash);
-      };
+  const articleData = useMemo(() => mockArticles, []);
+  const totalPages = 25; // 假设有25页
+  const currentPage = 1; // 当前页码
+  
+  // 修改生成分页数组的函数，不再需要省略号
+  const getPageNumbers = (total: number) => {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  };
 
-      // 使用文章的不同属性来生成索引
-      const categoryIndex =
-        hash(article.title + article.id.toString()) % categories.length;
-      const colorIndex =
-        hash(article.authorName + article.id.toString()) % colorSchemes.length;
-
-      // 为标签生成不同的索引
-      const tagIndices = tags
-        .map((_, index) => ({
-          index,
-          sort: hash(article.title + index.toString() + article.id.toString()),
-        }))
-        .sort((a, b) => a.sort - b.sort)
-        .slice(0, 2)
-        .map((item) => item.index);
-
-      return {
-        ...article,
-        category: categories[categoryIndex],
-        categoryColor: colorSchemes[colorIndex],
-        tags: tagIndices.map((index) => ({
-          name: tags[index],
-          color:
-            colorSchemes[
-              hash(tags[index] + article.id.toString()) % colorSchemes.length
-            ],
-        })),
-      };
-    });
-  }, []);
+  // 修改分页部分的渲染
+  const renderPageNumbers = () => {
+    const pages = getPageNumbers(totalPages);
+    
+    return pages.map(page => (
+      <div 
+        key={page}
+        className={`min-w-[32px] h-8 rounded-md transition-all duration-300 cursor-pointer
+          flex items-center justify-center group/item whitespace-nowrap
+          ${page === currentPage 
+            ? 'bg-[--accent-9] text-[--text-primary]' 
+            : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--accent-3]'
+          }`}
+      >
+        <Text 
+          size="1" 
+          weight={page === currentPage ? "medium" : "regular"}
+          className="group-hover/item:scale-110 transition-transform"
+        >
+          {page}
+        </Text>
+      </div>
+    ));
+  };
 
   return (
-    <Container size="3" className="pt-2 pb-4 md:pb-6 relative">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 px-4 md:px-0">
+    <Container size="3" className="pt-2 pb-4 relative">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 px-4 md:px-0 mb-6 md:mb-8">
         {articleData.map((article) => (
           <Card
             key={article.id}
-            className="group cursor-pointer hover:shadow-lg transition-all duration-300 border border-[--gray-5] hover:border-[--accent-8] relative overflow-hidden"
+            className="group cursor-pointer transition-all duration-300 
+              bg-[--card-bg] border-[--border-color] 
+              hover:shadow-lg hover:shadow-[--card-bg]/10
+              hover:border-[--accent-9]/50"
           >
             <div className="p-4 relative flex flex-col gap-4">
               <div className="flex gap-4">
-                <div className="w-[120px] md:w-[140px] h-[120px] md:h-[140px]">
+                <div className="w-[120px] h-[90px] flex-shrink-0">
                   <ImageLoader
                     src={article.coverImage}
                     alt={article.title || ""}
-                    className="group-hover:scale-105 transition-transform duration-500 relative z-[1] object-cover rounded-lg"
+                    className="w-full h-full group-hover:scale-105 transition-transform duration-500 
+                      relative z-[1] object-cover rounded-lg opacity-90 
+                      group-hover:opacity-100"
                   />
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <Heading
-                    size="3"
-                    className="group-hover:text-[--accent-9] transition-colors duration-200 line-clamp-2 text-base mb-2"
+                    size="2"
+                    className="text-[--text-primary] group-hover:text-[--accent-9] 
+                      transition-colors duration-200 line-clamp-2 mb-2"
                   >
                     {article.title}
                   </Heading>
 
-                  <Text className="text-[--gray-11] text-xs md:text-sm line-clamp-2 leading-relaxed">
+                  <Text className="text-[--text-secondary] text-xs 
+                    line-clamp-2 leading-relaxed">
                     {article.content}
                   </Text>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between gap-2">
-                  <Text
-                    size="1"
-                    className={`px-2 py-0.5 rounded-full font-medium ${article.categoryColor.bg} ${article.categoryColor.text}`}
-                  >
-                    {article.category}
-                  </Text>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <ScrollArea type="hover" scrollbars="horizontal" className="flex-1">
+                    <Flex gap="2" className="flex-nowrap">
+                      {article.categories?.map((category) => (
+                        <Text
+                          key={category.name}
+                          size="2"
+                          className={`px-3 py-0.5 rounded-md font-medium transition-colors cursor-pointer
+                            whitespace-nowrap
+                            ${getColorScheme(category.name).bg} 
+                            ${getColorScheme(category.name).text}
+                            border ${getColorScheme(category.name).border}
+                            ${getColorScheme(category.name).hover}`}
+                        >
+                          {category.name}
+                        </Text>
+                      ))}
+                    </Flex>
+                  </ScrollArea>
 
-                  <Flex gap="2" align="center" className="text-[--gray-11]">
-                    <CalendarIcon className="w-3 h-3" />
-                    <Text size="1">
+                  <Flex gap="2" align="center" className="text-[--text-tertiary] flex-shrink-0">
+                    <CalendarIcon className="w-4 h-4" />
+                    <Text size="2">
                       {article.publishedAt?.toLocaleDateString("zh-CN", {
                         year: "numeric",
                         month: "long",
@@ -198,19 +309,29 @@ export default new Template({}, ({ http, args }) => {
                       })}
                     </Text>
                     <span className="mx-1">·</span>
-                    <Text size="1" weight="medium">
+                    <Text size="2" weight="medium">
                       {article.authorName}
                     </Text>
                   </Flex>
                 </div>
 
                 <Flex gap="2" className="flex-wrap">
-                  {article.tags.map((tag) => (
+                  {article.tags?.map((tag: Tag) => (
                     <Text
                       key={tag.name}
                       size="1"
-                      className={`px-2 py-0.5 rounded-full border border-current ${tag.color.text} hover:bg-[--gray-a3] transition-colors`}
+                      className={`px-2.5 py-0.5 rounded-md transition-colors cursor-pointer
+                        flex items-center gap-1.5
+                        ${getColorScheme(tag.name).bg} ${getColorScheme(tag.name).text}
+                        border ${getColorScheme(tag.name).border} ${getColorScheme(tag.name).hover}`}
                     >
+                      <span 
+                        className={`inline-block w-1 h-1 rounded-full ${getColorScheme(tag.name).dot}`}
+                        style={{ 
+                          flexShrink: 0,
+                          opacity: 0.8
+                        }}
+                      />
                       {tag.name}
                     </Text>
                   ))}
@@ -221,30 +342,61 @@ export default new Template({}, ({ http, args }) => {
         ))}
       </div>
 
-      <Flex justify="center" align="center" gap="2" className="mt-8">
-        <Button variant="soft" className="group" disabled>
-          <ChevronLeftIcon className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-          上一页
-        </Button>
-
-        <Flex gap="1">
-          <Button
-            variant="solid"
-            className="bg-[--accent-9] text-white hover:bg-[--accent-10]"
+      <div className="px-4 md:px-0">
+        <Flex 
+          align="center" 
+          justify="between" 
+          className="max-w-[800px] mx-auto"
+        >
+          <Button 
+            variant="ghost" 
+            className="group/nav h-8 md:px-3 text-sm hidden md:flex"
+            disabled={true}
           >
-            1
+            <ChevronLeftIcon className="w-4 h-4 md:mr-1 text-[--text-tertiary] group-hover/nav:-translate-x-0.5 transition-transform" />
+            <span className="hidden md:inline">上一页</span>
           </Button>
-          <Button variant="soft">2</Button>
-          <Button variant="soft">3</Button>
-          <div className="flex items-center px-2 text-[--gray-11]">...</div>
-          <Button variant="soft">10</Button>
-        </Flex>
 
-        <Button variant="soft" className="group">
-          下一页
-          <ChevronRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-        </Button>
-      </Flex>
+          <Button 
+            variant="ghost" 
+            className="group/nav w-8 h-8 md:hidden"
+            disabled={true}
+          >
+            <ChevronLeftIcon className="w-4 h-4 text-[--text-tertiary]" />
+          </Button>
+
+          <Flex align="center" gap="2" className="flex-1 md:flex-none justify-center">
+            <ScrollArea 
+              type="hover" 
+              scrollbars="horizontal" 
+              className="w-[240px] md:w-[400px]"
+            >
+              <Flex gap="1" className="px-2">
+                {renderPageNumbers()}
+              </Flex>
+            </ScrollArea>
+
+            <Text size="1" className="text-[--text-tertiary] whitespace-nowrap hidden md:block">
+              共 {totalPages} 页
+            </Text>
+          </Flex>
+
+          <Button 
+            variant="ghost" 
+            className="group/nav h-8 md:px-3 text-sm hidden md:flex"
+          >
+            <span className="hidden md:inline">下一页</span>
+            <ChevronRightIcon className="w-4 h-4 md:ml-1 text-[--text-tertiary] group-hover/nav:translate-x-0.5 transition-transform" />
+          </Button>
+
+          <Button 
+            variant="ghost" 
+            className="group/nav w-8 h-8 md:hidden"
+          >
+            <ChevronRightIcon className="w-4 h-4 text-[--text-tertiary]" />
+          </Button>
+        </Flex>
+      </div>
     </Container>
   );
 });
