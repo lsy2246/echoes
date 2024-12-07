@@ -5,9 +5,9 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import { NotificationProvider } from "hooks/notification";
+import { NotificationProvider } from "hooks/Notification";
 import { Theme } from "@radix-ui/themes";
-import { ThemeScript } from "hooks/themeMode";
+import { ThemeScript } from "hooks/ThemeMode";
 
 import "~/index.css";
 
@@ -49,6 +49,7 @@ export function Layout() {
       <body
         className="h-full"
         suppressHydrationWarning={true}
+        data-cz-shortcut-listen="false"
       >
         <Theme
           grayColor="slate"

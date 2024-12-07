@@ -1,6 +1,6 @@
 import { Layout } from "interface/layout";
-import { ThemeModeToggle } from "hooks/themeMode";
-import { Echoes } from "hooks/echoes";
+import { ThemeModeToggle } from "hooks/ThemeMode";
+import { Echoes } from "hooks/Echoes";
 import { Container, Flex, Box, Link, TextField, Button } from "@radix-ui/themes";
 import {
   MagnifyingGlassIcon,
@@ -187,8 +187,8 @@ export default new Layout(({ children, args }) => {
                         <Box 
                           className={`w-10 h-10 flex items-center justify-center ${
                             scrollProgress > 0 
-                              ? 'relative translate-x-0 opacity-100 transition-all duration-300 ease-out' 
-                              : 'pointer-events-none absolute translate-x-2 opacity-0 transition-all duration-300 ease-in'
+                              ? 'block' 
+                              : 'hidden'
                           }`}
                         >
                           <Button
@@ -226,8 +226,8 @@ export default new Layout(({ children, args }) => {
                     <Box 
                       className={`w-10 h-10 flex items-center justify-center ${
                         scrollProgress > 0 
-                          ? 'relative translate-x-0 opacity-100 transition-all duration-300 ease-out' 
-                          : 'pointer-events-none absolute translate-x-2 opacity-0 transition-all duration-300 ease-in'
+                          ? 'block' 
+                          : 'hidden'
                       }`}
                     >
                       <Button
@@ -275,26 +275,62 @@ export default new Layout(({ children, args }) => {
                         <DropdownMenuPrimitive.Content
                           align="end"
                           sideOffset={5}
-                          className="mt-2 p-3 min-w-[280px] rounded-md bg-[--gray-1] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
+                          className="mt-2 min-w-[280px] rounded-md bg-[--gray-1] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
                         >
-                          <Box className="flex flex-col gap-2 [&>a]:text-[--gray-12] [&>a]:transition-colors [&>a:hover]:text-[--accent-9]">
-                            {parse(navString)}
-                          </Box>
-                          <Box className="mt-3 pt-3 border-t border-[--gray-a5]">
-                            <TextField.Root
-                              size="2"
-                              variant="surface"
-                              placeholder="搜索..."
-                              className="w-full [&_input]:pl-3"
-                              id="search"
-                            >
-                              <TextField.Slot
-                                side="right"
-                                className="p-2"
+                          <Box className="flex flex-col">
+                            {/* 导航链接区域 */}
+                            <Box className="flex flex-col">
+                              <Box className="flex flex-col [&>a]:px-4 [&>a]:py-2.5 [&>a]:text-[--gray-12] [&>a]:transition-colors [&>a:hover]:bg-[--gray-a3] [&>a]:text-lg [&>a]:text-center [&>a]:border-b [&>a]:border-[--gray-a5] [&>a:first-child]:rounded-t-md [&>a:last-child]:border-b-0">
+                                {parse(navString)}
+                              </Box>
+                            </Box>
+
+                            {/* 搜索框区域 */}
+                            <Box className="p-4 border-t border-[--gray-a5]">
+                              <TextField.Root
+                                size="2"
+                                variant="surface"
+                                placeholder="搜索..."
+                                className="w-full [&_input]:pl-3 hover:border-[--accent-9] border transition-colors group"
                               >
-                                <MagnifyingGlassIcon className="h-4 w-4 text-[--gray-a12]" />
-                              </TextField.Slot>
-                            </TextField.Root>
+                                <TextField.Slot
+                                  side="right"
+                                  className="p-2"
+                                >
+                                  <MagnifyingGlassIcon className="h-4 w-4 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
+                                </TextField.Slot>
+                              </TextField.Root>
+                            </Box>
+
+                            {/* 用户操作区域 */}
+                            <Box className="p-4 border-t border-[--gray-a5]">
+                              <Flex gap="3" align="center">
+                                {/* 用户信息/登录按钮 - 占据 55% 宽度 */}
+                                <Box className="w-[55%]">
+                                  <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start gap-2 text-[--gray-12] hover:text-[--accent-9] hover:bg-[--gray-a3] transition-colors"
+                                  >
+                                    {loginState ? (
+                                      <>
+                                        <AvatarIcon className="w-5 h-5" />
+                                        <span>个人中心</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <PersonIcon className="w-5 h-5" />
+                                        <span>登录/注册</span>
+                                      </>
+                                    )}
+                                  </Button>
+                                </Box>
+
+                                {/* 主题切换按钮 - 占据剩余空间 */}
+                                <Box className="flex-1 flex justify-end [&_button]:w-10 [&_button]:h-10 [&_svg]:w-5 [&_svg]:h-5 [&_button]:text-[--gray-12] [&_button:hover]:text-[--accent-9]">
+                                  <ThemeModeToggle />
+                                </Box>
+                              </Flex>
+                            </Box>
                           </Box>
                         </DropdownMenuPrimitive.Content>
                       </DropdownMenuPrimitive.Portal>

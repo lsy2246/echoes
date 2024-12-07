@@ -9,7 +9,7 @@ import {
 import { Post, PostDisplay, Tag } from "interface/fields";
 import { useMemo } from "react";
 
-import { ImageLoader } from "hooks/particleImage";
+import { ImageLoader } from "hooks/ParticleImage";
 import { getColorScheme, hashString } from "themes/echoes/utils/colorScheme";
 
 // 修改模拟文章列表数据
@@ -20,7 +20,7 @@ const mockArticles: PostDisplay[] = [
     content: "在现代前端开发中，一个高效的工作流程对于提高开发效率至关重要...",
     authorName: "张三",
     publishedAt: new Date("2024-03-15"),
-    coverImage: "",
+    coverImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=500&auto=format",
     metaKeywords: "",
     metaDescription: "",
     status: "published",
@@ -42,7 +42,7 @@ const mockArticles: PostDisplay[] = [
     content: "React 18 带来了许多令人兴奋的新特性，包括并发渲染、自动批处理更新...",
     authorName: "李四",
     publishedAt: new Date("2024-03-14"),
-    coverImage: "https://haowallpaper.com/link/common/file/previewFileIm",
+    coverImage: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=500&auto=format",
     metaKeywords: "",
     metaDescription: "",
     status: "published",
@@ -63,7 +63,7 @@ const mockArticles: PostDisplay[] = [
     content: "在这篇文章中，我们将探讨一些提高 JavaScript 性能的技巧和最佳实践...",
     authorName: "王五",
     publishedAt: new Date("2024-03-13"),
-    coverImage: "https://haowallpaper.com/link/common/file/previewFileImg/15789130517090624",
+    coverImage: "https://images.unsplash.com/photo-1592609931095-54a2168ae893?w=500&auto=format",
     metaKeywords: "",
     metaDescription: "",
     status: "published",
@@ -84,7 +84,7 @@ const mockArticles: PostDisplay[] = [
     content: "移动端开发中的各种适配问题及解决方案...",
     authorName: "田六",
     publishedAt: new Date("2024-03-13"),
-    coverImage: "https://avatars.githubusercontent.com/u/2?v=4",
+    coverImage: "https://images.unsplash.com/photo-1526498460520-4c246339dccb?w=500&auto=format",
     metaKeywords: "",
     metaDescription: "",
     status: "published",
@@ -105,7 +105,7 @@ const mockArticles: PostDisplay[] = [
     content: "本文将深入探讨现代全栈开发的各个方面，包括前端框架选择、后端架构设计、数据库优化、微服务部署以及云原生实践...",
     authorName: "赵七",
     publishedAt: new Date("2024-03-12"),
-    coverImage: "https://avatars.githubusercontent.com/u/3?v=4",
+    coverImage: "https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?w=500&auto=format",
     metaKeywords: "",
     metaDescription: "",
     status: "published",
@@ -136,7 +136,7 @@ const mockArticles: PostDisplay[] = [
     content: "探索 TypeScript 的高级类型系统、装饰器、类型编程等特性，以及在大型项目中的最佳实践...",
     authorName: "孙八",
     publishedAt: new Date("2024-03-11"),
-    coverImage: "https://avatars.githubusercontent.com/u/4?v=4",
+    coverImage: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=500&auto=format",
     metaKeywords: "",
     metaDescription: "",
     status: "published",
@@ -160,7 +160,7 @@ const mockArticles: PostDisplay[] = [
     content: "全面解析 Web 性能优化策略，包括资源加载优化、渲染性能优化、网络优化等多个维度...",
     authorName: "周九",
     publishedAt: new Date("2024-03-10"),
-    coverImage: "https://avatars.githubusercontent.com/u/5?v=4",
+    coverImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format",
     metaKeywords: "",
     metaDescription: "",
     status: "published",
@@ -173,7 +173,7 @@ const mockArticles: PostDisplay[] = [
     ],
     tags: [
       { name: "性能监控" },
-      { name: "懒加载" },
+      { name: "懒加���" },
       { name: "缓存策略" },
       { name: "代码分割" }
     ]
@@ -184,7 +184,7 @@ const mockArticles: PostDisplay[] = [
     content: "详细介绍微前端的架构设计、实现方案、应用集成以及实际项目中的经验总结...",
     authorName: "吴十",
     publishedAt: new Date("2024-03-09"),
-    coverImage: "https://avatars.githubusercontent.com/u/6?v=4",
+    coverImage: "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=500&auto=format",
     metaKeywords: "",
     metaDescription: "",
     status: "published",

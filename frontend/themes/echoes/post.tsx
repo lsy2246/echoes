@@ -1,115 +1,304 @@
+import React, { useMemo, useState,useContext, useCallback, useRef, useEffect } from "react";
 import { Template } from "interface/template";
-import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
-import { 
-  Container, 
-  Heading, 
-  Text, 
-  Flex, 
-  Box, 
-  Avatar, 
-  Button,
-  Code,
-  ScrollArea,
-  Tabs,
-  Card,
-} from "@radix-ui/themes";
+import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import {
-  CalendarIcon,
-  HeartIcon,
-  ChatBubbleIcon,
-  Share1Icon,
-  BookmarkIcon,
-  EyeOpenIcon,
-  CodeIcon,
-} from "@radix-ui/react-icons";
-import { Post, Category, Tag, PostDisplay } from "interface/fields";
-import { useMemo, useState, useEffect } from "react";
-import type { Components } from 'react-markdown';
+  Container,
+  Heading,
+  Text,
+  Flex,
+  Box,
+  Button,
+  ScrollArea,
+} from "@radix-ui/themes";
+import { CalendarIcon, CodeIcon } from "@radix-ui/react-icons";
+import type {  PostDisplay } from "interface/fields";
 import type { MetaFunction } from "@remix-run/node";
-import { getColorScheme, hashString } from "themes/echoes/utils/colorScheme";
+import { getColorScheme } from "themes/echoes/utils/colorScheme";
+import MarkdownIt from 'markdown-it';
+import { ComponentPropsWithoutRef } from 'react';
+import remarkGfm from 'remark-gfm';
 
 // 示例文章数据
 const mockPost: PostDisplay = {
   id: 1,
-  title: "构建现代化的前端开发工作流",
+  title: "现代前端开发完全指南",
   content: `
-# 构建现代化的前端开发工作流
+# 现代前端开发完全指南
 
-在现代前端开发中，一个高效的工作流程对于提高开发效率至关重要。本文将详细介绍如何建一个现代化的前端开发工作流。
+前端开发已经成为软件开发中最重要的领域之一。本全面介绍现代前端开发的各个方面。
 
-## 工具链选择
+![Modern Frontend Development](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=600)
 
-选择合适的工具链工作流的第一我们需要考虑
+## 1. 开发环境搭建
 
-- 包管理器：npm、yarn 或 pnpm
-- 构建工具：Vite、webpack 或 Rollup
-- 代码规范：ESLint、Prettier
-- 类型检查：TypeScript
+在开始前端开发之前，我们要搭建合适的开发环境。
 
-## 开发环境配置
-### 开发环境配置
+### 1.1 必备工具安装
 
-良好的开发环境配置可以大大提升开发效率：
+开发环境需要安装以下工具：
 
-\`\`\`json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true
+\`\`\`bash
+# 安装 Node.js
+brew install node
+
+# 安装包管理器
+npm install -g pnpm
+
+# 安装开发工具
+pnpm install -g typescript vite
+\`\`\`
+
+### 1.2 编辑器配置
+
+推荐使用 VS Code 作为开发工具，需要安装以下插件：
+
+- ESLint
+- Prettier
+- TypeScript Vue Plugin
+- Tailwind CSS IntelliSense
+
+![VS Code Setup](https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&h=600)
+
+## 2. 项目架构设计
+
+### 2.1 目录结构
+### 2.1 目录结构
+### 2.1 目录结构
+### 2.1 目录结构
+### 2.1 目录结构
+### 2.1 目录结构
+### 2.1 目录结构
+### 2.1 目录结构
+
+一个良好的项目结构对于项目的可维护性至关重要。
+
+\`\`\`typescript
+// 推荐的项目结构
+interface ProjectStructure {
+  src: {
+    components: {
+      common: string[];    // 通用组件
+      features: string[];  // 功能组件
+      layouts: string[];   // 布局组件
+    };
+    pages: string[];      // 页面组件
+    hooks: string[];      // 定 hooks
+    utils: string[];      // 工具函数
+    types: string[];      // 类型定义
+    styles: string[];     // 样式文件
   }
 }
 \`\`\`
 
+### 2.2 状态管理
 
-\`\`\`JavaScript
-let a=1
+现代前端应用需要高效的状态管理方案：
+
+![State Management](https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=1200&h=600)
+
+## 3. 性能优化
+
+### 3.1 加载性能
+
+关键的加载性能指标：
+
+| 指标 | 目标值 | 优化方法 |
+|------|--------|----------|
+| FCP | < 2s | 路由懒加载 |
+| TTI | < 3.5s | 代码分割 |
+| LCP | < 2.5s | 图片优化 |
+
+### 3.2 运行时性能
+
+#### 3.2.1 虚拟列表
+
+处理大数据列表时的示例代码：
+
+\`\`\`typescript
+interface VirtualListProps {
+  items: any[];
+  height: number;
+  itemHeight: number;
+  renderItem: (item: any) => React.ReactNode;
+}
+
+const VirtualList: React.FC<VirtualListProps> = ({
+  items,
+  height,
+  itemHeight,
+  renderItem
+}) => {
+  // 现码...
+};
 \`\`\`
 
-## 自动化流程
+#### 3.2.2 防抖与节流
 
-通过 GitHub Actions 等工具，我们可以实现：
+\`\`\`typescript
+// 防抖函数实现
+function debounce<T extends (...args: any[]) => any>(
+  fn: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: NodeJS.Timeout;
+  
+  return function (...args: Parameters<T>) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+}
+\`\`\`
 
-- 自动化测试
-- 自动化部署
-- 代码质量检查
+### 3.3 构建优化
+
+![Build Optimization](https://images.unsplash.com/photo-1551033406-611cf9a28f67?w=1200&h=600)
+
+## 4. 测试略
+
+### 4.1 单元测试
+
+使用 Jest 进行单元测试：
+
+\`typescript
+describe('Utils', () => {
+  test('debounce should work correctly', (done) => {
+    let counter = 0;
+    const increment = () => counter++;
+    const debouncedIncrement = debounce(increment, 100);
+
+    debouncedIncrement();
+    debouncedIncrement();
+    debouncedIncrement();
+
+    expect(counter).toBe(0);
+
+    setTimeout(() => {
+      expect(counter).toBe(1);
+      done();
+    }, 150);
+  });
+});
+\`\`\`
+
+### 4.2 集成测试
+
+使用 Cypress 进行端到端测试。
+
+![Testing](https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=1200&h=600)
+
+## 5. 部署与监控
+
+### 5.1 CI/CD 配置
+
+\`\`\`yaml
+name: Deploy
+on:
+  push:
+    branches: [ main ]
+    
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install
+        run: pnpm install
+      - name: Build
+        run: pnpm build
+      - name: Deploy
+        run: pnpm deploy
+\`\`\`
+
+### 5.2 监控系统
+
+#### 5.2.1 性能监控
+
+关键指标监控：
+
+- 页面加载时间
+- 首次内容绘制
+- 首次大内容绘制
+- 首次输入延迟
+
+#### 5.2.2 错误监控
+
+错误示例：
+
+\`\`\`typescript
+interface ErrorReport {
+  type: 'error' | 'warning';
+  message: string;
+  stack?: string;
+  timestamp: number;
+  userAgent: string;
+}
+
+function reportError(error: Error): void {
+  const report: ErrorReport = {
+    type: 'error',
+    message: error.message,
+    stack: error.stack,
+    timestamp: Date.now(),
+    userAgent: navigator.userAgent
+  };
+  
+  // 发送错误报告
+  sendErrorReport(report);
+}
+\`\`
+
+## 6. 安全最佳实践
+
+### 6.1 XSS 防护
+
+\`\`\`typescript
+// 安全的 HTML 转义函数
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+\`\`\`
+
+### 6.2 CSRF 防护
+
+![Security](https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=1200&h=600)
+
+## 总结
+
+现代前端开发是一个复杂的系统工程，需要我们在以下方面不断精进：
+
+1. 工程化能力
+2. 性能优化
+3. 测试覆盖
+4. 全防护
+5. 部署监控
+
+> 持续学习实践是提高端开发水平的关键。
+
+相关资源：
+- [MDN Web Docs](https://developer.mozilla.org/)
+- [Web.dev](https://web.dev/)
+- [GitHub](https://github.com/)
 `,
   authorName: "张三",
   publishedAt: new Date("2024-03-15"),
   coverImage: "",
-  metaKeywords: "前端开发,工作流,效率",
-  metaDescription: "探讨如何构现代的前端开发工作流，提高开发效率。",
+  metaKeywords: "前端开发,工程,效率",
+  metaDescription: "探讨如何构建高效的前端开发高开发效率",
   status: "published",
   isEditor: true,
   createdAt: new Date("2024-03-15"),
   updatedAt: new Date("2024-03-15"),
-  categories: [
-    { name: "前端开发" }
-  ],
-  tags: [
-    { name: "工程化" },
-    { name: "效率提升" },
-    { name: "开发工具" }
-  ]
+  categories: [{ name: "前端开发" }],
+  tags: [{ name: "工程化" }, { name: "效率提升" }, { name: "发工具" }],
 };
 
-// 添加标题项接口
-interface TocItem {
-  id: string;
-  text: string;
-  level: number;
-}
-
-// 在 TocItem 接口旁添加
-interface MarkdownCodeProps {
-  inline?: boolean;
-  className?: string;
-  children: React.ReactNode;
-}
 
 // 添 meta 函数
 export const meta: MetaFunction = () => {
@@ -117,7 +306,7 @@ export const meta: MetaFunction = () => {
     { title: mockPost.title },
     { name: "description", content: mockPost.metaDescription },
     { name: "keywords", content: mockPost.metaKeywords },
-    // 添加 Open Graph 标签
+    // 添加 Open Graph 标
     { property: "og:title", content: mockPost.title },
     { property: "og:description", content: mockPost.metaDescription },
     { property: "og:image", content: mockPost.coverImage },
@@ -130,20 +319,13 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-// 添加接口定义
-interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
-  node?: any;
-  level?: number;
-  ordered?: boolean;
-  children: React.ReactNode;
-}
 
-// 添加复制功能的接口
+// 添加复制能的接口
 interface CopyButtonProps {
   code: string;
 }
 
-// 添加 CopyButton 组件
+// 加 CopyButton 组件
 const CopyButton: React.FC<CopyButtonProps> = ({ code }) => {
   const [copied, setCopied] = useState(false);
 
@@ -154,56 +336,274 @@ const CopyButton: React.FC<CopyButtonProps> = ({ code }) => {
   };
 
   return (
-    <Button 
-      variant="ghost" 
+    <Button
+      variant="ghost"
       onClick={handleCopy}
       className="h-7 px-2 text-xs hover:bg-[--gray-4]"
     >
-      {copied ? '已复制' : '复制'}
+      {copied ? "已复制" : "复制"}
     </Button>
   );
 };
 
-// 创建一 React 组件
-export default new Template({}, ({ http, args }) => {
-  const [toc, setToc] = useState<TocItem[]>([]);
-  const [activeId, setActiveId] = useState<string>('');
+interface TocItem {
+  id: string;
+  text: string;
+  level: number;
+}
 
-  // 解析文章内容生成目录
+// 修改 generateSequentialId 函数的实现
+const generateSequentialId = (() => {
+  const idMap = new Map<string, number>();
+  
+  return (postId: string, reset = false) => {
+    if (reset) {
+      idMap.delete(postId);
+      return '';
+    }
+    
+    if (!idMap.has(postId)) {
+      idMap.set(postId, 0);
+    }
+    
+    const counter = idMap.get(postId)!;
+    const id = `heading-${postId}-${counter}`;
+    idMap.set(postId, counter + 1);
+    return id;
+  };
+})();
+
+export default new Template({}, ({ http, args }) => {
+  const [toc, setToc] = useState<string[]>([]);
+  const [tocItems, setTocItems] = useState<TocItem[]>([]);
+  const [activeId, setActiveId] = useState<string>("");
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [showToc, setShowToc] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [headingIdsArrays, setHeadingIdsArrays] = useState<{[key: string]: string[]}>({});
+  const headingIds = useRef<string[]>([]); // 保持原有的 ref
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isClickScrolling = useRef(false);
+
   useEffect(() => {
-    const parseHeadings = (content: string) => {
-      const lines = content.split('\n');
-      const headings: TocItem[] = [];
-      let counts = new Map<number, number>();
+    if (typeof window === 'undefined') return;
+
+    const md = new MarkdownIt();
+    const tocArray: TocItem[] = [];
+    
+    // 重置计数器,传入文章ID
+    generateSequentialId(mockPost.id.toString(), true);
+    
+    let isInCodeBlock = false;
+    
+    md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+      isInCodeBlock = true;
+      const result = self.renderToken(tokens, idx, options);
+      isInCodeBlock = false;
+      return result;
+    };
+    
+    md.renderer.rules.heading_open = (tokens, idx) => {
+      const token = tokens[idx];
+      const level = parseInt(token.tag.slice(1));
       
-      lines.forEach((line) => {
-        const match = line.match(/^(#{1,6})\s+(.+)$/);
-        if (match) {
-          const level = match[1].length;
-          const text = match[2];
-          
-          // 为每个级别维护计数
-          const count = (counts.get(level) || 0) + 1;
-          counts.set(level, count);
-          
-          // 生成唯一 ID
-          const id = `heading-${level}-${text.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${count}`;
-          headings.push({ id, text, level });
-        }
-      });
-      
-      return headings;
+      if (level <= 3 && !isInCodeBlock) {
+        const content = tokens[idx + 1].content;
+        // 生成ID时传入文章ID
+        const id = generateSequentialId(mockPost.id.toString());
+        
+        token.attrSet('id', id);
+        tocArray.push({
+          id,
+          text: content,
+          level
+        });
+      }
+      return md.renderer.renderToken(tokens, idx, md.options);
     };
 
-    setToc(parseHeadings(mockPost.content));
-  }, [mockPost.content]);
-
-  // 监听滚动更新当前标题
-  useEffect(() => {
-    const headings = document.querySelectorAll('h1[id], h2[id], h3[id]');
+    md.render(mockPost.content);
     
+    const newIds = tocArray.map(item => item.id);
+    headingIds.current = [...newIds];
+    setHeadingIdsArrays(prev => ({
+      ...prev,
+      [mockPost.id]: [...newIds]
+    }));
+    
+    setToc(newIds);
+    setTocItems(tocArray);
+    
+    if (tocArray.length > 0) {
+      setActiveId(tocArray[0].id);
+    }
+
+    setIsMounted(true);
+  }, [mockPost.content, mockPost.id]);
+
+  const components = useMemo(() => ({
+    h1: ({ children, ...props }: ComponentPropsWithoutRef<'h1'> & { node?: any }) => {
+      if (headingIdsArrays[mockPost.id] && headingIds.current.length === 0) {
+        headingIds.current = [...headingIdsArrays[mockPost.id]];
+      }
+      const headingId = headingIds.current.shift();
+      return (
+        <h1 id={headingId} className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mt-6 sm:mt-8 mb-3 sm:mb-4" {...props}>
+          {children}
+        </h1>
+      );
+    },
+    h2: ({ children, ...props }: ComponentPropsWithoutRef<'h2'> & { node?: any }) => {
+      if (headingIdsArrays[mockPost.id] && headingIds.current.length === 0) {
+        headingIds.current = [...headingIdsArrays[mockPost.id]];
+      }
+      const headingId = headingIds.current.shift();
+      return (
+        <h2 id={headingId} className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold mt-5 sm:mt-6 mb-2 sm:mb-3" {...props}>
+          {children}
+        </h2>
+      );
+    },
+    h3: ({ children, ...props }: ComponentPropsWithoutRef<'h3'> & { node?: any }) => {
+      if (headingIdsArrays[mockPost.id] && headingIds.current.length === 0) {
+        headingIds.current = [...headingIdsArrays[mockPost.id]];
+      }
+      const headingId = headingIds.current.shift();
+      return (
+        <h3 id={headingId} className="text-base sm:text-lg md:text-xl lg:text-2xl font-medium mt-4 mb-2" {...props}>
+          {children}
+        </h3>
+      );
+    },
+    p: ({ children, ...props }: ComponentPropsWithoutRef<'p'>) => (
+      <p className="text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 text-[--gray-11]" {...props}>
+        {children}
+      </p>
+    ),
+    ul: ({ children, ...props }: ComponentPropsWithoutRef<'ul'>) => (
+      <ul className="list-disc pl-4 sm:pl-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-[--gray-11]" {...props}>
+        {children}
+      </ul>
+    ),
+    ol: ({ children, ...props }: ComponentPropsWithoutRef<'ol'>) => (
+      <ol className="list-decimal pl-4 sm:pl-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-[--gray-11]" {...props}>
+        {children}
+      </ol>
+    ),
+    li: ({ children, ...props }: ComponentPropsWithoutRef<'li'>) => (
+      <li className="text-sm sm:text-base md:text-lg leading-relaxed" {...props}>
+        {children}
+      </li>
+    ),
+    blockquote: ({ children, ...props }: ComponentPropsWithoutRef<'blockquote'>) => (
+      <blockquote className="border-l-4 border-[--gray-6] pl-4 sm:pl-6 py-2 my-3 sm:my-4 text-[--gray-11] italic" {...props}>
+        {children}
+      </blockquote>
+    ),
+    code: ({ inline, className, children, ...props }: ComponentPropsWithoutRef<'code'> & { inline?: boolean }) => {
+      const match = /language-(\w+)/.exec(className || "");
+      const lang = match ? match[1].toLowerCase() : "";
+
+      return inline ? (
+        <code className="px-1.5 py-0.5 rounded bg-[--gray-3] text-[--gray-12] text-[0.85em] sm:text-[0.9em]" {...props}>
+          {children}
+        </code>
+      ) : (
+        <div className="my-4 sm:my-6 mx-0 sm:mx-0">
+          {/* 标题栏 */}
+          <div className="flex justify-between items-center h-9 sm:h-10 px-6 
+            border-x border-t border-[--gray-6] 
+            bg-white dark:bg-[--gray-1] 
+            rounded-t-none sm:rounded-t-lg"
+          >
+            <div className="text-sm text-[--gray-11] dark:text-[--gray-12] font-medium">{lang || "text"}</div>
+            <CopyButton code={String(children)} />
+          </div>
+          
+          {/* 代码内容区域 */}
+          <div className="overflow-x-auto border-x border-b border-[--gray-6] rounded-b-none sm:rounded-b-lg">
+            <div className="min-w-[640px]">
+              <div className="p-6 bg-[--gray-2] dark:bg-[--gray-3]">
+                <SyntaxHighlighter
+                  language={lang || "text"}
+                  style={{
+                    ...oneLight,
+                    'punctuation': {
+                      color: 'var(--gray-12)'
+                    },
+                    'operator': {
+                      color: 'var(--gray-12)'
+                    },
+                    'symbol': {
+                      color: 'var(--gray-12)'
+                    }
+                  }}
+                  customStyle={{
+                    margin: 0,
+                    padding: 0,
+                    background: "none",
+                    fontSize: "0.9rem",
+                    lineHeight: 1.6,
+                  }}
+                  codeTagProps={{
+                    className: "dark:text-[--gray-12]",
+                    style: {
+                      color: "inherit"
+                    }
+                  }}
+                >
+                  {String(children).replace(/\n$/, "")}
+                </SyntaxHighlighter>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    },
+    // 修改表格相关组件的响应式设计
+    table: ({ children, ...props }: ComponentPropsWithoutRef<'table'>) => (
+      <div className="w-full my-4 sm:my-6 -mx-4 sm:mx-0 overflow-hidden">
+        <div className="overflow-x-auto">
+          <div className="min-w-[640px] sm:min-w-0">
+            <div className="border-x border-t sm:border-t border-[--gray-6] rounded-t-none sm:rounded-t-lg bg-white dark:bg-[--gray-1]">
+              <table className="w-full border-collapse text-xs sm:text-sm" {...props}>
+                {children}
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    ),
+    
+    th: ({ children, ...props }: ComponentPropsWithoutRef<'th'>) => (
+      <th 
+        className="px-4 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase tracking-wider
+                  text-[--gray-12] break-words hyphens-auto"
+        {...props}
+      >
+        {children}
+      </th>
+    ),
+    
+    td: ({ children, ...props }: ComponentPropsWithoutRef<'td'>) => (
+      <td 
+        className="px-4 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-xs sm:text-sm text-[--gray-11] break-words hyphens-auto
+                [&:first-child]:font-medium [&:first-child]:text-[--gray-12]" 
+        {...props}
+      >
+        {children}
+      </td>
+    ),
+  }), [mockPost.id, headingIdsArrays]);
+
+  // 修改滚动监听逻辑
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const observer = new IntersectionObserver(
       (entries) => {
+        if (isClickScrolling.current) return;
+
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setActiveId(entry.target.id);
@@ -211,43 +611,198 @@ export default new Template({}, ({ http, args }) => {
         });
       },
       {
+        root: containerRef.current,
         rootMargin: '-80px 0px -80% 0px',
         threshold: 0.5
       }
     );
 
-    headings.forEach((heading) => observer.observe(heading));
+    tocItems.forEach((item) => {
+      const element = document.getElementById(item.id);
+      if (element) {
+        observer.observe(element);
+      }
+    });
 
-    return () => observer.disconnect();
+    return () => {
+      tocItems.forEach((item) => {
+        const element = document.getElementById(item.id);
+        if (element) {
+          observer.unobserve(element);
+        }
+      });
+    };
+  }, [tocItems]);
+
+  // 修改点击��理函数
+  const handleTocClick = useCallback((e: React.MouseEvent, itemId: string) => {
+    e.preventDefault();
+    const element = document.getElementById(itemId);
+    const container = document.querySelector("#main-content");
+    const contentBox = document.querySelector(".prose"); // 获取实际内容容器
+
+    if (element && container && contentBox) {
+      isClickScrolling.current = true;
+      
+      const elementRect = element.getBoundingClientRect();
+      const contentBoxRect = contentBox.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      
+      // 计算元素相对于内容容器的偏移量
+      const relativeTop = elementRect.top - contentBoxRect.top;
+      
+      // 计算内容容器相对于滚动容器的偏移量
+      const contentOffset = contentBoxRect.top - containerRect.top;
+      
+      // 计算最终滚动距离
+      const scrollDistance = container.scrollTop + relativeTop + contentOffset;
+
+      container.scrollTo({
+        top: scrollDistance,
+        behavior: "smooth",
+      });
+      
+      setActiveId(itemId);
+      
+      // 滚动完成后重置标记
+      const resetTimeout = setTimeout(() => {
+        isClickScrolling.current = false;
+      }, 100);
+
+      return () => clearTimeout(resetTimeout);
+    }
   }, []);
 
+  // 修改��动端目录的渲染逻辑
+  const mobileMenu = isMounted && (
+    <>
+      <Button
+        className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full shadow-lg bg-[--accent-9] text-white"
+        onClick={() => setShowToc(true)}
+      >
+        <CodeIcon className="w-5 h-5" />
+      </Button>
+
+      {showToc && (
+        <div 
+          className="lg:hidden fixed inset-0 z-50 bg-black/50 transition-opacity duration-300"
+          onClick={() => setShowToc(false)}
+        >
+          <div 
+            className="absolute right-0 top-0 bottom-0 w-72 bg-white dark:bg-[--gray-1] shadow-xl
+              transform transition-transform duration-300 ease-out
+              translate-x-0 animate-in slide-in-from-right"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center p-4 border-b border-[--gray-6]">
+              <Text size="2" weight="medium" className="text-[--gray-12]">
+                目录
+              </Text>
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowToc(false)}
+                className="hover:bg-[--gray-4] active:bg-[--gray-5] transition-colors"
+              >
+                关闭
+              </Button>
+            </div>
+
+            <ScrollArea
+              type="hover"
+              scrollbars="vertical"
+              className="h-[calc(100vh-64px)] p-4"
+            >
+              <div className="space-y-2">
+                {tocItems.map((item, index) => {
+                  if (item.level > 3) return null;
+                  return (
+                    <a
+                      key={`${item.id}-${index}`}
+                      href={`#${item.id}`}
+                      className={`
+                        block py-1.5 px-3 rounded transition-colors
+                        ${
+                          activeId === item.id
+                            ? "text-[--accent-11] font-medium bg-[--accent-3]"
+                            : "text-[--gray-11] hover:text-[--gray-12] hover:bg-[--gray-3]"
+                        }
+                        ${item.level === 2 ? "ml-4" : item.level === 3 ? "ml-8" : ""}
+                        ${
+                          item.level === 1
+                            ? "text-sm font-medium"
+                            : item.level === 2 
+                              ? "text-[0.8125rem]" 
+                              : `text-xs ${activeId === item.id ? "text-[--accent-11]" : "text-[--gray-10]"}`
+                        }
+                      `}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const element = document.getElementById(item.id);
+                        if (element) {
+                          const yOffset = -80;
+                          element.scrollIntoView({ behavior: 'smooth' });
+                          window.scrollBy(0, yOffset);
+                          setActiveId(item.id);
+                          setShowToc(false);
+                        }
+                      }}
+                    >
+                      {item.text}
+                    </a>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
   return (
-    <Container size="4" >
-      <Flex className="relative" gap="8">
+    <Container 
+      ref={containerRef}  // 添加ref到最外层容器
+      size={{initial: "2", sm: "3", md: "4"}}
+      className="px-4 sm:px-6 md:px-8"
+    >
+      {mobileMenu}
+      
+      <Flex 
+        className="relative flex-col lg:flex-row" 
+        gap={{initial: "4", lg: "8"}}
+      >
         {/* 文章主体 */}
-        <Box className="flex-1">
-          <Box className="p-0">
-            {/* 章头部 */}
-            <Box className="mb-8">
-              <Heading 
-                size="8" 
-                className="mb-6 leading-tight text-[--gray-12] font-bold tracking-tight"
+        <Box className="w-full lg:flex-1">
+          <Box className="p-4 sm:p-6 md:p-8 bg-white dark:bg-[--gray-1] rounded-lg shadow-sm">
+            {/* 头部 */}
+            <Box className="mb-4 sm:mb-8">
+              <Heading
+                size={{initial: "6", sm: "7", md: "8"}}
+                className="mb-4 sm:mb-6 leading-tight text-[--gray-12] font-bold tracking-tight"
               >
                 {mockPost.title}
               </Heading>
 
-              <Flex gap="6" className="items-center text-[--gray-11] flex-wrap">
+              <Flex
+                gap={{initial: "3", sm: "4", md: "6"}}
+                className="items-center text-[--gray-11] flex-wrap"
+              >
                 {/* 作者名字 */}
-                <Text size="2" weight="medium">
+                <Text
+                  size="2"
+                  weight="medium"
+                >
                   {mockPost.authorName}
                 </Text>
-                
 
                 {/* 分隔符 */}
                 <Box className="w-px h-4 bg-[--gray-6]" />
 
                 {/* 发布日期 */}
-                <Flex align="center" gap="2">
+                <Flex
+                  align="center"
+                  gap="2"
+                >
                   <CalendarIcon className="w-3.5 h-3.5" />
                   <Text size="2">
                     {mockPost.publishedAt?.toLocaleDateString("zh-CN", {
@@ -266,9 +821,9 @@ export default new Template({}, ({ http, args }) => {
                   {mockPost.categories?.map((category) => {
                     const color = getColorScheme(category.name);
                     return (
-                      <Text 
-                        key={category.name} 
-                        size="2" 
+                      <Text
+                        key={category.name}
+                        size="2"
                         className={`px-3 py-0.5 ${color.bg} ${color.text} rounded-md 
                                     border ${color.border} font-medium ${color.hover}
                                     transition-colors cursor-pointer`}
@@ -287,18 +842,18 @@ export default new Template({}, ({ http, args }) => {
                   {mockPost.tags?.map((tag) => {
                     const color = getColorScheme(tag.name);
                     return (
-                      <Text 
-                        key={tag.name} 
-                        size="2" 
+                      <Text
+                        key={tag.name}
+                        size="2"
                         className={`px-3 py-1 ${color.bg} ${color.text} rounded-md 
                                     border ${color.border} ${color.hover}
                                     transition-colors cursor-pointer flex items-center gap-2`}
                       >
-                        <span 
+                        <span
                           className={`inline-block w-1.5 h-1.5 rounded-full ${color.dot}`}
-                          style={{ 
+                          style={{
                             flexShrink: 0,
-                            opacity: 0.8
+                            opacity: 0.8,
                           }}
                         />
                         {tag.name}
@@ -309,7 +864,7 @@ export default new Template({}, ({ http, args }) => {
               </Flex>
             </Box>
 
-            {/* 修改封面图片样式 */}
+            {/* 修改片样式 */}
             {mockPost.coverImage && (
               <Box className="mb-16 rounded-xl overflow-hidden aspect-[2/1] shadow-lg">
                 <img
@@ -320,195 +875,75 @@ export default new Template({}, ({ http, args }) => {
               </Box>
             )}
 
-            {/* 文章内容 - 优化排版和间距 */}
-            <Box className="max-w-none">
-              <ReactMarkdown
-                components={{
-                  h1: ({ children, node, ...props }: HeadingProps) => {
-                    const text = children?.toString() || '';
-                    const id = `heading-1-${text.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-1`;
-                    return (
-                      <Heading
-                        as="h1"
-                        id={id}
-                        className="text-3xl font-bold mt-12 mb-6 text-[--gray-12] scroll-mt-20"
-                      >
-                        {children}
-                      </Heading>
-                    );
-                  },
-                  h2: ({ children, node, ...props }: HeadingProps) => {
-                    const text = children?.toString() || '';
-                    const id = `heading-2-${text.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-1`;
-                    return (
-                      <Heading
-                        as="h2"
-                        id={id}
-                        className="text-2xl font-semibold mt-10 mb-4 text-[--gray-12] scroll-mt-20"
-                      >
-                        {children}
-                      </Heading>
-                    );
-                  },
-                  h3: ({ children, node, ...props }: HeadingProps) => {
-                    const text = children?.toString() || '';
-                    const id = `heading-3-${text.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-1`;
-                    return (
-                      <Heading
-                        as="h3"
-                        id={id}
-                        className="text-xl font-medium mt-8 mb-4 text-[--gray-12] scroll-mt-20"
-                      >
-                        {children}
-                      </Heading>
-                    );
-                  },
-                  code: ({ inline, className, children }: MarkdownCodeProps) => {
-                    const match = /language-(\w+)/.exec(className || '');
-                    const lang = match ? match[1].toLowerCase() : '';
-                    
-                    return inline ? (
-                      <code className="px-1.5 py-0.5 rounded bg-[--gray-3] text-[--gray-12] text-[0.9em]">
-                        {children}
-                      </code>
-                    ) : (
-                      <pre className="relative my-6 rounded-lg border border-[--gray-6] bg-[--gray-2]">
-                        <div className="flex justify-between items-center absolute top-0 left-0 right-0 h-9 px-4 border-b border-[--gray-6]">
-                          {/* 左侧语言类型 */}
-                          <div className="text-xs text-[--gray-11]">
-                            {lang || 'text'}
-                          </div>
-                          {/* 右侧复制按钮 */}
-                          <CopyButton code={String(children)} />
-                        </div>
-                        <SyntaxHighlighter
-                          language={lang || 'text'}
-                          PreTag="div"
-                          style={{
-                            ...oneDark,
-                            'pre[class*="language-"]': {
-                              ...oneDark['pre[class*="language-"]'],
-                              background: 'transparent',
-                              margin: 0,
-                              padding: 0,
-                            },
-                            'code[class*="language-"]': {
-                              ...oneDark['code[class*="language-"]'],
-                              background: 'transparent',
-                              textShadow: 'none',
-                              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                              fontWeight: '500',
-                              opacity: '0.95',
-                            }
-                          }}
-                          customStyle={{
-                            margin: 0,
-                            padding: '3rem 1.5rem 1.5rem',  // 增加顶部内边距，为头部工具栏留出空间
-                            background: 'none',
-                            fontSize: '0.95rem',
-                            lineHeight: '1.6',
-                            fontFeatureSettings: '"liga" 0',
-                            WebkitFontSmoothing: 'antialiased',
-                            MozOsxFontSmoothing: 'grayscale',
-                          }}
-                        >
-                          {String(children).replace(/\n$/, '')}
-                        </SyntaxHighlighter>
-                      </pre>
-                    );
-                  },
-                  p: ({ children }) => (
-                    <Text as="p" className="text-base leading-relaxed mb-6 text-[--gray-11]">
-                      {children}
-                    </Text>
-                  ),
-                  ul: ({ children }) => (
-                    <ul className="list-disc pl-6 mb-6 space-y-2 text-[--gray-11]">
-                      {children}
-                    </ul>
-                  ),
-                  ol: ({ children }) => (
-                    <ol className="list-decimal pl-6 mb-6 space-y-2 text-[--gray-11]">
-                      {children}
-                    </ol>
-                  ),
-                  li: ({ children }) => (
-                    <li className="text-base leading-relaxed">
-                      {children}
-                    </li>
-                  ),
-                  blockquote: ({ children }) => (
-                    <blockquote className="border-l-4 border-[--gray-6] pl-4 py-1 my-6 text-[--gray-11] italic">
-                      {children}
-                    </blockquote>
-                  ),
-                  strong: ({ children }) => (
-                    <strong className="font-semibold text-[--gray-12]">
-                      {children}
-                    </strong>
-                  ),
-                  a: ({ children, href }) => (
-                    <a
-                      href={href}
-                      className="text-[--accent-11] hover:text-[--accent-12] underline-offset-4 hover:underline transition-colors"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {children}
-                    </a>
-                  ),
-                } as Partial<Components>}
-              >
-                {mockPost.content}
-              </ReactMarkdown>
+            {/* 内容区域 */}
+            <Box className="prose dark:prose-invert max-w-none 
+              [&_pre]:!bg-transparent [&_pre]:!p-0 [&_pre]:!m-0 [&_pre]:!border-0
+              [&_.prism-code]:!bg-transparent [&_.prism-code]:!shadow-none
+              [&_pre_.prism-code]:!bg-transparent [&_pre_.prism-code]:!shadow-none
+              [&_code]:!bg-transparent [&_code]:!shadow-none
+              [&_table]:!m-0
+            ">
+              <div ref={contentRef}>
+                <ReactMarkdown 
+                  components={components}
+                  remarkPlugins={[remarkGfm]}
+                >
+                  {mockPost.content}
+                </ReactMarkdown>
+              </div>
             </Box>
           </Box>
         </Box>
 
-        {/* 右侧目录 */}
-        <Box className="hidden lg:block w-36 relative">
+        {/* 侧边目录 */}
+        <Box className="hidden lg:block w-48 xl:w-56 relative">
           <Box className="sticky top-8">
-            <Text 
-              size="2" 
-              weight="medium" 
+            <Text
+              size="2"
+              weight="medium"
               className="mb-4 text-[--gray-11] flex items-center gap-2 text-sm"
             >
               <CodeIcon className="w-3 h-3" />
               目录
             </Text>
-            <ScrollArea className="h-[calc(100vh-250px)]">
-              <Box className="space-y-1.5">
-                {toc.map((item) => (
-                  <a
-                    key={item.id}
-                    href={`#${item.id}`}
-                    className={`
-                      block text-xs leading-relaxed transition-all
-                      border-l-2 
-                      ${item.level === 1 ? 'pl-3 border-[--gray-8]' : ''}
-                      ${item.level === 2 ? 'pl-3 ml-4 border-[--gray-7]' : ''}
-                      ${item.level === 3 ? 'pl-3 ml-8 border-[--gray-6]' : ''}
-                      ${item.level >= 4 ? 'pl-3 ml-12 border-[--gray-5]' : ''}
-                      ${activeId === item.id 
-                        ? 'text-[--accent-11] font-medium border-[--accent-9]' 
-                        : 'text-[--gray-11] hover:text-[--gray-12] hover:border-[--gray-8]'
-                      }
-                    `}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const element = document.getElementById(item.id);
-                      if (element) {
-                        element.scrollIntoView({ 
-                          behavior: 'smooth',
-                          block: 'center'
-                        });
-                        setActiveId(item.id);
-                      }
-                    }}
-                  >
-                    {item.text}
-                  </a>
-                ))}
+            <ScrollArea
+              type="hover"
+              scrollbars="vertical"
+              className="max-h-[calc(100vh-180px)]"
+              style={{
+                ["--scrollbar-size" as string]: "6px",
+              }}
+            >
+              <Box className="space-y-1.5 pr-4">
+                {tocItems.map((item, index) => {
+                  if (item.level > 3) return null;
+                  return (
+                    <a
+                      key={`${item.id}-${index}`}
+                      href={`#${item.id}`}
+                      className={`
+                        block text-xs leading-relaxed transition-all
+                        border-l-2 pl-3
+                        ${
+                          activeId === item.id
+                            ? "text-[--accent-11] font-medium border-[--accent-9]"
+                            : "text-[--gray-11] hover:text-[--gray-12] border-[--gray-6] hover:border-[--gray-8]"
+                        }
+                        ${item.level === 2 ? "ml-3" : item.level === 3 ? "ml-6" : ""}
+                        ${
+                          item.level === 2 
+                            ? "text-[0.75rem]" 
+                            : item.level === 3 
+                              ? `text-[0.7rem] ${activeId === item.id ? "text-[--accent-11]" : "text-[--gray-10]"}`
+                              : ""
+                        }
+                      `}
+                      onClick={(e) => handleTocClick(e, item.id)}
+                    >
+                      {item.text}
+                    </a>
+                  );
+                })}
               </Box>
             </ScrollArea>
           </Box>
@@ -516,4 +951,4 @@ export default new Template({}, ({ http, args }) => {
       </Flex>
     </Container>
   );
-})
+});

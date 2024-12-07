@@ -87,5 +87,17 @@ export default defineConfig(async ({ mode }) => {
     },
     publicDir: resolve(__dirname, "public"),
     envPrefix: "VITE_",
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            three: ['three'],
+            gsap: ['gsap']
+          }
+        }
+      },
+      // 优化大型依赖的处理
+      chunkSizeWarningLimit: 1000
+    }
   };
 });

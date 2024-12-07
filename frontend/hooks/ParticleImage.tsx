@@ -224,7 +224,7 @@ const getOptimalImageParams = (width: number, height: number) => {
   const pixelRatio = window.devicePixelRatio || 1;
   const isMobile = window.innerWidth <= 768;
   
-  // 移动端使用更大的采样间隔来减少���数量
+  // 移动端使用更大的采样间隔来减少数量
   let samplingGap = isMobile 
     ? Math.ceil(Math.max(width, height) / 60)  // 移动端降低采样密度
     : Math.ceil(Math.max(width, height) / 120); // 桌面端保持较高采密度
@@ -394,29 +394,73 @@ export const ParticleImage = ({
 
     // 清理场景资源
     if (sceneRef.current) {
-      cleanupResources(sceneRef.current);
+      // 遍历场景中的所有对象
+      sceneRef.current.traverse((object) => {
+        if (object instanceof THREE.Points) {
+          const geometry = object.geometry;
+          const material = object.material as THREE.PointsMaterial;
+          
+          // 清理几何体
+          if (geometry) {
+            // 清空缓冲区数据
+            if (geometry.attributes.position) {
+              geometry.attributes.position.array = new Float32Array(0);
+            }
+            if (geometry.attributes.color) {
+              geometry.attributes.color.array = new Float32Array(0);
+            }
+            
+            // 移除所有属性
+            geometry.deleteAttribute('position');
+            geometry.deleteAttribute('color');
+            geometry.dispose();
+          }
+          
+          // 清理材质
+          if (material) {
+            material.dispose();
+          }
+        }
+      });
+      
+      // 清空场景
+      while(sceneRef.current.children.length > 0) { 
+        sceneRef.current.remove(sceneRef.current.children[0]); 
+      }
     }
 
     // 修改渲染器清理逻辑
     if (rendererRef.current) {
       const renderer = rendererRef.current;
+      
+      // 确保在移除 DOM 元素前停止渲染
+      renderer.setAnimationLoop(null);
+      
+      // 清理渲染器上下文
+      renderer.dispose();
+      renderer.forceContextLoss();
+      
+      // 安全地移除 DOM 元素
       const domElement = renderer.domElement;
-      
-      // 使用 requestAnimationFrame 确保在一帧进�� DOM 操作
-      requestAnimationFrame(() => {
-        if (isMountedRef.current && containerRef.current?.contains(domElement)) {
-          try {
-            containerRef.current.removeChild(domElement);
-          } catch (e) {
-            console.warn('清理渲染器DOM元素失败:', e);
+      if (containerRef.current?.contains(domElement)) {
+        requestAnimationFrame(() => {
+          if (isMountedRef.current && containerRef.current?.contains(domElement)) {
+            try {
+              containerRef.current.removeChild(domElement);
+            } catch (e) {
+              console.warn('清理渲染器DOM元素失败:', e);
+            }
           }
-        }
-        
-        renderer.dispose();
-        renderer.forceContextLoss();
-      });
+        });
+      }
       
+      // 清空引用
       rendererRef.current = undefined;
+    }
+
+    // 清理相机引用
+    if (cameraRef.current) {
+      cameraRef.current = undefined;
     }
   }, []);
 
@@ -1013,7 +1057,7 @@ export const ImageLoader = ({
       });
     };
 
-    // 确保src存在再设���
+    // 确保src存在再设置
     if (src) {
       img.src = src;
     }

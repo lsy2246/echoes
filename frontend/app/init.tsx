@@ -1,7 +1,7 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import { DEFAULT_CONFIG } from "app/env";
 import { HttpClient } from "core/http";
-import { ThemeModeToggle } from "hooks/themeMode";
+import { ThemeModeToggle } from "hooks/ThemeMode";
 import {
   Theme,
   Button,
@@ -13,8 +13,8 @@ import {
   Box,
   TextField,
 } from "@radix-ui/themes";
-import { toast } from "hooks/notification";
-import { Echoes } from "hooks/echoes";
+import { toast } from "hooks/Notification";
+import { Echoes } from "hooks/Echoes";
 
 interface SetupContextType {
   currentStep: number;
@@ -36,7 +36,7 @@ const StepContainer: React.FC<{ title: string; children: React.ReactNode }> = ({
   children,
 }) => (
   <Box style={{ width: "90%", maxWidth: "600px", margin: "0 auto" }}>
-    <Heading size="5" mb="4" weight="bold">
+    <Heading size="5" mb="4" weight="bold" style={{ userSelect: "none" }}>
       {title}
     </Heading>
     <Flex direction="column" gap="4">
@@ -237,15 +237,27 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
       <div>
         <Box mb="6">
           <Text as="label" size="2" weight="medium" mb="2" className="block">
-            数据库类型
+            数据库类型 <Text color="red">*</Text>
           </Text>
           <Select.Root value={dbType} onValueChange={setDbType}>
-            <Select.Trigger />
-            <Select.Content>
+            <Select.Trigger className="w-full" />
+            <Select.Content position="popper" sideOffset={8}>
               <Select.Group>
-                <Select.Item value="postgresql">PostgreSQL</Select.Item>
-                <Select.Item value="mysql">MySQL</Select.Item>
-                <Select.Item value="sqllite">SQLite</Select.Item>
+                <Select.Item value="postgresql">
+                  <Flex gap="2" align="center">
+                    <Text>PostgreSQL</Text>
+                  </Flex>
+                </Select.Item>
+                <Select.Item value="mysql">
+                  <Flex gap="2" align="center">
+                    <Text>MySQL</Text>
+                  </Flex>
+                </Select.Item>
+                <Select.Item value="sqllite">
+                  <Flex gap="2" align="center">
+                    <Text>SQLite</Text>
+                  </Flex>
+                </Select.Item>
               </Select.Group>
             </Select.Content>
           </Select.Root>
@@ -461,9 +473,12 @@ const SetupComplete: React.FC = () => (
 );
 
 export default function SetupPage() {
-  const [currentStep, setCurrentStep] = useState(() => {
-    return Number(import.meta.env.VITE_INIT_STATUS ?? 0) + 1;
-  });
+  const [currentStep, setCurrentStep] = useState(1);
+  useEffect(() => {
+    // 在客户端组件挂载后更新状态
+    const initStatus = Number(import.meta.env.VITE_INIT_STATUS ?? 0) + 1;
+    setCurrentStep(initStatus);
+  }, []);
 
   return (
     <Theme

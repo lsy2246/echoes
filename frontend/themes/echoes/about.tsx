@@ -8,7 +8,7 @@ import {
 } from "@radix-ui/react-icons";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import { ParticleImage } from "hooks/particleImage";
+import { ImageLoader } from "hooks/ParticleImage";
 
 const socialLinks = [
   {
@@ -93,7 +93,11 @@ export default new Template({}, ({ http, args }) => {
         <Flex direction="column" align="center" className="text-center mb-16">
           <Box className="w-40 h-40 mb-8 relative">
             <div className="absolute inset-0 bg-gradient-to-br from-[rgb(10,37,77)] via-[rgb(8,27,57)] to-[rgb(2,8,23)] rounded-full overflow-hidden">
-              <ParticleImage src="/path/to/your/avatar.jpg" />
+              <ImageLoader 
+                src="/images/avatar-placeholder.png"
+                alt="avatar"
+                className="w-full h-full"
+              />
             </div>
           </Box>
 
