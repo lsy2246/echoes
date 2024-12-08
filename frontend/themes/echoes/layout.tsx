@@ -18,7 +18,12 @@ import parse from 'html-react-parser';
 
 // 直接导出 Layout 实例
 export default new Layout(({ children, args }) => {
-  const [moreState, setMoreState] = useState(false);
+  const [moreState, setMoreState] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024 ? false : false;
+    }
+    return false;
+  });
   const [loginState, setLoginState] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
 
@@ -73,6 +78,121 @@ export default new Layout(({ children, args }) => {
     }
   };
 
+  // 修改移动端菜单的渲染逻辑
+  const mobileMenu = (
+    <Box className="flex lg:hidden gap-2 items-center">
+      {/* 添加移动端进度指示器 */}
+      <Box 
+        className={`w-10 h-10 flex items-center justify-center ${
+          scrollProgress > 0 
+            ? 'block' 
+            : 'hidden'
+        }`}
+      >
+        <Button
+          variant="ghost"
+          className="w-10 h-10 p-0 text-[--gray-12] hover:text-[--accent-9] transition-colors flex items-center justify-center [&_text]:text-[--gray-12] [&_text:hover]:text-[--accent-9]"
+          onClick={scrollToTop}
+        >
+          <svg 
+            className="w-6 h-6"
+            viewBox="0 0 100 100"
+          >
+            <text
+              x="50"
+              y="55"
+              className="progress-indicator font-bold transition-colors"
+              dominantBaseline="middle"
+              textAnchor="middle"
+              style={{ 
+                fontSize: '56px',
+                fill: 'currentColor'
+              }}
+            >
+              {Math.round(scrollProgress)}
+            </text>
+          </svg>
+        </Button>
+      </Box>
+
+      <Button 
+        className="w-10 h-10 p-0 hover:text-[--accent-9] transition-colors flex items-center justify-center group bg-transparent border-0"
+        onClick={() => setMoreState(!moreState)}
+      >
+        {moreState ? (
+          <Cross1Icon className="h-5 w-5 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
+        ) : (
+          <HamburgerMenuIcon className="h-5 w-5 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
+        )}
+      </Button>
+
+      {/* 移动端菜单内容 */}
+      {moreState && (
+        <div 
+          className="absolute top-full right-4 w-[180px] mt-2 rounded-md bg-[--gray-1] border border-[--gray-a5] shadow-lg
+            animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 
+            duration-200 z-[90]"
+        >
+          <Box className="flex flex-col">
+            {/* 导航链接区域 */}
+            <Box className="flex flex-col">
+              <Box className="flex flex-col [&>a]:px-4 [&>a]:py-2.5 [&>a]:text-[--gray-12] [&>a]:transition-colors [&>a:hover]:bg-[--gray-a3] [&>a]:text-lg [&>a]:text-center [&>a]:border-b [&>a]:border-[--gray-a5] [&>a:first-child]:rounded-t-md [&>a:last-child]:border-b-0">
+                {parse(navString)}
+              </Box>
+            </Box>
+
+            {/* 搜索框区域 */}
+            <Box className="p-4 border-t border-[--gray-a5]">
+              <TextField.Root
+                size="2"
+                variant="surface"
+                placeholder="搜索..."
+                className="w-full [&_input]:pl-3 hover:border-[--accent-9] border transition-colors group"
+              >
+                <TextField.Slot
+                  side="right"
+                  className="p-2"
+                >
+                  <MagnifyingGlassIcon className="h-4 w-4 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
+                </TextField.Slot>
+              </TextField.Root>
+            </Box>
+
+            {/* 用户操作区域 */}
+            <Box className="p-4 border-t border-[--gray-a5]">
+              <Flex gap="3" align="center">
+                {/* 用户信息/登录按钮 - 调整为 70% 宽度 */}
+                <Box className="w-[70%]">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start gap-2 text-[--gray-12] hover:text-[--accent-9] hover:bg-[--gray-a3] transition-colors"
+                  >
+                    {loginState ? (
+                      <>
+                        <AvatarIcon className="w-5 h-5" />
+                        <span>个人中心</span>
+                      </>
+                    ) : (
+                      <>
+                        <PersonIcon className="w-5 h-5" />
+                        <span>登录/注册</span>
+                      </>
+                    )}
+                  </Button>
+                </Box>
+
+                {/* 主题切换按钮 - 调整为 30% 宽度 */}
+                <Box className="w-[30%] flex justify-end [&_button]:w-10 [&_button]:h-10 [&_svg]:w-5 [&_svg]:h-5 [&_button]:text-[--gray-12] [&_button:hover]:text-[--accent-9]">
+                  <ThemeModeToggle />
+                </Box>
+              </Flex>
+            </Box>
+          </Box>
+        </div>
+      )}
+    </Box>
+  );
+
   return (
     <Theme
       grayColor="gray"
@@ -87,7 +207,7 @@ export default new Layout(({ children, args }) => {
         {/* 导航栏 */}
         <Box
           asChild
-          className="w-full backdrop-blur-sm border-b border-[--gray-a5] z-60 sticky top-0"
+          className="w-full backdrop-blur-sm border-b border-[--gray-a5] z-[100] sticky top-0"
         >
           <nav>
             <Container size="4">
@@ -100,7 +220,7 @@ export default new Layout(({ children, args }) => {
                 <Flex align="center">
                   <Link
                     href="/"
-                    className="flex items-center group transition-all"
+                    className="hover-text flex items-center"
                   >
                     <Box className="w-20 h-20 [&_path]:transition-all [&_path]:duration-200 group-hover:[&_path]:stroke-[--accent-9]">
                       <Echoes />
@@ -221,138 +341,7 @@ export default new Layout(({ children, args }) => {
                   </Box>
 
                   {/* 移动菜单按钮 */}
-                  <Box className="flex lg:hidden gap-2 items-center">
-                    {/* 添加移动端进度指示器 */}
-                    <Box 
-                      className={`w-10 h-10 flex items-center justify-center ${
-                        scrollProgress > 0 
-                          ? 'block' 
-                          : 'hidden'
-                      }`}
-                    >
-                      <Button
-                        variant="ghost"
-                        className="w-10 h-10 p-0 text-[--gray-12] hover:text-[--accent-9] transition-colors flex items-center justify-center [&_text]:text-[--gray-12] [&_text:hover]:text-[--accent-9]"
-                        onClick={scrollToTop}
-                      >
-                        <svg 
-                          className="w-6 h-6"
-                          viewBox="0 0 100 100"
-                        >
-                          <text
-                            x="50"
-                            y="55"
-                            className="progress-indicator font-bold transition-colors"
-                            dominantBaseline="middle"
-                            textAnchor="middle"
-                            style={{ 
-                              fontSize: '56px',
-                              fill: 'currentColor'
-                            }}
-                          >
-                            {Math.round(scrollProgress)}
-                          </text>
-                        </svg>
-                      </Button>
-                    </Box>
-
-                    <DropdownMenuPrimitive.Root
-                      open={moreState}
-                      onOpenChange={setMoreState}
-                    >
-                      <DropdownMenuPrimitive.Trigger asChild>
-                        <Button 
-                          className="w-10 h-10 p-0 hover:text-[--accent-9] transition-colors flex items-center justify-center group bg-transparent border-0"
-                        >
-                          {moreState ? (
-                            <Cross1Icon className="h-5 w-5 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
-                          ) : (
-                            <HamburgerMenuIcon className="h-5 w-5 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
-                          )}
-                        </Button>
-                      </DropdownMenuPrimitive.Trigger>
-                      <DropdownMenuPrimitive.Portal>
-                        <DropdownMenuPrimitive.Content
-                          align="end"
-                          sideOffset={20}
-                          className="min-w-[200px] rounded-md bg-[--gray-1] border border-[--gray-a5] shadow-lg 
-                            data-[state=open]:animate-in 
-                            data-[state=closed]:animate-out 
-                            data-[state=closed]:fade-out-0 
-                            data-[state=open]:fade-in-0 
-                            data-[state=closed]:zoom-out-95 
-                            data-[state=open]:zoom-in-95 
-                            data-[state=closed]:slide-in-from-top-2 
-                            data-[state=left]:slide-in-from-right-2 
-                            data-[state=right]:slide-in-from-left-2 
-                            data-[state=top]:slide-in-from-bottom-2
-                            duration-200
-                            max-h-[calc(100vh-6rem)] 
-                            overflow-y-auto 
-                            z-50
-                            absolute
-                            top-full
-                            right-0"
-                        >
-                          <Box className="flex flex-col">
-                            {/* 导航链接区域 */}
-                            <Box className="flex flex-col">
-                              <Box className="flex flex-col [&>a]:px-4 [&>a]:py-2.5 [&>a]:text-[--gray-12] [&>a]:transition-colors [&>a:hover]:bg-[--gray-a3] [&>a]:text-lg [&>a]:text-center [&>a]:border-b [&>a]:border-[--gray-a5] [&>a:first-child]:rounded-t-md [&>a:last-child]:border-b-0">
-                                {parse(navString)}
-                              </Box>
-                            </Box>
-
-                            {/* 搜索框区域 */}
-                            <Box className="p-4 border-t border-[--gray-a5]">
-                              <TextField.Root
-                                size="2"
-                                variant="surface"
-                                placeholder="搜索..."
-                                className="w-full [&_input]:pl-3 hover:border-[--accent-9] border transition-colors group"
-                              >
-                                <TextField.Slot
-                                  side="right"
-                                  className="p-2"
-                                >
-                                  <MagnifyingGlassIcon className="h-4 w-4 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
-                                </TextField.Slot>
-                              </TextField.Root>
-                            </Box>
-
-                            {/* 用户操作区域 */}
-                            <Box className="p-4 border-t border-[--gray-a5]">
-                              <Flex gap="3" align="center">
-                                {/* 用户信息/登录按钮 - 调整为 70% 宽度 */}
-                                <Box className="w-[70%]">
-                                  <Button 
-                                    variant="ghost" 
-                                    className="w-full justify-start gap-2 text-[--gray-12] hover:text-[--accent-9] hover:bg-[--gray-a3] transition-colors"
-                                  >
-                                    {loginState ? (
-                                      <>
-                                        <AvatarIcon className="w-5 h-5" />
-                                        <span>个人中心</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <PersonIcon className="w-5 h-5" />
-                                        <span>登录/注册</span>
-                                      </>
-                                    )}
-                                  </Button>
-                                </Box>
-
-                                {/* 主题切换按钮 - 调整为 30% 宽度 */}
-                                <Box className="w-[30%] flex justify-end [&_button]:w-10 [&_button]:h-10 [&_svg]:w-5 [&_svg]:h-5 [&_button]:text-[--gray-12] [&_button:hover]:text-[--accent-9]">
-                                  <ThemeModeToggle />
-                                </Box>
-                              </Flex>
-                            </Box>
-                          </Box>
-                        </DropdownMenuPrimitive.Content>
-                      </DropdownMenuPrimitive.Portal>
-                    </DropdownMenuPrimitive.Root>
-                  </Box>
+                  {mobileMenu}
                 </Flex>
               </Flex>
             </Container>

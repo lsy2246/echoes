@@ -1,95 +1,125 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import { useThemeMode } from 'hooks/ThemeMode';
 
-export const AnimatedBackground = () => {
+interface AnimatedBackgroundProps {
+  onError?: () => void;
+}
+
+export const AnimatedBackground = memo(({ onError }: AnimatedBackgroundProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { mode } = useThemeMode();
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      onError?.();
+      return;
+    }
 
-    const ctx = canvas.getContext('2d')!;
-    if (!ctx) return;
-
-    const canvasElement = canvas!;
-
-    // 生成随机HSL颜色
-    const getRandomHSLColor = () => {
-      const hue = Math.random() * 360;
-      const saturation = 70 + Math.random() * 30;
-      const lightness = mode === 'dark' 
-        ? 40 + Math.random() * 20
-        : 60 + Math.random() * 20;
+    try {
+      const ctx = canvas.getContext('2d', { 
+        alpha: true,
+        desynchronized: true
+      });
       
-      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-    };
+      if (!ctx) {
+        console.error('无法获取 canvas context');
+        onError?.();
+        return;
+      }
 
-    const ballColor = getRandomHSLColor();
-    let ballRadius = 100;
-    let x = canvas.width / 2;
-    let y = canvas.height - 200;
-    let dx = 0.2;
-    let dy = -0.2;
+      // 添加非空断言
+      const context = ctx!;
 
-    // 设置canvas尺寸为窗口大小
-    const resizeCanvas = () => {
-      // 保存调整前的相对位置
-      const relativeX = x / canvas.width;
-      const relativeY = y / canvas.height;
-      
-      // 更新canvas尺寸
+      // 添加必要的变量定义
+      const getRandomHSLColor = () => {
+        const hue = Math.random() * 360;
+        const saturation = 70 + Math.random() * 30;
+        const lightness = mode === 'dark' ? 40 + Math.random() * 20 : 60 + Math.random() * 20;
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+      };
+
+      const ballColor = getRandomHSLColor();
+      let ballRadius = 100;
+      let x = canvas.width / 2;
+      let y = canvas.height - 200;
+      let dx = 0.2;
+      let dy = -0.2;
+
+      // 添加 drawBall 函数
+      function drawBall() {
+        context.beginPath();
+        context.arc(x, y, ballRadius, 0, Math.PI * 2);
+        context.fillStyle = ballColor;
+        context.fill();
+        context.closePath();
+      }
+
+      // 设置 canvas 尺寸
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      
-      // 根据新尺寸更新球的位置
-      x = canvas.width * relativeX;
-      y = canvas.height * relativeY;
-      
-      // 立即重绘
-      drawBall();
-    };
 
-    function drawBall() {
-      ctx.beginPath();
-      ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-      ctx.fillStyle = ballColor;
-      ctx.fill();
-      ctx.closePath();
+      // 性能优化：降低动画帧率
+      const fps = 30;
+      const interval = 1000 / fps;
+      let then = Date.now();
+
+      const draw = () => {
+        const now = Date.now();
+        const delta = now - then;
+
+        if (delta > interval) {
+          // 更新时间戳
+          then = now - (delta % interval);
+
+          // 绘制逻辑...
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          drawBall();
+          
+          if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+            dx = -dx;
+          }
+          if (y + dy > canvas.height - ballRadius || y + dy < ballRadius) {
+            dy = -dy;
+          }
+
+          x += dx;
+          y += dy;
+        }
+
+        // 使用 requestAnimationFrame 代替 setInterval
+        animationFrameId = requestAnimationFrame(draw);
+      };
+
+      let animationFrameId: number;
+      draw();
+
+      // 清理函数
+      return () => {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+      };
+    } catch (error) {
+      console.error('Canvas 初始化失败:', error);
+      onError?.();
+      return;
     }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-      drawBall();
-
-      if (x + dx > canvasElement.width - ballRadius || x + dx < ballRadius) {
-        dx = -dx;
-      }
-      if (y + dy > canvasElement.height - ballRadius || y + dy < ballRadius) {
-        dy = -dy;
-      }
-
-      x += dx;
-      y += dy;
-    }
-
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    const interval = setInterval(draw, 10);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, [mode]);
+  }, [mode, onError]);
 
   return (
-    <div className="fixed inset-0 -z-10">
+    <div className="fixed inset-0 -z-10 overflow-hidden">
       <canvas
         ref={canvasRef}
-        className="w-full h-full"
-        style={{ filter: 'blur(150px)' }}
+        className="w-full h-full opacity-50"
+        style={{ 
+          filter: 'blur(150px)',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          willChange: 'transform'
+        }}
       />
     </div>
   );
-}; 
+}); 

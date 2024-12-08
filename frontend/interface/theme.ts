@@ -11,5 +11,6 @@ export interface ThemeConfig {
   layout?: string;
   configuration: Configuration;
   error?: string;
+  manage?: string;
   routes: Map<string, string>;
 }

@@ -53,37 +53,25 @@ body:has(:root[class~="dark"]) {
 .rt-Card,
 [class*="rt-Card"] {
   transition: all 0.3s ease;
+  border: 1px solid var(--gray-a3) !important;
+  /* 覆盖 Radix UI 的默认边框样式 */
+  --card-border-width: 0 !important;
+  outline: none !important;
 }
 
 /* 暗色主题卡片样式 */
 html[class~="dark"] body .rt-Card,
 html[class~="dark"] body [class*="rt-Card"] {
   background-color: rgb(2, 6, 16);
-  border-color: rgba(148, 163, 184, 0.1);
 }
 
-/* 通用交互元素样式 */
-.rt-Button,
-.rt-DialogContent,
-.rt-DropdownMenuContent,
-[class*="rt-Button"],
-[class*="rt-DialogContent"],
-[class*="rt-DropdownMenuContent"] {
-  transition: all 0.2s ease;
+/* 添加卡片悬停样式 */
+.rt-Card:hover,
+[class*="rt-Card"]:hover {
+  border-color: var(--accent-9) !important;
 }
 
-/* 暗色主题交互元素 */
-html[class~="dark"] body .rt-Button,
-html[class~="dark"] body .rt-DialogContent,
-html[class~="dark"] body .rt-DropdownMenuContent,
-html[class~="dark"] body [class*="rt-Button"],
-html[class~="dark"] body [class*="rt-DialogContent"],
-html[class~="dark"] body [class*="rt-DropdownMenuContent"] {
-  background-color: rgb(2, 6, 16);
-  border-color: rgba(148, 163, 184, 0.1);
-}
-
-/* 导航链接样式 */
+/* 导航链接样式 - 更具体的选择器 */
 #nav a {
   position: relative;
   transition: all 0.2s ease;
@@ -108,6 +96,27 @@ html[class~="dark"] body [class*="rt-DropdownMenuContent"] {
 
 #nav a:hover::after {
   transform: scaleX(1);
+}
+
+/* Markdown 内容链接样式 */
+.prose a {
+  position: relative;
+  color: var(--accent-9);
+  text-decoration: none;
+  padding-bottom: 1px;
+  border-bottom: 1.5px solid var(--accent-8);
+  transition: all 0.2s ease;
+}
+
+.prose a:hover {
+  color: var(--accent-11);
+  border-bottom: 2px solid var(--accent-9);
+  padding-bottom: 0.5px;
+}
+
+/* 移除 Markdown 链接的导航样式 */
+.prose a::after {
+  display: none;
 }
 
 /* 进度指示器动画 */
@@ -214,4 +223,95 @@ html[class~="dark"] body [class*="shadow"] {
 
 .zoom-out-95 {
   animation: zoomOut 0.2s ease-in;
+}
+
+/* 通用交互效果 */
+.hover-card {
+  transition: all 0.3s ease;
+}
+
+.hover-card:hover {
+  transform: translateY(-2px);
+  background-color: var(--gray-4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.hover-border {
+  transition: border-color 0.2s ease;
+}
+
+.hover-border:hover {
+  border-color: var(--accent-9);
+}
+
+.hover-text {
+  transition: color 0.2s ease;
+}
+
+.hover-text:hover {
+  color: var(--accent-9);
+}
+
+.hover-scale {
+  transition: transform 0.5s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-bg {
+  transition: background-color 0.2s ease;
+}
+
+.hover-bg:hover {
+  background-color: var(--gray-3);
+}
+
+/* 横向滚动条容器 */
+.scroll-container {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--gray-a6) transparent; /* Firefox */
+  -webkit-overflow-scrolling: touch; /* iOS 滚动优化 */
+}
+
+/* Webkit 滚动条样式 */
+.scroll-container::-webkit-scrollbar {
+  height: 6px; /* 横向滚动条高度 */
+  width: auto;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+  margin: 0 4px; /* 轨道边距 */
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background: var(--gray-a6);
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-a8);
+}
+
+/* 暗色主题滚动条 */
+html[class~="dark"] .scroll-container::-webkit-scrollbar-thumb {
+  background: var(--gray-a4);
+}
+
+html[class~="dark"] .scroll-container::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-a5);
+}
+
+/* 隐藏滚动条但保持可滚动 */
+.scroll-hidden {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scroll-hidden::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }

@@ -62,7 +62,7 @@ const mockArticles: PostDisplay[] = [
     content: "在这篇文章中，我们将探讨一些提高 JavaScript 性能的技巧和最佳实践...",
     authorName: "王五",
     publishedAt: new Date("2024-03-13"),
-    coverImage: "https://mages.unsplash.com/photo-1592609931095-54a2168ae893?w=500&auto=format",
+    coverImage: "ssssxx",
     metaKeywords: "",
     metaDescription: "",
     status: "published",
@@ -156,7 +156,7 @@ const mockArticles: PostDisplay[] = [
   {
     id: 7,
     title: "Web 性能优化：从理论到实践",
-    content: "全面解析 Web 性能优化策略，包括资源加载优化、渲染性能优化、网络优化等多个维度...",
+    content: "全面解析 Web 性能优化策略，包括资源加载优化、渲染性能优化、网络优化等多个...",
     authorName: "周九",
     publishedAt: new Date("2024-03-10"),
     coverImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format",
@@ -244,10 +244,7 @@ export default new Template({}, ({ http, args }) => {
         {articleData.map((article) => (
           <Card
             key={article.id}
-            className="group cursor-pointer transition-all duration-300 
-              bg-[--card-bg] border-[--border-color] 
-              hover:shadow-lg hover:shadow-[--card-bg]/10
-              hover:border-[--accent-9]/50"
+            className="group cursor-pointer hover-card border border-[--gray-a3]"
           >
             <div className="p-4 relative flex flex-col gap-4">
               <div className="flex gap-4">
@@ -279,7 +276,11 @@ export default new Template({}, ({ http, args }) => {
 
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
-                  <ScrollArea type="hover" scrollbars="horizontal" className="flex-1">
+                  <ScrollArea 
+                    type="hover" 
+                    scrollbars="horizontal" 
+                    className="scroll-container flex-1"
+                  >
                     <Flex gap="2" className="flex-nowrap">
                       {article.categories?.map((category) => (
                         <Text

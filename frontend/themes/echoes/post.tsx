@@ -20,286 +20,220 @@ import MarkdownIt from 'markdown-it';
 import { ComponentPropsWithoutRef } from 'react';
 import remarkGfm from 'remark-gfm';
 import type { Components } from "react-markdown";
+import { toast } from "hooks/Notification";
 
 // 示例文章数据
 const mockPost: PostDisplay = {
   id: 1,
-  title: "现代前端开发完全指南",
+  title: "Markdown 完全指南：从基础到高级排版",
   content: `
-# 现代前端开发完全指南
+# Markdown 完全指南：从基础到高级排版
 
-前端开发已经成为软件开发中最重要的领域之一。本全面介绍现代前端开发的各个方面。
+这篇指南将介绍 Markdown 的基础语法和高级排版技巧。
 
-![Modern Frontend Development](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=600)
+## 1. 基础语法
 
-## 1. 开发环境搭建
+### 1.1 文本格式化
 
-在开始前端开发之前，我们要搭建合适的开发环境。
+普通文本不需要任何特殊标记。
 
-### 1.1 必备工具安装
+**这是粗体文本**
+*这是斜体文本*
+***这是粗斜体文本***
+~~这是删除线文本~~
 
-发环境需要安装以下工具：
+### 1.2 列表
 
-\`\`\`bash
-# 安装 Node.js
-brew install node
+#### 无序列表：
+- 第一项
+  - 子项 1
+  - 子项 2
+- 第二项
+- 第三项
 
-# 安装包管理器
-npm install -g pnpm
+#### 有序列表：
+1. 第一步
+   1. 子步骤 1
+   2. 子步骤 2
+2. 第二步
+3. 第三步
 
-# 安装开发工具
-pnpm install -g typescript vite
-\`\`\`
+#### 任务列表：
+- [x] 已完成任务
+- [ ] 未完成任务
+- [x] 又一个已完成任务
 
-### 1.2 编辑器配置
+### 1.3 代码展示
 
-推荐使用 VS Code 作为开发工具，需要安装以下插件：
+行内代码：\`const greeting = "Hello World";\`
 
-- ESLint
-- Prettier
-- TypeScript Vue Plugin
-- Tailwind CSS IntelliSense
-
-![VS Code Setup](https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&h=600)
-
-## 2. 项目架构设计
-
-### 2.1 目录结构
-### 2.1 目录结构
-### 2.1 目录结构
-### 2.1 目录结构
-### 2.1 目录结构
-### 2.1 目录结构
-### 2.1 目录结构
-### 2.1 目录结构
-
-一个良好的项目结构对于项目的可维护性至关重要。
-
+代码块：
 \`\`\`typescript
-// 推荐的项目结构
-interface ProjectStructure {
-  src: {
-    components: {
-      common: string[];    // 通用组件
-      features: string[];  // 功能组件
-      layouts: string[];   // 布局组件
-    };
-    pages: string[];      // 页面组件
-    hooks: string[];      // 定 hooks
-    utils: string[];      // 工具函数
-    types: string[];      // 类型定义
-    styles: string[];     // 样式文件
-  }
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}!\`;
 }
 \`\`\`
 
-### 2.2 状态管理
+### 1.4 表格
 
-现代前端应用需要高效的状态管理方案：
+| 功能 | 基础版 | 高级版 |
+|:-----|:------:|-------:|
+| 文本编辑 | ✓ | ✓ |
+| 实时预览 | ✗ | ✓ |
+| 导出格式 | 2种 | 5种 |
 
-![State Management](https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=1200&h=600)
+## 2. 高级排版
 
-## 3. 性能优化
+### 2.1 图文混排布局
 
-### 3.1 加载性能
+#### 左图右文
 
-关键的加载性能指标：
+<div class="flex items-center gap-6 my-8">
+  <img src="https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&h=400" 
+       alt="写作工具" 
+       class="w-1/3 rounded-lg shadow-lg" />
+  <div class="flex-1">
+    <h4 class="text-xl font-bold mb-2">高效写作工具</h4>
+    <p>使用合适的写作工具可以极大提升写作效率。推荐使用支持即时预览的编辑器，这样可以实时查看排版效果。</p>
+  </div>
+</div>
 
-| 指标 | 目标值 | 优化方法 |
-|------|--------|----------|
-| FCP | < 2s | 路由懒加载 |
-| TTI | < 3.5s | 代码分割 |
-| LCP | < 2.5s | 图片优化 |
+#### 右图左文
 
-### 3.2 运行时性能
+<div class="flex items-center gap-6 my-8">
+  <div class="flex-1">
+    <h4 class="text-xl font-bold mb-2">版面设计原则</h4>
+    <p>好的版面设计应该让内容清晰易读，层次分明。合理使用留白和分隔符可以让文章更有结构感。</p>
+  </div>
+  <img src="https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=400&h=400" 
+       alt="设计工具" 
+       class="w-1/3 rounded-lg shadow-lg" />
+</div>
 
-#### 3.2.1 虚拟列表
+### 2.2 可折叠内容
 
-处理大数据列表时的示例代码：
+<details class="my-4">
+<summary class="cursor-pointer p-4 bg-gray-100 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+  🎯 如何选择合适的写作工具？
+</summary>
 
-\`\`\`typescript
-interface VirtualListProps {
-  items: any[];
-  height: number;
-  itemHeight: number;
-  renderItem: (item: any) => React.ReactNode;
-}
+选择写作工具时需要考虑以下几点：
 
-const VirtualList: React.FC<VirtualListProps> = ({
-  items,
-  height,
-  itemHeight,
-  renderItem
-}) => {
-  // 现码...
-};
-\`\`\`
+1. **跨平台支持** - 确保在不同设备上都能访问
+2. **实时预览** - Markdown 实时渲染很重要
+3. **版本控制** - 最好能支持文章的版本管理
+4. **导出功能** - 支持导出为多种格式
+</details>
 
-#### 3.2.2 防抖与节流
+### 2.3 并排卡片
 
-\`\`\`typescript
-// 防抖函数实现
-function debounce<T extends (...args: any[]) => any>(
-  fn: T,
-  delay: number
-): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout;
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+  <div class="p-6 bg-gray-100 rounded-lg">
+    <h4 class="text-lg font-bold mb-2">🚀 快速上手</h4>
+    <p>通过简单的标记语法，快速创建格式化的文档，无需复杂的排版工具。</p>
+  </div>
+  <div class="p-6 bg-gray-100 rounded-lg">
+    <h4 class="text-lg font-bold mb-2">⚡ 高效输出</h4>
+    <p>专注于内容创作，让工具自动处理排版，提高写作效率。</p>
+  </div>
+</div>
+
+### 2.4 高亮提示框
+
+<div class="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-lg my-8">
+  <h4 class="text-lg font-bold text-blue-700 mb-2">💡 小贴士</h4>
+  <p class="text-blue-600">在写作时，可以先列出文章大纲，再逐步充实内容。这样可以保证文章结构清晰，内容完整。</p>
+</div>
+
+<div class="p-6 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg my-8">
+  <h4 class="text-lg font-bold text-yellow-700 mb-2">⚠️ 注意事项</h4>
+  <p class="text-yellow-600">写作时要注意文章的受众，使用他们能理解的语言和例子。</p>
+</div>
+
+### 2.5 时间线
+
+<div class="relative pl-8 my-8 border-l-2 border-gray-200">
+  <div class="mb-8 relative">
+    <div class="absolute -left-10 w-4 h-4 bg-blue-500 rounded-full"></div>
+    <div class="font-bold mb-2">1. 确定主题</div>
+    <p>根据目标受众和写作目的，确定文章主题。</p>
+  </div>
   
-  return function (...args: Parameters<T>) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(...args), delay);
-  };
-}
-\`\`\`
-
-### 3.3 构建优化
-
-![Build Optimization](https://images.unsplash.com/photo-1551033406-611cf9a28f67?w=1200&h=600)
-
-## 4. 测试略
-
-### 4.1 单元测试
-
-使用 Jest 进行单元测试：
-
-\`typescript
-describe('Utils', () => {
-  test('debounce should work correctly', (done) => {
-    let counter = 0;
-    const increment = () => counter++;
-    const debouncedIncrement = debounce(increment, 100);
-
-    debouncedIncrement();
-    debouncedIncrement();
-    debouncedIncrement();
-
-    expect(counter).toBe(0);
-
-    setTimeout(() => {
-      expect(counter).toBe(1);
-      done();
-    }, 150);
-  });
-});
-\`\`\`
-
-### 4.2 集成测试
-
-使用 Cypress 进行端到端测试。
-
-![Testing](https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=1200&h=600)
-
-## 5. 部署与监控
-
-### 5.1 CI/CD 配置
-
-\`\`\`yaml
-name: Deploy
-on:
-  push:
-    branches: [ main ]
-    
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install
-        run: pnpm install
-      - name: Build
-        run: pnpm build
-      - name: Deploy
-        run: pnpm deploy
-\`\`\`
-
-### 5.2 监控系统
-
-#### 5.2.1 性能监控
-
-关键指标监控：
-
-- 页面加载时间
-- 首次内容绘制
-- 首次大内容绘制
-- 首次输入延迟
-
-#### 5.2.2 错误监控
-
-错误示例：
-
-\`\`\`typescript
-interface ErrorReport {
-  type: 'error' | 'warning';
-  message: string;
-  stack?: string;
-  timestamp: number;
-  userAgent: string;
-}
-
-function reportError(error: Error): void {
-  const report: ErrorReport = {
-    type: 'error',
-    message: error.message,
-    stack: error.stack,
-    timestamp: Date.now(),
-    userAgent: navigator.userAgent
-  };
+  <div class="mb-8 relative">
+    <div class="absolute -left-10 w-4 h-4 bg-blue-500 rounded-full"></div>
+    <div class="font-bold mb-2">2. 收集资料</div>
+    <p>广泛搜集相关资料，为写作做充分准备。</p>
+  </div>
   
-  // 发送错误报告
-  sendErrorReport(report);
-}
-\`\`
+  <div class="relative">
+    <div class="absolute -left-10 w-4 h-4 bg-blue-500 rounded-full"></div>
+    <div class="font-bold mb-2">3. 开始写作</div>
+    <p>按照大纲逐步展开写作。</p>
+  </div>
+</div>
 
-## 6. 安全最佳实践
+### 2.6 引用样式
 
-### 6.1 XSS 防护
+> 📌 **最佳实践**
+> 
+> 好的文章需要有清晰的结构和流畅的表达。以下是一些建议：
+> 
+> 1. 开门见山，直入主题
+> 2. 层次分明，逻辑清晰
+> 3. 语言简洁，表达准确
+> 
+> *— 写作指南*
 
-\`\`\`typescript
-// 安全的 HTML 转义函数
-function escapeHtml(unsafe: string): string {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-\`\`\`
+## 3. 特殊语法
 
-### 6.2 CSRF 防护
+### 3.1 数学公式
 
-![Security](https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=1200&h=600)
+行内公式：$E = mc^2$
 
-## 总结
+块级公式：
 
-现代前端开发是一个复杂的系统工程，需要我们在以下方面不断精进：
+$$
+\\frac{n!}{k!(n-k)!} = \\binom{n}{k}
+$$
 
-1. 工程化能力
-2. 性能优化
-3. 测试覆盖
-4. 全防护
-5. 部署监控
+### 3.2 脚注
 
-> 持续学习实践是提高端开发水平的关键。
+这里有一个脚注[^1]。
 
-相关资源：
-- [MDN Web Docs](https://developer.mozilla.org/)
-- [Web.dev](https://web.dev/)
-- [GitHub](https://github.com/)
+[^1]: 这是脚注的内容。
+
+### 3.3 表情符号
+
+:smile: :heart: :thumbsup: :star: :rocket:
+
+## 4. 总结
+
+本文展示了 Markdown 从基础到高级的各种用法：
+
+1. 基础语法：文本格式化、列表、代码、表格等
+2. 高级排版：图文混排、折叠面板、卡片布局等
+3. 特殊语法：数学公式、脚注、表情符号等
+
+> 💡 **提示**：部分高级排版功能可能需要特定的 Markdown 编辑器或渲染器支持。使用前请确认你的工具是否支持这些特性。
 `,
-  authorName: "张三",
+  authorName: "Markdown 专家",
   publishedAt: new Date("2024-03-15"),
-  coverImage: "",
-  metaKeywords: "前端开发,工程,效率",
-  metaDescription: "探讨如何构建高效的前端开发高开发效率",
+  coverImage: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=1200&h=600",
+  metaKeywords: "Markdown,基础语法,高级排版,布局设计",
+  metaDescription: "从基础语法到高级排版，全面了解 Markdown 的各种用法和技巧。",
   status: "published",
   isEditor: true,
   createdAt: new Date("2024-03-15"),
   updatedAt: new Date("2024-03-15"),
-  categories: [{ name: "前端开发" }],
-  tags: [{ name: "工程化" }, { name: "效率提升" }, { name: "发工具" }],
+  categories: [{ name: "教程" }],
+  tags: [{ name: "Markdown" }, { name: "排版" }, { name: "写作" }],
 };
-
 
 // 添 meta 函数
 export const meta: MetaFunction = () => {
@@ -326,23 +260,36 @@ interface CopyButtonProps {
   code: string;
 }
 
-// 加 CopyButton 组件
+// 修改 CopyButton 组件
 const CopyButton: React.FC<CopyButtonProps> = ({ code }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      toast.success("复制成功", "代码已复制到剪贴板");
+      setTimeout(() => {
+        setCopied(false);
+      }, 3000);
+    } catch (err) {
+      console.error('复制失败:', err);
+      toast.error("复制失败", "请检查浏览器权限设置");
+    }
   };
 
   return (
     <Button
       variant="ghost"
       onClick={handleCopy}
-      className="h-7 px-2 text-xs hover:bg-[--gray-4]"
+      className="h-7 px-2 text-xs
+        transition-all duration-300 ease-in-out
+        [@media(hover:hover)]:hover:bg-[--gray-4]
+        active:bg-[--gray-4] active:transition-none"
     >
-      {copied ? "已复制" : "复制"}
+      <span className="transition-opacity duration-300">
+        {copied ? "已复制" : "复制"}
+      </span>
     </Button>
   );
 };
@@ -515,11 +462,11 @@ export default new Template({}, ({ http, args }) => {
         <div className="my-4 sm:my-6">
           <div className="flex justify-between items-center h-9 sm:h-10 px-4 sm:px-6 
             border-t border-x border-[--gray-6] 
-            bg-[--gray-2] dark:bg-[--gray-2]
+            bg-[--gray-3] dark:bg-[--gray-3]
             rounded-t-lg
             mx-0"
           >
-            <div className="text-sm text-[--gray-11] dark:text-[--gray-11] font-medium">{lang || "text"}</div>
+            <div className="text-sm text-[--gray-12] dark:text-[--gray-12] font-medium">{lang || "text"}</div>
             <CopyButton code={String(children)} />
           </div>
           
@@ -565,9 +512,9 @@ export default new Template({}, ({ http, args }) => {
     // 修改表格相关组件的响应式设计
     table: ({ children, ...props }: ComponentPropsWithoutRef<'table'>) => (
       <div className="w-full my-4 sm:my-6 -mx-4 sm:mx-0 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="scroll-container overflow-x-auto">
           <div className="min-w-[640px] sm:min-w-0">
-            <div className="border-x border-t border-b sm:border-t border-[--gray-6] rounded-none sm:rounded-lg bg-white dark:bg-[--gray-1]">
+            <div className="border border-[--gray-6] rounded-lg bg-white dark:bg-[--gray-1]">
               <table className="w-full border-collapse text-xs sm:text-sm" {...props}>
                 {children}
               </table>
@@ -580,7 +527,10 @@ export default new Template({}, ({ http, args }) => {
     th: ({ children, ...props }: ComponentPropsWithoutRef<'th'>) => (
       <th 
         className="px-4 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase tracking-wider
-                  text-[--gray-12] break-words hyphens-auto"
+                  text-[--gray-12] break-words hyphens-auto
+                  bg-[--gray-3] dark:bg-[--gray-3]
+                  first:rounded-tl-lg last:rounded-tr-lg
+                  border-b border-[--gray-6]"
         {...props}
       >
         {children}
@@ -621,7 +571,7 @@ export default new Template({}, ({ http, args }) => {
             top: entry.boundingClientRect.top
           }));
           
-          // 选择最靠近视口顶部的标题
+          // 选择靠近视口顶部的标题
           const closestHeading = visibleHeadings.reduce((prev, current) => {
             return Math.abs(current.top) < Math.abs(prev.top) ? current : prev;
           });
@@ -734,7 +684,7 @@ export default new Template({}, ({ http, args }) => {
             <ScrollArea
               type="hover"
               scrollbars="vertical"
-              className="h-[calc(100vh-64px)] p-4"
+              className="scroll-container h-[calc(100vh-64px)] p-4"
             >
               <div className="space-y-2">
                 {tocItems.map((item, index) => {
@@ -888,7 +838,7 @@ export default new Template({}, ({ http, args }) => {
               </Flex>
             </Box>
 
-            {/* 封面图片 */}
+            {/* 面图片 */}
             {mockPost.coverImage && (
               <Box className="mb-16 rounded-xl overflow-hidden aspect-[2/1] shadow-lg">
                 <img
@@ -933,7 +883,7 @@ export default new Template({}, ({ http, args }) => {
             <ScrollArea
               type="hover"
               scrollbars="vertical"
-              className="max-h-[calc(100vh-180px)]"
+              className="scroll-container max-h-[calc(100vh-180px)]"
               style={{
                 ["--scrollbar-size" as string]: "6px",
               }}

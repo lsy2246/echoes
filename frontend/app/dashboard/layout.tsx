@@ -9,9 +9,11 @@ import {
   DashboardIcon,
   GearIcon,
   FileTextIcon,
-  ImageIcon,
   ReaderIcon,
   LayersIcon,
+  FileIcon,
+  ColorWheelIcon,
+  HomeIcon,
 } from "@radix-ui/react-icons";
 import { Theme } from "@radix-ui/themes";
 import { useState, useEffect } from "react";
@@ -31,11 +33,6 @@ const menuItems = [
     path: "/dashboard/posts",
   },
   {
-    icon: <ImageIcon className="w-4 h-4" />,
-    label: "媒体管理",
-    path: "/dashboard/media",
-  },
-  {
     icon: <ReaderIcon className="w-4 h-4" />,
     label: "评论管理",
     path: "/dashboard/comments",
@@ -46,9 +43,29 @@ const menuItems = [
     path: "/dashboard/categories",
   },
   {
+    icon: <FileIcon className="w-4 h-4" />,
+    label: "文件管理",
+    path: "/dashboard/files",
+  },
+  {
+    icon: <ColorWheelIcon className="w-4 h-4" />,
+    label: "主题管理",
+    path: "/dashboard/themes",
+  },
+  {
     icon: <GearIcon className="w-4 h-4" />,
     label: "系统设置",
     path: "/dashboard/settings",
+  },
+  {
+    icon: <PersonIcon className="w-4 h-4" />,
+    label: "用户管理",
+    path: "/dashboard/users",
+  },
+  {
+    icon: <LayersIcon className="w-4 h-4" />,
+    label: "插件管理",
+    path: "/dashboard/plugins",
   },
 ];
 
@@ -187,46 +204,36 @@ export default new Layout(({ children }) => {
 
                 {/* 右侧用户菜单 */}
                 <Flex align="center" gap="4">
-                  <Box className="flex items-center border-r border-[--gray-6] pr-4">
+                  <Box className="flex items-center border-r border-[--gray-6] pr-4 [&_button]:w-10 [&_button]:h-10 [&_svg]:w-6 [&_svg]:h-6">
                     <ThemeModeToggle />
                   </Box>
 
-                  <DropdownMenuPrimitive.Root>
-                    <DropdownMenuPrimitive.Trigger asChild>
-                      <Button 
-                        variant="ghost"
-                        size="3"
-                        className="gap-2 text-base"
-                      >
-                        <PersonIcon className="w-5 h-5" />
-                        <span className="hidden sm:inline">管理员</span>
-                      </Button>
-                    </DropdownMenuPrimitive.Trigger>
-                    
-                    <DropdownMenuPrimitive.Portal>
-                      <DropdownMenuPrimitive.Content
-                        align="end"
-                        sideOffset={5}
-                        className="min-w-[180px] p-1 rounded-md bg-[--gray-1] border border-[--gray-6] shadow-lg"
-                      >
-                        <DropdownMenuPrimitive.Item 
-                          className="flex items-center gap-2 px-3 py-2 text-[--gray-12] hover:bg-[--gray-3] rounded outline-none cursor-pointer text-base"
-                        >
-                          <GearIcon className="w-5 h-5" />
-                          个人设置
-                        </DropdownMenuPrimitive.Item>
-                        
-                        <DropdownMenuPrimitive.Separator className="h-px my-1 bg-[--gray-6]" />
-                        
-                        <DropdownMenuPrimitive.Item 
-                          className="flex items-center gap-2 px-3 py-2 text-[--gray-12] hover:bg-[--gray-3] rounded outline-none cursor-pointer text-base"
-                        >
-                          <ExitIcon className="w-5 h-5" />
-                          退出登录
-                        </DropdownMenuPrimitive.Item>
-                      </DropdownMenuPrimitive.Content>
-                    </DropdownMenuPrimitive.Portal>
-                  </DropdownMenuPrimitive.Root>
+                  {/* 返回主页按钮 */}
+                  <Button 
+                    variant="ghost"
+                    size="3"
+                    className="gap-2 text-base"
+                    onClick={() => {
+                      window.location.href = '/';
+                    }}
+                  >
+                    <HomeIcon className="w-5 h-5" />
+                    <span className="hidden sm:inline">返回主页</span>
+                  </Button>
+
+                  {/* 退出登录按钮 */}
+                  <Button 
+                    variant="ghost"
+                    size="3"
+                    className="gap-2 text-base"
+                    onClick={() => {
+                      // 这里添加退出登录的逻辑
+                      console.log('退出登录');
+                    }}
+                  >
+                    <ExitIcon className="w-5 h-5" />
+                    <span className="hidden sm:inline">退出登录</span>
+                  </Button>
                 </Flex>
               </Flex>
             </Box>

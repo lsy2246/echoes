@@ -2,10 +2,11 @@ import "./styles/login.css";
 import { Template } from "interface/template";
 import { Container, Heading, Text, Box, Flex, Button } from "@radix-ui/themes";
 import { PersonIcon, LockClosedIcon } from "@radix-ui/react-icons";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { gsap } from "gsap";
 import { AnimatedBackground } from 'hooks/Background';
 import { useThemeMode, ThemeModeToggle } from 'hooks/ThemeMode';
+import { useNotification } from 'hooks/Notification';
 
 export default new Template({}, ({ http, args }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -14,6 +15,8 @@ export default new Template({}, ({ http, args }) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { mode } = useThemeMode();
+  const [hasBackgroundError, setHasBackgroundError] = useState(false);
+  const notification = useNotification();
 
   useEffect(() => {
     setIsVisible(true);
@@ -58,20 +61,36 @@ export default new Template({}, ({ http, args }) => {
       // 这里添加登录逻辑
       await new Promise(resolve => setTimeout(resolve, 1500)); // 模拟API请求
       
+      // 登录成功的通知
+      notification.success('登录成功', '欢迎回来！');
+      
       // 登录成功后的处理
       console.log("Login successful");
     } catch (error) {
+      // 登录失败的通知
+      notification.error('登录失败', '用户名或密码错误');
       console.error("Login failed:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleBackgroundError = () => {
+    console.log('Background failed to load, switching to fallback');
+    setHasBackgroundError(true);
+  };
+
+  // 使用 useMemo 包裹背景组件
+  const backgroundComponent = useMemo(() => (
+    !hasBackgroundError && <AnimatedBackground onError={handleBackgroundError} />
+  ), [hasBackgroundError]);
+
   return (
-    <>
-      <AnimatedBackground />
+    <div className="relative min-h-screen">
+      {backgroundComponent}
+      
       <Box 
-        className="fixed top-4 right-4 z-10 w-10 h-10 flex items-center justify-center [&_button]:w-10 [&_button]:h-10 [&_svg]:w-6 [&_svg]:h-6"
+        className="fixed top-4 right-4 z-20 w-10 h-10 flex items-center justify-center [&_button]:w-10 [&_button]:h-10 [&_svg]:w-6 [&_svg]:h-6"
         style={{
           '--button-color': 'var(--gray-12)',
           '--button-hover-color': 'var(--accent-9)'
@@ -82,7 +101,7 @@ export default new Template({}, ({ http, args }) => {
       
       <Container
         ref={containerRef}
-        className={`h-screen w-full flex items-center justify-center transition-all duration-300 ${
+        className={`relative z-10 h-screen w-full flex items-center justify-center transition-all duration-300 ${
           isVisible ? "opacity-100" : "opacity-0"
         }`}
       >
@@ -106,36 +125,32 @@ export default new Template({}, ({ http, args }) => {
             <form onSubmit={handleLogin}>
               <Flex direction="column" gap="4">
                 {/* 用户名输入框 */}
-                <Box className="form-element relative">
-                  <PersonIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" 
-                    style={{ color: 'var(--gray-11)' }} />
+                <Box className="form-element input-box relative">
                   <input
-                    className="login-input pl-10"
-                    placeholder="请输入用户名"
+                    className="login-input"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
                   />
+                  <label>用户名</label>
                 </Box>
 
                 {/* 密码输入框 */}
-                <Box className="form-element relative">
-                  <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" 
-                    style={{ color: 'var(--gray-11)' }} />
+                <Box className="form-element input-box relative">
                   <input
-                    className="login-input pl-10"
-                    placeholder="请输入密码"
+                    className="login-input"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
+                  <label>密码</label>
                 </Box>
 
                 {/* 登录按钮 */}
                 <Button
-                  className="login-button w-full h-10 transition-colors duration-300"
+                  className="login-button w-full h-10 transition-colors duration-300 hover:bg-[--hover-bg]"
                   style={{
                     backgroundColor: 'var(--accent-9)',
                     color: 'white',
@@ -152,7 +167,7 @@ export default new Template({}, ({ http, args }) => {
                 <Flex justify="center" className="form-element">
                   <Text 
                     size="2" 
-                    className="cursor-pointer transition-colors duration-300"
+                    className="cursor-pointer transition-colors duration-300 hover:text-[--hover-color]"
                     style={{
                       color: 'var(--gray-11)',
                       '--hover-color': 'var(--accent-9)'
@@ -166,6 +181,6 @@ export default new Template({}, ({ http, args }) => {
           </Box>
         </Box>
       </Container>
-    </>
+    </div>
   );
 }); 

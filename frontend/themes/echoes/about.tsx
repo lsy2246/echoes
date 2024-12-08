@@ -148,7 +148,7 @@ export default new Template({}, ({ http, args }) => {
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="social-link p-3 rounded-full hover:bg-[--gray-3] transition-colors"
+              className="social-link hover-bg p-3 rounded-full"
             >
               {link.icon}
             </Link>
