@@ -89,15 +89,12 @@ export default defineConfig(async ({ mode }) => {
     envPrefix: "VITE_",
     build: {
       rollupOptions: {
-        output: {
-          manualChunks: {
-            three: ['three'],
-            gsap: ['gsap']
-          }
-        }
+        // 移除 manualChunks 配置
       },
-      // 优化大型依赖的处理
-      chunkSizeWarningLimit: 1000
+      chunkSizeWarningLimit: 1500
+    },
+    ssr: {
+      noExternal: ['three', '@react-three/fiber', '@react-three/drei', 'gsap']
     }
   };
 });

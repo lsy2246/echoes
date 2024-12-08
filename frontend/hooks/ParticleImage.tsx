@@ -210,11 +210,6 @@ interface ParticleImageProps {
 
 // 修改 BG_CONFIG，添加尺寸配置
 const BG_CONFIG = {
-  colors: {
-    from: 'rgb(10,37,77)',
-    via: 'rgb(8,27,57)', 
-    to: 'rgb(2,8,23)'
-  },
   className: 'bg-gradient-to-br from-[rgb(248,250,252)] via-[rgb(241,245,249)] to-[rgb(236,241,247)] dark:from-[rgb(10,37,77)] dark:via-[rgb(8,27,57)] dark:to-[rgb(2,8,23)]'
 };
 
@@ -375,6 +370,12 @@ export const ParticleImage = ({
   const cleanup = useCallback(() => {
     if (!isMountedRef.current) return;
 
+    // 检查是否应该跳过清理
+    if (sceneRef.current?.userData.isSmileComplete || 
+        sceneRef.current?.userData.isErrorComplete) {
+      return;
+    }
+
     // 清理动画状态
     isAnimatingRef.current = false;
     
@@ -394,43 +395,16 @@ export const ParticleImage = ({
 
     // 清理场景资源
     if (sceneRef.current) {
-      // 遍历场景中的所有对象
-      sceneRef.current.traverse((object) => {
-        if (object instanceof THREE.Points) {
-          const geometry = object.geometry;
-          const material = object.material as THREE.PointsMaterial;
-          
-          // 清理几何体
-          if (geometry) {
-            // 清空缓冲区数据
-            if (geometry.attributes.position) {
-              geometry.attributes.position.array = new Float32Array(0);
-            }
-            if (geometry.attributes.color) {
-              geometry.attributes.color.array = new Float32Array(0);
-            }
-            
-            // 移除所有属性
-            geometry.deleteAttribute('position');
-            geometry.deleteAttribute('color');
-            geometry.dispose();
-          }
-          
-          // 清理材质
-          if (material) {
-            material.dispose();
-          }
-        }
-      });
-      
-      // 清空场景
-      while(sceneRef.current.children.length > 0) { 
-        sceneRef.current.remove(sceneRef.current.children[0]); 
+      // 检查是否应该跳过清理
+      if (!sceneRef.current.userData.isSmileComplete && 
+          !sceneRef.current.userData.isErrorComplete) {
+        cleanupResources(sceneRef.current);
       }
     }
 
     // 修改渲染器清理逻辑
-    if (rendererRef.current) {
+    if (rendererRef.current && !sceneRef.current?.userData.isSmileComplete && 
+        !sceneRef.current?.userData.isErrorComplete) {
       const renderer = rendererRef.current;
       
       // 确保在移除 DOM 元素前停止渲染
@@ -459,7 +433,8 @@ export const ParticleImage = ({
     }
 
     // 清理相机引用
-    if (cameraRef.current) {
+    if (cameraRef.current && !sceneRef.current?.userData.isSmileComplete && 
+        !sceneRef.current?.userData.isErrorComplete) {
       cameraRef.current = undefined;
     }
   }, []);
@@ -475,7 +450,10 @@ export const ParticleImage = ({
   const updateParticles = useCallback((width: number, height: number) => {
     if (!sceneRef.current || isAnimatingRef.current || !isMountedRef.current) return;
 
-    cleanup();
+    // 只有当src不为空时才执行cleanup
+    if(src !== '') {
+      cleanup();
+    }
     
     if (!isMountedRef.current) return;
 
@@ -500,8 +478,40 @@ export const ParticleImage = ({
     sceneRef.current.add(points);
 
     const positionAttribute = geometry.attributes.position as THREE.BufferAttribute;
-    startAnimation(positionAttribute, particles, width, height);
-  }, [cleanup, startAnimation]);
+    
+    // 记录完成的动画数量
+    let completedAnimations = 0;
+    const totalAnimations = particles.length;
+
+    particles.forEach((particle, i) => {
+      const i3 = i * 3;
+      const distanceToCenter = Math.sqrt(
+        Math.pow(particle.originalX, 2) + 
+        Math.pow(particle.originalY, 2)
+      );
+      const maxDistance = Math.sqrt(Math.pow(width/2, 2) + Math.pow(height/2, 2));
+      const normalizedDistance = distanceToCenter / maxDistance;
+      
+      gsap.to(positionAttribute.array, {
+        duration: 0.8,
+        delay: normalizedDistance * 0.6,
+        [i3]: particle.originalX,
+        [i3 + 1]: particle.originalY,
+        [i3 + 2]: 0,
+        ease: "sine.inOut",
+        onUpdate: () => {
+          positionAttribute.needsUpdate = true;
+        },
+        onComplete: () => {
+          completedAnimations++;
+          // 当所有动画完成时设置标记
+          if (completedAnimations === totalAnimations && sceneRef.current) {
+            sceneRef.current.userData.isSmileComplete = true;
+          }
+        }
+      });
+    });
+  }, [cleanup, src]);
 
   // 将 resize 处理逻辑移到组件顶层
   const handleResize = useCallback(() => {
@@ -511,7 +521,7 @@ export const ParticleImage = ({
     const width = containerRef.current.offsetWidth;
     const height = containerRef.current.offsetHeight;
 
-    // 更新相机视图
+    // 更新相机图
     const camera = cameraRef.current;
     camera.left = width / -2;
     camera.right = width / 2;
@@ -563,8 +573,19 @@ export const ParticleImage = ({
     const renderer = new THREE.WebGLRenderer({ 
       alpha: true,
       antialias: window.innerWidth > 768,
-      powerPreference: 'low-power'
+      powerPreference: 'low-power',
+      failIfMajorPerformanceCaveat: false,
+      canvas: document.createElement('canvas')
     });
+
+    // 在初始化渲染器后立即添加错误检查
+    if (!renderer.capabilities.isWebGL2) {
+      console.warn('WebGL2 not supported, falling back...');
+      renderer.dispose();
+      renderer.forceContextLoss();
+      return;
+    }
+
     renderer.setPixelRatio(Math.min(
       window.devicePixelRatio,
       window.innerWidth <= 768 ? 2 : 3
@@ -572,12 +593,17 @@ export const ParticleImage = ({
     renderer.setSize(width, height);
     rendererRef.current = renderer;
     
-    // 确保容器仍然存在再添加渲染器
-    if (containerRef.current && isMountedRef.current) {
-      containerRef.current.appendChild(renderer.domElement);
+    // 修改渲染器添加到DOM的部分
+    if (containerRef.current && isMountedRef.current && renderer.domElement) {
+      try {
+        containerRef.current.appendChild(renderer.domElement);
+      } catch (e) {
+        console.warn('Failed to append renderer:', e);
+        return;
+      }
     }
 
-    // 检查是否应该显示笑
+    // 检查是否应该显示笑脸
     if (src === '') {
       const { particles, positionArray, colorArray, particleSize } = createSmileParticles(width, height);
       
@@ -599,10 +625,10 @@ export const ParticleImage = ({
       const points = new THREE.Points(geometry, material);
       scene.add(points);
 
-      // 修改动画效果
-      const positionAttribute = geometry.attributes.position;
-      
-      // 算到中心的距离用于延迟
+      // 添加这一行来获取position属性
+      const positionAttribute = geometry.attributes.position as THREE.BufferAttribute;
+
+      // 修改动画效果,添加完成回调
       particles.forEach((particle, i) => {
         const i3 = i * 3;
         const distanceToCenter = Math.sqrt(
@@ -621,6 +647,12 @@ export const ParticleImage = ({
           ease: "sine.inOut",
           onUpdate: () => {
             positionAttribute.needsUpdate = true;
+          },
+          onComplete: () => {
+            // 动画完成后设置标记,防止被清理
+            if(scene) {
+              scene.userData.isSmileComplete = true;
+            }
           }
         });
       });
@@ -699,6 +731,12 @@ export const ParticleImage = ({
           ease: "back.out(1.7)",
           onUpdate: () => {
             positionAttribute.needsUpdate = true;
+          },
+          onComplete: () => {
+            // 添加标记表示错误动画已完成
+            if(scene) {
+              scene.userData.isErrorComplete = true;
+            }
           }
         });
       });
@@ -785,7 +823,7 @@ export const ParticleImage = ({
                 delay: normalizedDistance * 0.3
               });
 
-              // 随机初始位置（根据距离调整范围）
+              // 随机初始位置（根据距离调范围）
               const spread = 1 - normalizedDistance * 0.5; // 距离越远，始扩散越小
               positionArray.push(
                 (Math.random() - 0.5) * width * spread,
@@ -962,7 +1000,7 @@ export const ImageLoader = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [animationComplete, setAnimationComplete] = useState(false);
 
-  // 处理图片预加载
+  // 处理图片加载
   const preloadImage = useCallback(() => {
     if (!src || loadingRef.current) return;
     

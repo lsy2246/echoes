@@ -1,0 +1,64 @@
+.login-input {
+  width: 100%;
+  height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--gray-6);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--gray-12);
+  outline: none;
+  transition: all 0.2s;
+  backdrop-filter: blur(8px);
+}
+
+/* 黑暗模式下的输入框样式 */
+:root[class~="dark"] .login-input {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: var(--gray-7);
+  backdrop-filter: blur(8px);
+}
+
+.login-input:hover {
+  border-color: var(--gray-7);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+:root[class~="dark"] .login-input:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: var(--gray-8);
+}
+
+.login-input:focus {
+  border-color: var(--accent-8);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 1px var(--accent-8);
+}
+
+:root[class~="dark"] .login-input:focus {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: var(--accent-8);
+  box-shadow: 0 0 0 1px var(--accent-8);
+}
+
+.login-input::placeholder {
+  color: var(--gray-9);
+}
+
+:root[class~="dark"] .login-input::placeholder {
+  color: var(--gray-8);
+}
+
+.login-button {
+  background-color: var(--accent-9);
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+.login-button:hover {
+  background-color: var(--accent-10);
+}
+
+.login-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+} 

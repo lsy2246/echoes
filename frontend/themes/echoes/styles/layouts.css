@@ -1,8 +1,93 @@
+/* 基础变量 */
+:root {
+  /* 明亮模式的基础颜色 */
+  --text-primary: var(--gray-12);
+  --text-secondary: var(--gray-11);
+  --text-tertiary: var(--gray-10);
+  
+  /* 共用的尺寸 */
+  --scrollbar-size: 8px;
+  --border-radius: 4px;
+}
+
+/* 暗色主题变量 */
+:root[class~="dark"] {
+  /* Radix UI 暗色主题变量覆盖 */
+  --color-panel-solid: rgb(2, 6, 16);
+  --color-surface: rgb(2, 6, 16);
+  --color-background: rgb(2, 6, 16);
+  
+  /* 覆盖灰度色板 */
+  --slate-1: rgb(2, 6, 16);
+  --slate-2: rgb(2, 6, 16);
+  --slate-3: rgb(2, 6, 16);
+  
+  /* 覆盖 Radix 的颜色变量 */
+  --gray-1: rgb(2, 6, 16);
+  --gray-2: rgb(2, 6, 16);
+  --gray-3: rgb(2, 6, 16);
+  --gray-4: rgb(4, 10, 24);
+  --gray-5: rgb(5, 12, 28);
+  --gray-6: rgb(6, 14, 32);
+  
+  /* 文本颜色 */
+  --gray-12: rgb(226, 232, 240);
+  --gray-11: rgb(203, 213, 225);
+  --gray-10: rgb(148, 163, 184);
+  
+  /* 透明度变量 */
+  --gray-a1: rgba(226, 232, 240, 0.05);
+  --gray-a2: rgba(226, 232, 240, 0.08);
+  --gray-a3: rgba(226, 232, 240, 0.1);
+  --gray-a4: rgba(226, 232, 240, 0.12);
+  --gray-a5: rgba(226, 232, 240, 0.14);
+  --gray-a6: rgba(226, 232, 240, 0.16);
+}
+
+/* 暗色主题背景 */
+body:has(:root[class~="dark"]) {
+  background: rgb(2, 6, 16);
+}
+
+/* 通用卡片样式 */
+.rt-Card,
+[class*="rt-Card"] {
+  transition: all 0.3s ease;
+}
+
+/* 暗色主题卡片样式 */
+html[class~="dark"] body .rt-Card,
+html[class~="dark"] body [class*="rt-Card"] {
+  background-color: rgb(2, 6, 16);
+  border-color: rgba(148, 163, 184, 0.1);
+}
+
+/* 通用交互元素样式 */
+.rt-Button,
+.rt-DialogContent,
+.rt-DropdownMenuContent,
+[class*="rt-Button"],
+[class*="rt-DialogContent"],
+[class*="rt-DropdownMenuContent"] {
+  transition: all 0.2s ease;
+}
+
+/* 暗色主题交互元素 */
+html[class~="dark"] body .rt-Button,
+html[class~="dark"] body .rt-DialogContent,
+html[class~="dark"] body .rt-DropdownMenuContent,
+html[class~="dark"] body [class*="rt-Button"],
+html[class~="dark"] body [class*="rt-DialogContent"],
+html[class~="dark"] body [class*="rt-DropdownMenuContent"] {
+  background-color: rgb(2, 6, 16);
+  border-color: rgba(148, 163, 184, 0.1);
+}
+
 /* 导航链接样式 */
 #nav a {
   position: relative;
   transition: all 0.2s ease;
-  color: var(--gray-12);
+  color: var(--text-primary);
 }
 
 #nav a:hover {
@@ -27,16 +112,12 @@
 
 /* 进度指示器动画 */
 @keyframes flow {
-  0% {
-    background-position: 0% center;
-  }
-  100% {
-    background-position: 200% center;
-  }
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
 }
 
 .progress-indicator {
-  color: var(--gray-11);
+  color: var(--text-secondary);
   transition: all 0.3s ease;
 }
 
@@ -55,34 +136,82 @@
   text-fill-color: transparent;
 }
 
-/* 添加以下暗色主题的自定义变量 */
-.dark-theme-custom {
-  --gray-1: hsl(220, 15%, 12%);    /* 背景色，更柔和的深色 */
-  --gray-2: hsl(220, 15%, 14%);
-  --gray-3: hsl(220, 15%, 16%);
-  --gray-12: hsl(220, 15%, 85%);   /* 文本颜色，不要太白 */
-  
-  /* 减少对比度，使文字更柔和 */
-  --gray-11: hsl(220, 15%, 65%);
-  
-  /* 边框颜色调整 */
-  --gray-a5: hsla(220, 15%, 50%, 0.2);
-  
-  /* 重要：确保背景和文本的对比度适中 */
-  background-color: var(--gray-1);
-  color: var(--gray-12);
-  
-  /* 添加微弱的蓝光过滤 */
-  filter: brightness(0.96) saturate(0.95);
+/* 滚动条基础样式 */
+::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
 }
 
-/* 优化暗色主题下的阴影效果 */
-.dark-theme-custom [class*='shadow'] {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.5);
+  border-radius: var(--border-radius);
 }
 
-/* 优化链接和交互元素的高亮颜色 */
-.dark-theme-custom a:hover,
-.dark-theme-custom button:hover {
-  --accent-9: hsl(226, 70%, 65%); /* 更柔和的强调色 */
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.5);
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+
+/* 暗色主题滚动条 */
+html[class~="dark"] ::-webkit-scrollbar-track {
+  background: rgba(8, 27, 57, 0.6);
+}
+
+html[class~="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+}
+
+html[class~="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
+
+/* 阴影效果 */
+[class*="shadow"] {
+  transition: box-shadow 0.3s ease;
+}
+
+html[class~="dark"] body [class*="shadow"] {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+.animate-in {
+  animation: in 0.2s ease-out;
+}
+
+.animate-out {
+  animation: out 0.2s ease-in;
+}
+
+/* 添加缩放动画 */
+@keyframes zoomIn {
+  from { transform: scale(0.95); }
+  to { transform: scale(1); }
+}
+
+@keyframes zoomOut {
+  from { transform: scale(1); }
+  to { transform: scale(0.95); }
+}
+
+.zoom-in-95 {
+  animation: zoomIn 0.2s ease-out;
+}
+
+.zoom-out-95 {
+  animation: zoomOut 0.2s ease-in;
 }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState,useContext, useCallback, useRef, useEffect } from "react";
+import React, { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { Template } from "interface/template";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -19,6 +19,7 @@ import { getColorScheme } from "themes/echoes/utils/colorScheme";
 import MarkdownIt from 'markdown-it';
 import { ComponentPropsWithoutRef } from 'react';
 import remarkGfm from 'remark-gfm';
+import type { Components } from "react-markdown";
 
 // 示例文章数据
 const mockPost: PostDisplay = {
@@ -37,7 +38,7 @@ const mockPost: PostDisplay = {
 
 ### 1.1 必备工具安装
 
-开发环境需要安装以下工具：
+发环境需要安装以下工具：
 
 \`\`\`bash
 # 安装 Node.js
@@ -379,11 +380,15 @@ export default new Template({}, ({ http, args }) => {
   const [activeId, setActiveId] = useState<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
   const [showToc, setShowToc] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const [isMounted, setIsMounted] = useState(true);
   const [headingIdsArrays, setHeadingIdsArrays] = useState<{[key: string]: string[]}>({});
   const headingIds = useRef<string[]>([]); // 保持原有的 ref
   const containerRef = useRef<HTMLDivElement>(null);
   const isClickScrolling = useRef(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -437,8 +442,6 @@ export default new Template({}, ({ http, args }) => {
     if (tocArray.length > 0) {
       setActiveId(tocArray[0].id);
     }
-
-    setIsMounted(true);
   }, [mockPost.content, mockPost.id]);
 
   const components = useMemo(() => ({
@@ -509,21 +512,20 @@ export default new Template({}, ({ http, args }) => {
           {children}
         </code>
       ) : (
-        <div className="my-4 sm:my-6 mx-0 sm:mx-0">
-          {/* 标题栏 */}
-          <div className="flex justify-between items-center h-9 sm:h-10 px-6 
-            border-x border-t border-[--gray-6] 
-            bg-white dark:bg-[--gray-1] 
-            rounded-t-none sm:rounded-t-lg"
+        <div className="my-4 sm:my-6">
+          <div className="flex justify-between items-center h-9 sm:h-10 px-4 sm:px-6 
+            border-t border-x border-[--gray-6] 
+            bg-[--gray-2] dark:bg-[--gray-2]
+            rounded-t-lg
+            mx-0"
           >
-            <div className="text-sm text-[--gray-11] dark:text-[--gray-12] font-medium">{lang || "text"}</div>
+            <div className="text-sm text-[--gray-11] dark:text-[--gray-11] font-medium">{lang || "text"}</div>
             <CopyButton code={String(children)} />
           </div>
           
-          {/* 代码内容区域 */}
-          <div className="overflow-x-auto border-x border-b border-[--gray-6] rounded-b-none sm:rounded-b-lg">
-            <div className="min-w-[640px]">
-              <div className="p-6 bg-[--gray-2] dark:bg-[--gray-3]">
+          <div className="border border-[--gray-6] rounded-b-lg bg-white dark:bg-[--gray-1] mx-0">
+            <div className="overflow-x-auto">
+              <div className="p-4 sm:p-6">
                 <SyntaxHighlighter
                   language={lang || "text"}
                   style={{
@@ -565,7 +567,7 @@ export default new Template({}, ({ http, args }) => {
       <div className="w-full my-4 sm:my-6 -mx-4 sm:mx-0 overflow-hidden">
         <div className="overflow-x-auto">
           <div className="min-w-[640px] sm:min-w-0">
-            <div className="border-x border-t sm:border-t border-[--gray-6] rounded-t-none sm:rounded-t-lg bg-white dark:bg-[--gray-1]">
+            <div className="border-x border-t border-b sm:border-t border-[--gray-6] rounded-none sm:rounded-lg bg-white dark:bg-[--gray-1]">
               <table className="w-full border-collapse text-xs sm:text-sm" {...props}>
                 {children}
               </table>
@@ -602,39 +604,60 @@ export default new Template({}, ({ http, args }) => {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (isClickScrolling.current) return;
+        if (!isMounted) return;
+        
+        const container = document.querySelector("#main-content");
+        const contentBox = document.querySelector(".prose");
+        
+        if (!container || !contentBox) return;
 
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-          }
-        });
+        // 找出所有进入可视区域的标题
+        const intersectingEntries = entries.filter(entry => entry.isIntersecting);
+        
+        if (intersectingEntries.length > 0) {
+          // 获取所有可见标题的位置信息
+          const visibleHeadings = intersectingEntries.map(entry => ({
+            id: entry.target.id,
+            top: entry.boundingClientRect.top
+          }));
+          
+          // 选择最靠近视口顶部的标题
+          const closestHeading = visibleHeadings.reduce((prev, current) => {
+            return Math.abs(current.top) < Math.abs(prev.top) ? current : prev;
+          });
+          
+          setActiveId(closestHeading.id);
+        }
       },
       {
-        root: containerRef.current,
-        rootMargin: '-80px 0px -80% 0px',
-        threshold: 0.5
+        root: document.querySelector("#main-content"),
+        rootMargin: '-20px 0px -80% 0px',
+        threshold: [0, 1]
       }
     );
 
-    tocItems.forEach((item) => {
-      const element = document.getElementById(item.id);
-      if (element) {
-        observer.observe(element);
-      }
-    });
-
-    return () => {
+    if (isMounted) {
       tocItems.forEach((item) => {
         const element = document.getElementById(item.id);
         if (element) {
-          observer.unobserve(element);
+          observer.observe(element);
         }
       });
-    };
-  }, [tocItems]);
+    }
 
-  // 修改点击��理函数
+    return () => {
+      if (isMounted) {
+        tocItems.forEach((item) => {
+          const element = document.getElementById(item.id);
+          if (element) {
+            observer.unobserve(element);
+          }
+        });
+      }
+    };
+  }, [tocItems, isMounted]);
+
+  // 修改点击处理函数
   const handleTocClick = useCallback((e: React.MouseEvent, itemId: string) => {
     e.preventDefault();
     const element = document.getElementById(itemId);
@@ -644,6 +667,7 @@ export default new Template({}, ({ http, args }) => {
     if (element && container && contentBox) {
       isClickScrolling.current = true;
       
+      // 计算元素相对于内容容器的偏移量
       const elementRect = element.getBoundingClientRect();
       const contentBoxRect = contentBox.getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
@@ -662,8 +686,6 @@ export default new Template({}, ({ http, args }) => {
         behavior: "smooth",
       });
       
-      setActiveId(itemId);
-      
       // 滚动完成后重置标记
       const resetTimeout = setTimeout(() => {
         isClickScrolling.current = false;
@@ -673,17 +695,19 @@ export default new Template({}, ({ http, args }) => {
     }
   }, []);
 
-  // 修改��动端目录的渲染逻辑
-  const mobileMenu = isMounted && (
+  // 修改移动端目录的渲染逻辑
+  const mobileMenu = (
     <>
-      <Button
-        className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full shadow-lg bg-[--accent-9] text-white"
-        onClick={() => setShowToc(true)}
-      >
-        <CodeIcon className="w-5 h-5" />
-      </Button>
+      {isMounted && (
+        <Button
+          className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full shadow-lg bg-[--accent-9] text-white"
+          onClick={() => setShowToc(true)}
+        >
+          <CodeIcon className="w-5 h-5" />
+        </Button>
+      )}
 
-      {showToc && (
+      {isMounted && showToc && (
         <div 
           className="lg:hidden fixed inset-0 z-50 bg-black/50 transition-opacity duration-300"
           onClick={() => setShowToc(false)}
@@ -761,11 +785,11 @@ export default new Template({}, ({ http, args }) => {
 
   return (
     <Container 
-      ref={containerRef}  // 添加ref到最外层容器
+      ref={containerRef}
       size={{initial: "2", sm: "3", md: "4"}}
       className="px-4 sm:px-6 md:px-8"
     >
-      {mobileMenu}
+      {isMounted && mobileMenu}
       
       <Flex 
         className="relative flex-col lg:flex-row" 
@@ -773,7 +797,7 @@ export default new Template({}, ({ http, args }) => {
       >
         {/* 文章主体 */}
         <Box className="w-full lg:flex-1">
-          <Box className="p-4 sm:p-6 md:p-8 bg-white dark:bg-[--gray-1] rounded-lg shadow-sm">
+          <Box className="p-4 sm:p-6 md:p-8">
             {/* 头部 */}
             <Box className="mb-4 sm:mb-8">
               <Heading
@@ -864,7 +888,7 @@ export default new Template({}, ({ http, args }) => {
               </Flex>
             </Box>
 
-            {/* 修改片样式 */}
+            {/* 封面图片 */}
             {mockPost.coverImage && (
               <Box className="mb-16 rounded-xl overflow-hidden aspect-[2/1] shadow-lg">
                 <img

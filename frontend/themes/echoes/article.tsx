@@ -2,7 +2,6 @@ import { Template } from "interface/template";
 import { Container, Heading, Text, Flex, Card, Button, ScrollArea } from "@radix-ui/themes";
 import {
   CalendarIcon,
-  PersonIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@radix-ui/react-icons";
@@ -20,7 +19,7 @@ const mockArticles: PostDisplay[] = [
     content: "在现代前端开发中，一个高效的工作流程对于提高开发效率至关重要...",
     authorName: "张三",
     publishedAt: new Date("2024-03-15"),
-    coverImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=500&auto=format",
+    coverImage: "https://avatars.githubusercontent.com/u/72159?v=4",
     metaKeywords: "",
     metaDescription: "",
     status: "published",
@@ -42,7 +41,7 @@ const mockArticles: PostDisplay[] = [
     content: "React 18 带来了许多令人兴奋的新特性，包括并发渲染、自动批处理更新...",
     authorName: "李四",
     publishedAt: new Date("2024-03-14"),
-    coverImage: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=500&auto=format",
+    coverImage: "",
     metaKeywords: "",
     metaDescription: "",
     status: "published",
@@ -63,7 +62,7 @@ const mockArticles: PostDisplay[] = [
     content: "在这篇文章中，我们将探讨一些提高 JavaScript 性能的技巧和最佳实践...",
     authorName: "王五",
     publishedAt: new Date("2024-03-13"),
-    coverImage: "https://images.unsplash.com/photo-1592609931095-54a2168ae893?w=500&auto=format",
+    coverImage: "https://mages.unsplash.com/photo-1592609931095-54a2168ae893?w=500&auto=format",
     metaKeywords: "",
     metaDescription: "",
     status: "published",
@@ -84,7 +83,7 @@ const mockArticles: PostDisplay[] = [
     content: "移动端开发中的各种适配问题及解决方案...",
     authorName: "田六",
     publishedAt: new Date("2024-03-13"),
-    coverImage: "https://images.unsplash.com/photo-1526498460520-4c246339dccb?w=500&auto=format",
+    coverImage: "https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?w=500&auto=format",
     metaKeywords: "",
     metaDescription: "",
     status: "published",
@@ -173,7 +172,7 @@ const mockArticles: PostDisplay[] = [
     ],
     tags: [
       { name: "性能监控" },
-      { name: "懒加���" },
+      { name: "懒加载" },
       { name: "缓存策略" },
       { name: "代码分割" }
     ]

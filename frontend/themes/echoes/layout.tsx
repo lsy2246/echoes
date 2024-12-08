@@ -274,8 +274,25 @@ export default new Layout(({ children, args }) => {
                       <DropdownMenuPrimitive.Portal>
                         <DropdownMenuPrimitive.Content
                           align="end"
-                          sideOffset={5}
-                          className="mt-2 min-w-[280px] rounded-md bg-[--gray-1] border border-[--gray-a5] shadow-lg animate-in fade-in slide-in-from-top-2"
+                          sideOffset={20}
+                          className="min-w-[200px] rounded-md bg-[--gray-1] border border-[--gray-a5] shadow-lg 
+                            data-[state=open]:animate-in 
+                            data-[state=closed]:animate-out 
+                            data-[state=closed]:fade-out-0 
+                            data-[state=open]:fade-in-0 
+                            data-[state=closed]:zoom-out-95 
+                            data-[state=open]:zoom-in-95 
+                            data-[state=closed]:slide-in-from-top-2 
+                            data-[state=left]:slide-in-from-right-2 
+                            data-[state=right]:slide-in-from-left-2 
+                            data-[state=top]:slide-in-from-bottom-2
+                            duration-200
+                            max-h-[calc(100vh-6rem)] 
+                            overflow-y-auto 
+                            z-50
+                            absolute
+                            top-full
+                            right-0"
                         >
                           <Box className="flex flex-col">
                             {/* 导航链接区域 */}
@@ -305,8 +322,8 @@ export default new Layout(({ children, args }) => {
                             {/* 用户操作区域 */}
                             <Box className="p-4 border-t border-[--gray-a5]">
                               <Flex gap="3" align="center">
-                                {/* 用户信息/登录按钮 - 占据 55% 宽度 */}
-                                <Box className="w-[55%]">
+                                {/* 用户信息/登录按钮 - 调整为 70% 宽度 */}
+                                <Box className="w-[70%]">
                                   <Button 
                                     variant="ghost" 
                                     className="w-full justify-start gap-2 text-[--gray-12] hover:text-[--accent-9] hover:bg-[--gray-a3] transition-colors"
@@ -325,8 +342,8 @@ export default new Layout(({ children, args }) => {
                                   </Button>
                                 </Box>
 
-                                {/* 主题切换按钮 - 占据剩余空间 */}
-                                <Box className="flex-1 flex justify-end [&_button]:w-10 [&_button]:h-10 [&_svg]:w-5 [&_svg]:h-5 [&_button]:text-[--gray-12] [&_button:hover]:text-[--accent-9]">
+                                {/* 主题切换按钮 - 调整为 30% 宽度 */}
+                                <Box className="w-[30%] flex justify-end [&_button]:w-10 [&_button]:h-10 [&_svg]:w-5 [&_svg]:h-5 [&_button]:text-[--gray-12] [&_button:hover]:text-[--accent-9]">
                                   <ThemeModeToggle />
                                 </Box>
                               </Flex>
