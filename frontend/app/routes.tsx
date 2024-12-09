@@ -1,6 +1,6 @@
 import ErrorPage from "hooks/Error";
 import layout from "themes/echoes/layout";
-import article from "themes/echoes/article";
+import article from "themes/echoes/posts";
 import about from "themes/echoes/about";
 import { useLocation } from "react-router-dom";
 import post from "themes/echoes/post";
