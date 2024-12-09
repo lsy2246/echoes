@@ -397,12 +397,6 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
             ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
-            "profile_icon",
-            FieldType::VarChar(255),
-            FieldConstraint::new(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
             "password_hash",
             FieldType::VarChar(255),
             FieldConstraint::new().not_null(),
@@ -444,7 +438,9 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
         .add_field(Field::new(
             "last_login_at",
             FieldType::Timestamp,
-            FieldConstraint::new().default(SafeValue::Text(
+            FieldConstraint::new()
+            .not_null()
+            .default(SafeValue::Text(
                 "CURRENT_TIMESTAMP".to_string(),
                 ValidationLevel::Strict,
             )),
@@ -470,18 +466,6 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
             ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
-            "meta_keywords",
-            FieldType::VarChar(255),
-            FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "meta_description",
-            FieldType::VarChar(255),
-            FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
             "content",
             FieldType::Text,
             FieldConstraint::new().not_null(),
@@ -490,12 +474,6 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
         .add_field(Field::new(
             "template",
             FieldType::VarChar(50),
-            FieldConstraint::new(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "custom_fields",
-            FieldType::Text,
             FieldConstraint::new(),
             ValidationLevel::Strict,
         )?)
@@ -546,18 +524,6 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
             "title",
             FieldType::VarChar(255),
             FieldConstraint::new(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "meta_keywords",
-            FieldType::VarChar(255),
-            FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "meta_description",
-            FieldType::VarChar(255),
-            FieldConstraint::new().not_null(),
             ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
@@ -622,108 +588,6 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
 
     schema.add_table(posts_table)?;
 
-    // 标签表
-    let mut tags_tables = Table::new(&format!("{}tags", db_prefix))?;
-    tags_tables
-        .add_field(Field::new(
-            "name",
-            FieldType::VarChar(50),
-            FieldConstraint::new().primary(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "icon",
-            FieldType::VarChar(255),
-            FieldConstraint::new(),
-            ValidationLevel::Strict,
-        )?);
-
-    schema.add_table(tags_tables)?;
-
-    // 文章标签
-    let mut post_tags_tables = Table::new(&format!("{}post_tags", db_prefix))?;
-    post_tags_tables
-        .add_field(Field::new(
-            "post_id",
-            FieldType::Integer(false),
-            FieldConstraint::new()
-                .not_null()
-                .foreign_key(format!("{}posts", db_prefix), "id".to_string())
-                .on_delete(ForeignKeyAction::Cascade)
-                .on_update(ForeignKeyAction::Cascade),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "tag_id",
-            FieldType::VarChar(50),
-            FieldConstraint::new()
-                .not_null()
-                .foreign_key(format!("{}tags", db_prefix), "name".to_string())
-                .on_delete(ForeignKeyAction::Cascade)
-                .on_update(ForeignKeyAction::Cascade),
-            ValidationLevel::Strict,
-        )?);
-
-    post_tags_tables.add_index(Index::new(
-        "pk_post_tags",
-        vec!["post_id".to_string(), "tag_id".to_string()],
-        true,
-    )?);
-
-    schema.add_table(post_tags_tables)?;
-
-    // 分类表
-
-    let mut categories_table = Table::new(&format!("{}categories", db_prefix))?;
-    categories_table
-        .add_field(Field::new(
-            "name",
-            FieldType::VarChar(50),
-            FieldConstraint::new().primary(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "parent_id",
-            FieldType::VarChar(50),
-            FieldConstraint::new()
-                .foreign_key(format!("{}categories", db_prefix), "name".to_string()),
-            ValidationLevel::Strict,
-        )?);
-
-    schema.add_table(categories_table)?;
-
-    // 文章分类关联表
-    let mut post_categories_table = Table::new(&format!("{}post_categories", db_prefix))?;
-    post_categories_table
-        .add_field(Field::new(
-            "post_id",
-            FieldType::Integer(false),
-            FieldConstraint::new()
-                .not_null()
-                .foreign_key(format!("{}posts", db_prefix), "id".to_string())
-                .on_delete(ForeignKeyAction::Cascade)
-                .on_update(ForeignKeyAction::Cascade),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "category_id",
-            FieldType::VarChar(50),
-            FieldConstraint::new()
-                .not_null()
-                .foreign_key(format!("{}categories", db_prefix), "name".to_string())
-                .on_delete(ForeignKeyAction::Cascade)
-                .on_update(ForeignKeyAction::Cascade),
-            ValidationLevel::Strict,
-        )?);
-
-    post_categories_table.add_index(Index::new(
-        "pk_post_categories",
-        vec!["post_id".to_string(), "category_id".to_string()],
-        true,
-    )?);
-
-    schema.add_table(post_categories_table)?;
-
     // 资源库表
     let mut resources_table = Table::new(&format!("{}resources", db_prefix))?;
     resources_table
@@ -762,7 +626,7 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
             ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
-            "file_type",
+            "mime_type",
             FieldType::VarChar(50),
             FieldConstraint::new().not_null(),
             ValidationLevel::Strict,
@@ -808,6 +672,188 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
         )?);
 
     schema.add_table(settings_table)?;
+
+    // 元数据表
+    let mut metadata_table = Table::new(&format!("{}metadata", db_prefix))?;
+    metadata_table
+        .add_field(Field::new(
+            "id",
+            FieldType::Integer(true), 
+            FieldConstraint::new().primary(),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "target_type",
+            FieldType::VarChar(20),
+            FieldConstraint::new()
+                .not_null()
+                .check(WhereClause::Condition(Condition::new(
+                    "target_type".to_string(),
+                    Operator::In,
+                    Some(SafeValue::Text(
+                        "('post', 'page')".to_string(),
+                        ValidationLevel::Standard,
+                    )),
+                )?)),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "target_id",
+            FieldType::Integer(false),
+            FieldConstraint::new()
+                .not_null()
+                .check(WhereClause::Condition(Condition::new(
+                    "(target_type = 'post' AND EXISTS (SELECT 1 FROM posts WHERE id = target_id)) OR \
+                     (target_type = 'page' AND EXISTS (SELECT 1 FROM pages WHERE id = target_id))".to_string(),
+                    Operator::Raw,
+                    None,
+                )?)),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "meta_key",
+            FieldType::VarChar(50),
+            FieldConstraint::new().not_null(),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "meta_value",
+            FieldType::Text,
+            FieldConstraint::new(),
+            ValidationLevel::Strict,
+        )?);
+
+    metadata_table.add_index(Index::new(
+        "idx_metadata_target",
+        vec!["target_type".to_string(), "target_id".to_string()],
+        false,
+    )?);
+
+    schema.add_table(metadata_table)?;
+
+    // 自定义字段表
+    let mut custom_fields_table = Table::new(&format!("{}custom_fields", db_prefix))?;
+    custom_fields_table
+        .add_field(Field::new(
+            "id",
+            FieldType::Integer(true),
+            FieldConstraint::new().primary(),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "target_type",
+            FieldType::VarChar(20),
+            FieldConstraint::new()
+                .not_null()
+                .check(WhereClause::Condition(Condition::new(
+                    "target_type".to_string(),
+                    Operator::In,
+                    Some(SafeValue::Text(
+                        "('post', 'page')".to_string(),
+                        ValidationLevel::Standard,
+                    )),
+                )?)),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "target_id",
+            FieldType::Integer(false),
+            FieldConstraint::new().not_null(),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "field_key",
+            FieldType::VarChar(50),
+            FieldConstraint::new().not_null(),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "field_value",
+            FieldType::Text,
+            FieldConstraint::new(),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "field_type",
+            FieldType::VarChar(20),
+            FieldConstraint::new().not_null(),
+            ValidationLevel::Strict,
+        )?);
+
+    custom_fields_table.add_index(Index::new(
+        "idx_custom_fields_target",
+        vec!["target_type".to_string(), "target_id".to_string()],
+        false,
+    )?);
+
+    schema.add_table(custom_fields_table)?;
+
+    // 在 generate_schema 函数中，删除原有的 tags_tables 和 categories_table
+    // 替换为新的 taxonomies 表
+    let mut taxonomies_table = Table::new(&format!("{}taxonomies", db_prefix))?;
+    taxonomies_table
+        .add_field(Field::new(
+            "name",
+            FieldType::VarChar(50),
+            FieldConstraint::new().primary(),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "slug",
+            FieldType::VarChar(50),
+            FieldConstraint::new().not_null().unique(),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "type",
+            FieldType::VarChar(20),
+            FieldConstraint::new()
+                .not_null()
+                .check(WhereClause::Condition(Condition::new(
+                    "type".to_string(),
+                    Operator::In,
+                    Some(SafeValue::Text(
+                        "('tag', 'category')".to_string(),
+                        ValidationLevel::Standard,
+                    )),
+                )?)),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "parent_id",
+            FieldType::VarChar(50),
+            FieldConstraint::new()
+                .foreign_key(format!("{}taxonomies", db_prefix), "name".to_string())
+                .on_delete(ForeignKeyAction::SetNull)
+                .on_update(ForeignKeyAction::Cascade)
+                .check(WhereClause::Condition(Condition::new(
+                    "(type = 'category' OR parent_id IS NULL)".to_string(),
+                    Operator::Raw,
+                    None,
+                )?)),
+            ValidationLevel::Strict,
+        )?);
+
+    schema.add_table(taxonomies_table)?;
+
+    // 替换为新的 post_taxonomies 表
+    let mut post_taxonomies_table = Table::new(&format!("{}post_taxonomies", db_prefix))?;
+    post_taxonomies_table
+        .add_field(Field::new(
+            "post_id",
+            FieldType::Integer(false),
+            FieldConstraint::new()
+                .not_null()
+                .foreign_key(format!("{}posts", db_prefix), "id".to_string())
+                .on_delete(ForeignKeyAction::Cascade)
+                .on_update(ForeignKeyAction::Cascade),
+            ValidationLevel::Strict,
+        )?).add_field(Field::new(
+            "taxonomy_id",
+            FieldType::VarChar(50),
+            FieldConstraint::new()
+                .not_null()
+                .foreign_key(format!("{}taxonomies", db_prefix), "name".to_string())
+                .on_delete(ForeignKeyAction::Cascade)
+                .on_update(ForeignKeyAction::Cascade),
+            ValidationLevel::Strict,
+        )?);
+
+    post_taxonomies_table.add_index(Index::new(
+        "pk_post_taxonomies",
+        vec!["post_id".to_string(), "taxonomy_id".to_string()],
+        true,
+    )?);
+
+    schema.add_table(post_taxonomies_table)?;
 
     schema.build(db_type)
 }

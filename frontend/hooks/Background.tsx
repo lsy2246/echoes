@@ -10,11 +10,15 @@ export const AnimatedBackground = memo(({ onError }: AnimatedBackgroundProps) =>
   const { mode } = useThemeMode();
 
   useEffect(() => {
+    
     const canvas = canvasRef.current;
     if (!canvas) {
       onError?.();
       return;
     }
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     try {
       const ctx = canvas.getContext('2d', { 
@@ -28,14 +32,14 @@ export const AnimatedBackground = memo(({ onError }: AnimatedBackgroundProps) =>
         return;
       }
 
-      // 添加非空断言
-      const context = ctx!;
+      const context = ctx;
 
-      // 添加必要的变量定义
       const getRandomHSLColor = () => {
         const hue = Math.random() * 360;
-        const saturation = 70 + Math.random() * 30;
-        const lightness = mode === 'dark' ? 40 + Math.random() * 20 : 60 + Math.random() * 20;
+        const saturation = 90 + Math.random() * 10;
+        const lightness = mode === 'dark' 
+          ? 50 + Math.random() * 15  // 暗色模式：50-65%
+          : 60 + Math.random() * 15; // 亮色模式：60-75%
         return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
       };
 
@@ -46,7 +50,6 @@ export const AnimatedBackground = memo(({ onError }: AnimatedBackgroundProps) =>
       let dx = 0.2;
       let dy = -0.2;
 
-      // 添加 drawBall 函数
       function drawBall() {
         context.beginPath();
         context.arc(x, y, ballRadius, 0, Math.PI * 2);
@@ -55,11 +58,6 @@ export const AnimatedBackground = memo(({ onError }: AnimatedBackgroundProps) =>
         context.closePath();
       }
 
-      // 设置 canvas 尺寸
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      // 性能优化：降低动画帧率
       const fps = 30;
       const interval = 1000 / fps;
       let then = Date.now();
@@ -69,10 +67,8 @@ export const AnimatedBackground = memo(({ onError }: AnimatedBackgroundProps) =>
         const delta = now - then;
 
         if (delta > interval) {
-          // 更新时间戳
           then = now - (delta % interval);
 
-          // 绘制逻辑...
           context.clearRect(0, 0, canvas.width, canvas.height);
           drawBall();
           
@@ -87,14 +83,12 @@ export const AnimatedBackground = memo(({ onError }: AnimatedBackgroundProps) =>
           y += dy;
         }
 
-        // 使用 requestAnimationFrame 代替 setInterval
         animationFrameId = requestAnimationFrame(draw);
       };
 
       let animationFrameId: number;
       draw();
 
-      // 清理函数
       return () => {
         if (animationFrameId) {
           cancelAnimationFrame(animationFrameId);
@@ -111,9 +105,9 @@ export const AnimatedBackground = memo(({ onError }: AnimatedBackgroundProps) =>
     <div className="fixed inset-0 -z-10 overflow-hidden">
       <canvas
         ref={canvasRef}
-        className="w-full h-full opacity-50"
+        className="w-full h-full opacity-70"
         style={{ 
-          filter: 'blur(150px)',
+          filter: 'blur(100px)',
           position: 'absolute',
           top: 0,
           left: 0,

@@ -5,7 +5,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@radix-ui/react-icons";
-import { Post, PostDisplay, Tag } from "interface/fields";
+import {  PostDisplay } from "interface/fields";
 import { useMemo } from "react";
 
 import { ImageLoader } from "hooks/ParticleImage";
@@ -20,20 +20,19 @@ const mockArticles: PostDisplay[] = [
     authorName: "张三",
     publishedAt: new Date("2024-03-15"),
     coverImage: "https://avatars.githubusercontent.com/u/72159?v=4",
-    metaKeywords: "",
-    metaDescription: "",
     status: "published",
     isEditor: false,
     createdAt: new Date("2024-03-15"),
     updatedAt: new Date("2024-03-15"),
-    // 添加分类和标签
-    categories: [
-      { name: "前端开发" }
-    ],
-    tags: [
-      { name: "工程化" },
-      { name: "效率提升" }
-    ]
+    taxonomies: {
+      categories: [
+        { name: "前端开发", slug: "frontend", type: "category" }
+      ],
+      tags: [
+        { name: "工程化", slug: "engineering", type: "tag" },
+        { name: "效率提升", slug: "efficiency", type: "tag" }
+      ]
+    }
   },
   {
     id: 2,
@@ -42,19 +41,19 @@ const mockArticles: PostDisplay[] = [
     authorName: "李四",
     publishedAt: new Date("2024-03-14"),
     coverImage: "",
-    metaKeywords: "",
-    metaDescription: "",
     status: "published",
     isEditor: false,
     createdAt: new Date("2024-03-14"),
     updatedAt: new Date("2024-03-14"),
-    categories: [
-      { name: "前端开发" }
-    ],
-    tags: [
-      { name: "React" },
-      { name: "JavaScript" }
-    ]
+    taxonomies: {
+      categories: [
+        { name: "前端开发", slug: "frontend", type: "category" }
+      ],
+      tags: [
+        { name: "React", slug: "react", type: "tag" },
+        { name: "JavaScript", slug: "javascript", type: "tag" }
+      ]
+    }
   },
   {
     id: 3,
@@ -63,19 +62,19 @@ const mockArticles: PostDisplay[] = [
     authorName: "王五",
     publishedAt: new Date("2024-03-13"),
     coverImage: "ssssxx",
-    metaKeywords: "",
-    metaDescription: "",
     status: "published",
     isEditor: false,
     createdAt: new Date("2024-03-13"),
     updatedAt: new Date("2024-03-13"),
-    categories: [
-      { name: "性能优化" }
-    ],
-    tags: [
-      { name: "JavaScript" },
-      { name: "性能" }
-    ]
+    taxonomies: {
+      categories: [
+        { name: "性能优化", slug: "performance-optimization", type: "category" }
+      ],
+      tags: [
+        { name: "JavaScript", slug: "javascript", type: "tag" },
+        { name: "性能", slug: "performance", type: "tag" }
+      ]
+    }
   },
   {
     id: 4,
@@ -84,19 +83,19 @@ const mockArticles: PostDisplay[] = [
     authorName: "田六",
     publishedAt: new Date("2024-03-13"),
     coverImage: "https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?w=500&auto=format",
-    metaKeywords: "",
-    metaDescription: "",
     status: "published",
     isEditor: false,
     createdAt: new Date("2024-03-13"),
     updatedAt: new Date("2024-03-13"),
-    categories: [
-      { name: "移动开发" }
-    ],
-    tags: [
-      { name: "移动端" },
-      { name: "响应式" }
-    ]
+    taxonomies: {
+      categories: [
+        { name: "移动开发", slug: "mobile-development", type: "category" }
+      ],
+      tags: [
+        { name: "移动端", slug: "mobile", type: "tag" },
+        { name: "响应式", slug: "responsive", type: "tag" }
+      ]
+    }
   },
   {
     id: 5,
@@ -105,29 +104,29 @@ const mockArticles: PostDisplay[] = [
     authorName: "赵七",
     publishedAt: new Date("2024-03-12"),
     coverImage: "https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?w=500&auto=format",
-    metaKeywords: "",
-    metaDescription: "",
     status: "published",
     isEditor: false,
     createdAt: new Date("2024-03-12"),
     updatedAt: new Date("2024-03-12"),
-    categories: [
-      { name: "全栈开发" },
-      { name: "云原生" },
-      { name: "微服务" },
-      { name: "DevOps" },
-      { name: "系统架构" }
-    ],
-    tags: [
-      { name: "React" },
-      { name: "Node.js" },
-      { name: "Docker" },
-      { name: "Kubernetes" },
-      { name: "MongoDB" },
-      { name: "微服务" },
-      { name: "CI/CD" },
-      { name: "云计算" }
-    ]
+    taxonomies: {
+      categories: [
+        { name: "全栈开发", slug: "full-stack-development", type: "category" },
+        { name: "云原生", slug: "cloud-native", type: "category" },
+        { name: "微服务", slug: "microservices", type: "category" },
+        { name: "DevOps", slug: "devops", type: "category" },
+        { name: "系统架构", slug: "system-architecture", type: "category" }
+      ],
+      tags: [
+        { name: "React", slug: "react", type: "tag" },
+        { name: "Node.js", slug: "node-js", type: "tag" },
+        { name: "Docker", slug: "docker", type: "tag" },
+        { name: "Kubernetes", slug: "kubernetes", type: "tag" },
+        { name: "MongoDB", slug: "mongodb", type: "tag" },
+        { name: "微服务", slug: "microservices", type: "tag" },
+        { name: "CI/CD", slug: "ci-cd", type: "tag" },
+        { name: "云计算", slug: "cloud-computing", type: "tag" }
+      ]
+    }
   },
   {
     id: 6,
@@ -136,22 +135,22 @@ const mockArticles: PostDisplay[] = [
     authorName: "孙八",
     publishedAt: new Date("2024-03-11"),
     coverImage: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=500&auto=format",
-    metaKeywords: "",
-    metaDescription: "",
     status: "published",
     isEditor: false,
     createdAt: new Date("2024-03-11"),
     updatedAt: new Date("2024-03-11"),
-    categories: [
-      { name: "TypeScript" },
-      { name: "编程语言" }
-    ],
-    tags: [
-      { name: "类型系统" },
-      { name: "泛型编程" },
-      { name: "装饰器" },
-      { name: "类型推导" }
-    ]
+    taxonomies: {
+      categories: [
+        { name: "TypeScript", slug: "typescript", type: "category" },
+        { name: "编程语言", slug: "programming-languages", type: "category" }
+      ],
+      tags: [
+        { name: "类型系统", slug: "type-system", type: "tag" },
+        { name: "泛型编程", slug: "generic-programming", type: "tag" },
+        { name: "装饰器", slug: "decorators", type: "tag" },
+        { name: "类型推导", slug: "type-inference", type: "tag" }
+      ]
+    }
   },
   {
     id: 7,
@@ -160,22 +159,22 @@ const mockArticles: PostDisplay[] = [
     authorName: "周九",
     publishedAt: new Date("2024-03-10"),
     coverImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format",
-    metaKeywords: "",
-    metaDescription: "",
     status: "published",
     isEditor: false,
     createdAt: new Date("2024-03-10"),
     updatedAt: new Date("2024-03-10"),
-    categories: [
-      { name: "性能优化" },
-      { name: "前端开发" }
-    ],
-    tags: [
-      { name: "性能监控" },
-      { name: "懒加载" },
-      { name: "缓存策略" },
-      { name: "代码分割" }
-    ]
+    taxonomies: {
+      categories: [
+        { name: "性能优化", slug: "performance-optimization", type: "category" },
+        { name: "前端开发", slug: "frontend-development", type: "category" }
+      ],
+      tags: [
+        { name: "性能监控", slug: "performance-monitoring", type: "tag" },
+        { name: "懒加载", slug: "lazy-loading", type: "tag" },
+        { name: "缓存策略", slug: "caching-strategies", type: "tag" },
+        { name: "代码分割", slug: "code-splitting", type: "tag" }
+      ]
+    }
   },
   {
     id: 8,
@@ -184,22 +183,22 @@ const mockArticles: PostDisplay[] = [
     authorName: "吴十",
     publishedAt: new Date("2024-03-09"),
     coverImage: "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=500&auto=format",
-    metaKeywords: "",
-    metaDescription: "",
     status: "published",
     isEditor: false,
     createdAt: new Date("2024-03-09"),
     updatedAt: new Date("2024-03-09"),
-    categories: [
-      { name: "架构设计" },
-      { name: "微前端" }
-    ],
-    tags: [
-      { name: "qiankun" },
-      { name: "single-spa" },
-      { name: "模块联邦" },
-      { name: "应用通信" }
-    ]
+    taxonomies: {
+      categories: [
+        { name: "架构设计", slug: "architecture-design", type: "category" },
+        { name: "微前端", slug: "micro-frontends", type: "category" }
+      ],
+      tags: [
+        { name: "qiankun", slug: "qiankun", type: "tag" },
+        { name: "single-spa", slug: "single-spa", type: "tag" },
+        { name: "模块联邦", slug: "module-federation", type: "tag" },
+        { name: "应用通信", slug: "application-communication", type: "tag" }
+      ]
+    }
   }
 ];
 
@@ -282,7 +281,7 @@ export default new Template({}, ({ http, args }) => {
                     className="scroll-container flex-1"
                   >
                     <Flex gap="2" className="flex-nowrap">
-                      {article.categories?.map((category) => (
+                      {article.taxonomies?.categories.map((category) => (
                         <Text
                           key={category.name}
                           size="2"
@@ -316,7 +315,7 @@ export default new Template({}, ({ http, args }) => {
                 </div>
 
                 <Flex gap="2" className="flex-wrap">
-                  {article.tags?.map((tag: Tag) => (
+                  {article.taxonomies?.tags.map((tag) => (
                     <Text
                       key={tag.name}
                       size="1"

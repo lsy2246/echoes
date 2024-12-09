@@ -22,6 +22,7 @@ import remarkGfm from 'remark-gfm';
 import { toast } from "hooks/Notification";
 import rehypeRaw from 'rehype-raw';
 import remarkEmoji from 'remark-emoji';
+import ReactDOMServer from 'react-dom/server';
 
 // 示例文章数据
 const mockPost: PostDisplay = {
@@ -34,75 +35,93 @@ const mockPost: PostDisplay = {
 
 ## 1. 基础语法
 
-### 1.1 文本格式化
+### 1.1 粗体文本
 
-<pre>
+\`\`\`markdown
 **这是粗体文本**
-*这是斜体文本*
-***这是粗斜体文本***
-~~这是删除线文本~~
-</pre>
-
-普通文本不需要任何特殊标记。
+\`\`\`
 
 **这是粗体文本**
+
+### 1.2 斜体文本
+
+\`\`\`markdown
 *这是斜体文本*
+\`\`\`
+
+*这是斜体文本*
+
+### 1.3 粗斜体文本
+
+\`\`\`markdown
 ***这是粗斜体文本***
+\`\`\`
+
+***这是粗斜体文本***
+
+### 1.4 删除线文本
+
+\`\`\`markdown
+~~这是删除线文本~~
+\`\`\`
+
 ~~这是删除线文本~~
 
-### 1.2 列表
+### 1.5 无序列表
 
-<pre>
-#### 无序列表：
+\`\`\`markdown
+- 第一项
+  - 子项 1
+  - 子项 2
+- 第二项
+- 第三项
+\`\`\`
+
 - 第一项
   - 子项 1
   - 子项 2
 - 第二项
 - 第三项
 
-#### 有序列表：
+### 1.6 有序列表
+
+\`\`\`markdown
+1. 第一步
+   1. 子步骤 1
+   2. 子步骤 2
+2. 第二步
+3. 第三步
+\`\`\`
+
 1. 第一步
    1. 子步骤 1
    2. 子步骤 2
 2. 第二步
 3. 第三步
 
-#### 任务列表：
+### 1.7 任务列表
+
+\`\`\`markdown
 - [x] 已完成任务
 - [ ] 未完成任务
 - [x] 又一个已完成任务
-</pre>
+\`\`\`
 
-#### 无序列表：
-- 第一项
-  - 子项 1
-  - 子项 2
-- 第二项
-- 第三项
-
-#### 有序列表：
-1. 第一步
-   1. 子步骤 1
-   2. 子步骤 2
-2. 第二步
-3. 第三步
-
-#### 任务列表：
 - [x] 已完成任务
 - [ ] 未完成任务
 - [x] 又一个已完成任务
 
-### 1.3 代码展示
+### 1.8 行内代码
 
-<pre>
-行内代码：\`const greeting = "Hello World";\`
+\`\`\`markdown
+这是一段包含\`const greeting = "Hello World";\`的行内代码
+\`\`\`
 
-</pre>
+这是一段包含\`const greeting = "Hello World";\`的行内代码
 
-行内代码：\`const greeting = "Hello World";\`
+### 1.9 代码块
 
-<pre>
-代码块：
+\`\`\`\`markdown
 \`\`\`typescript
 interface User {
   id: number;
@@ -114,9 +133,8 @@ function greet(user: User): string {
   return \`Hello, \${user.name}!\`;
 }
 \`\`\`
-</pre>
+\`\`\`\`
 
-代码块：
 \`\`\`typescript
 interface User {
   id: number;
@@ -129,21 +147,53 @@ function greet(user: User): string {
 }
 \`\`\`
 
-### 1.4 表格
+### 1.10 表格
 
-<pre>
+\`\`\`markdown
 | 功能 | 基础版 | 高级版 |
 |:-----|:------:|-------:|
 | 文本编辑 | ✓ | ✓ |
 | 实时预览 | ✗ | ✓ |
 | 导出格式 | 2种 | 5种 |
-</pre>
+\`\`\`
 
 | 功能 | 基础版 | 高级版 |
 |:-----|:------:|-------:|
 | 文本编辑 | ✓ | ✓ |
 | 实时预览 | ✗ | ✓ |
 | 导出格式 | 2种 | 5种 |
+
+### 1.11 引用
+
+\`\`\`markdown
+> 📌 **最佳实践**
+> 
+> 好的文章需要有清晰的结构和流畅的表达。
+\`\`\`
+
+> 📌 **最佳实践**
+> 
+> 好的文章需要有清晰的结构和流畅的表达。
+
+### 1.12 脚注
+
+\`\`\`markdown
+这里有一个脚注[^1]。
+
+[^1]: 这是脚注的内容。
+\`\`\`
+
+这里有一个脚注[^1]。
+
+[^1]: 这是脚注的内容。
+
+### 1.13 表情符号
+
+\`\`\`markdown
+:smile: :heart: :star: :rocket:
+\`\`\`
+
+:smile: :heart: :star: :rocket:
 
 ## 2. 高级排版
 
@@ -232,12 +282,12 @@ function greet(user: User): string {
 <pre>
 <div class="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-lg my-8">
   <h4 class="text-lg font-bold text-blue-700 mb-2">💡 小贴士</h4>
-  <p class="text-blue-600">在写作时，可以先列出文章大纲，再逐步充实内容。这样可以保证文章结构清晰，内容完整。</p>
+  <p class="text-blue-600">在写作时，可以先列出文章大纲，再逐步充实内容。这可以保证文章结构清晰，内容完整。</p>
 </div>
 </pre>
 
 <div class="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-lg my-8">
-  <h4 class="text-lg font-bold text-blue-700 mb-2">💡 小贴士</h4>
+  <h4 class="text-lg font-bold text-blue-700 mb-2">小贴士</h4>
   <p class="text-blue-600">在写作时，可以先列出文章大纲，再逐步充实内容。这样可以保证文章结构清晰，内容完整。</p>
 </div>
 
@@ -273,7 +323,7 @@ function greet(user: User): string {
   </div>
 </div>
 
-### 2.6 引用样式
+### 2.6 引用式
 
 <pre>
 > 📌 **最佳实践**
@@ -327,36 +377,63 @@ function greet(user: User): string {
 2. 高级排版：图文混排、折叠面板、卡片布局等
 3. 特殊语法：数学公式、脚注、表情符号等
 
-> 💡 **提示**：部分高级排版功能可能需要特定的 Markdown 编辑器或渲染器支持，请确认是否支持这些功能。
+> 💡 **提示**：部分高级排版功能可能需要特定的 Markdown 编辑器或渲染支持，请确认是否支持这些功能。
 `,
   authorName: "Markdown 专家",
   publishedAt: new Date("2024-03-15"),
   coverImage: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=1200&h=600",
-  metaKeywords: "Markdown,基础语法,高级排版,布局设计",
-  metaDescription: "从基础语法到高级排版，全面了解 Markdown 的各种用法和技巧。",
   status: "published",
   isEditor: true,
   createdAt: new Date("2024-03-15"),
   updatedAt: new Date("2024-03-15"),
-  categories: [{ name: "教程" }],
-  tags: [{ name: "Markdown" }, { name: "排版" }, { name: "写作" }],
+  taxonomies: {
+    categories: [{ 
+      name: "教程",
+      slug: "tutorial",
+      type: "category"
+    }],
+    tags: [
+      { name: "Markdown", slug: "markdown", type: "tag" },
+      { name: "排版", slug: "typography", type: "tag" },
+      { name: "写作", slug: "writing", type: "tag" }
+    ]
+  },
+  metadata: [
+    { 
+      id: 1,
+      targetType: "post",
+      targetId: 1,
+      metaKey: "description",
+      metaValue: "从基础语法到高级排版，全面了解 Markdown 的各种用法和技巧。"
+    },
+    {
+      id: 2,
+      targetType: "post",
+      targetId: 1,
+      metaKey: "keywords",
+      metaValue: "Markdown,基础语法,高级排版,布局设计"
+    }
+  ]
 };
 
 // 添 meta 函数
 export const meta: MetaFunction = () => {
+  const description = mockPost.metadata?.find(m => m.metaKey === "description")?.metaValue || "";
+  const keywords = mockPost.metadata?.find(m => m.metaKey === "keywords")?.metaValue || "";
+
   return [
     { title: mockPost.title },
-    { name: "description", content: mockPost.metaDescription },
-    { name: "keywords", content: mockPost.metaKeywords },
-    // 添加 Open Graph 标
+    { name: "description", content: description },
+    { name: "keywords", content: keywords },
+    // 添 Open Graph 标
     { property: "og:title", content: mockPost.title },
-    { property: "og:description", content: mockPost.metaDescription },
+    { property: "og:description", content: description },
     { property: "og:image", content: mockPost.coverImage },
     { property: "og:type", content: "article" },
     // 添加 Twitter 卡片标签
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: mockPost.title },
-    { name: "twitter:description", content: mockPost.metaDescription },
+    { name: "twitter:description", content: description },
     { name: "twitter:image", content: mockPost.coverImage },
   ];
 };
@@ -510,7 +587,7 @@ export default new Template({}, ({ http, args }) => {
 
   const components = useMemo(() => {
     return {
-      h1: ({ children, node, ...props }: ComponentPropsWithoutRef<'h1'> & { node?: any }) => {
+      h1: ({ children, ...props }: ComponentPropsWithoutRef<'h1'>) => {
         const headingId = headingIds.current.shift();
         return (
           <h1 id={headingId} className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mt-6 sm:mt-8 mb-3 sm:mb-4" {...props}>
@@ -518,7 +595,7 @@ export default new Template({}, ({ http, args }) => {
           </h1>
         );
       },
-      h2: ({ children, node, ...props }: ComponentPropsWithoutRef<'h2'> & { node?: any }) => {
+      h2: ({ children, ...props }: ComponentPropsWithoutRef<'h2'>) => {
         const headingId = headingIds.current.shift();
         return (
           <h2 id={headingId} className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold mt-5 sm:mt-6 mb-2 sm:mb-3" {...props}>
@@ -526,7 +603,7 @@ export default new Template({}, ({ http, args }) => {
           </h2>
         );
       },
-      h3: ({ children, node, ...props }: ComponentPropsWithoutRef<'h3'> & { node?: any }) => {
+      h3: ({ children, ...props }: ComponentPropsWithoutRef<'h3'>) => {
         const headingId = headingIds.current.shift();
         return (
           <h3 id={headingId} className="text-base sm:text-lg md:text-xl lg:text-2xl font-medium mt-4 mb-2" {...props}>
@@ -534,45 +611,100 @@ export default new Template({}, ({ http, args }) => {
           </h3>
         );
       },
-      p: ({ children, node, ...props }: ComponentPropsWithoutRef<'p'> & { node?: any }) => (
-        <p className="text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 text-[--gray-11]" {...props}>
-          {children}
-        </p>
+      p: ({ node, ...props }: ComponentPropsWithoutRef<'p'> & { node?: any }) => (
+        <p 
+          className="text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 text-[--gray-11]" 
+          {...props}
+        />
       ),
-      ul: ({ children, node, ...props }: ComponentPropsWithoutRef<'ul'> & { node?: any }) => (
+      ul: ({ children, ...props }: ComponentPropsWithoutRef<'ul'>) => (
         <ul className="list-disc pl-4 sm:pl-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-[--gray-11]" {...props}>
           {children}
         </ul>
       ),
-      ol: ({ children, node, ...props }: ComponentPropsWithoutRef<'ol'> & { node?: any }) => (
+      ol: ({ children, ...props }: ComponentPropsWithoutRef<'ol'>) => (
         <ol className="list-decimal pl-4 sm:pl-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-[--gray-11]" {...props}>
           {children}
         </ol>
       ),
-      li: ({ children, node, ...props }: ComponentPropsWithoutRef<'li'> & { node?: any }) => (
+      li: ({ children, ...props }: ComponentPropsWithoutRef<'li'>) => (
         <li className="text-sm sm:text-base md:text-lg leading-relaxed" {...props}>
           {children}
         </li>
       ),
-      blockquote: ({ children, node, ...props }: ComponentPropsWithoutRef<'blockquote'> & { node?: any }) => (
+      blockquote: ({ children, ...props }: ComponentPropsWithoutRef<'blockquote'>) => (
         <blockquote className="border-l-4 border-[--gray-6] pl-4 sm:pl-6 py-2 my-3 sm:my-4 text-[--gray-11] italic" {...props}>
           {children}
         </blockquote>
       ),
-      code: ({ inline, className, children, node, ...props }: ComponentPropsWithoutRef<'code'> & { 
-        inline?: boolean,
-        node?: any 
-      }) => {
-        // 使用多个条件来确保服务端和客户端渲染一致
-        const isInPre = Boolean(
-          className?.includes('language-')
-        );
+      pre: ({ children, ...props }: ComponentPropsWithoutRef<'pre'>) => {
+        const childArray = React.Children.toArray(children);
         
-        // 如果是行内代码（不在 pre 标签内），使用行内样式
-        if (!isInPre) {
+        // 检查是否包含代码块
+        const codeElement = childArray.find(
+          child => React.isValidElement(child) && child.props.className?.includes('language-')
+        );
+
+        // 如果是代码块，让 code 组件处理
+        if (codeElement) {
+          return <>{children}</>;
+        }
+
+        // 获取内容
+        let content = '';
+        if (typeof children === 'string') {
+          content = children;
+        } else if (Array.isArray(children)) {
+          content = children.map(child => {
+            if (typeof child === 'string') return child;
+            if (React.isValidElement(child)) {
+              // 使用 renderToString 而不是 renderToStaticMarkup
+              return ReactDOMServer.renderToString(child as React.ReactElement)
+                // 移除 React 添加的 data 属性
+                .replace(/\s+data-reactroot=""/g, '')
+                // 移除已经存在的 HTML 实体编码
+                .replace(/&quot;/g, '"')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&#39;/g, "'");
+            }
+            return '';
+          }).join('');
+        } else if (React.isValidElement(children)) {
+          content = ReactDOMServer.renderToString(children as React.ReactElement)
+            .replace(/\s+data-reactroot=""/g, '')
+            .replace(/&quot;/g, '"')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&#39;/g, "'");
+        }
+
+        // 普通预格式化文本
+        return (
+          <pre 
+            className="my-4 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap
+                       bg-[--gray-3] border border-[--gray-6] text-[--gray-12]
+                       text-sm leading-relaxed font-mono"
+            {...props}
+          >
+            {content
+             }
+          </pre>
+        );
+      },
+      code: ({ inline, className, children, ...props }: ComponentPropsWithoutRef<'code'> & { 
+        inline?: boolean,
+        className?: string 
+      }) => {
+        const match = /language-(\w+)/.exec(className || '');
+        const code = String(children).replace(/\n$/, '');
+
+        if (!className || inline) {
           return (
             <code 
-              className="px-2 py-1 rounded-md bg-[--gray-4] text-[--accent-11] font-medium text-[0.85em] sm:text-[0.9em]" 
+              className="px-2 py-1 rounded-md bg-[--gray-4] text-[--accent-11] font-medium text-[0.85em]" 
               {...props}
             >
               {children}
@@ -580,27 +712,26 @@ export default new Template({}, ({ http, args }) => {
           );
         }
 
-        // 以下是代码块的处理逻辑
-        const match = /language-(\w+)/.exec(className || "");
-        const lang = match ? match[1].toLowerCase() : "";
-
+        const language = match ? match[1] : '';
+        
         return (
           <div className="my-4 sm:my-6">
             <div className="flex justify-between items-center h-9 sm:h-10 px-4 sm:px-6 
               border-t border-x border-[--gray-6] 
               bg-[--gray-3] dark:bg-[--gray-3]
-              rounded-t-lg
-              mx-0"
+              rounded-t-lg"
             >
-              <div className="text-sm text-[--gray-12] dark:text-[--gray-12] font-medium">{lang || "text"}</div>
-              <CopyButton code={String(children)} />
+              <div className="text-sm text-[--gray-12] dark:text-[--gray-12] font-medium">
+                {language || "text"}
+              </div>
+              <CopyButton code={code} />
             </div>
             
-            <div className="border border-[--gray-6] rounded-b-lg bg-white dark:bg-[--gray-1] mx-0">
+            <div className="border border-[--gray-6] rounded-b-lg bg-white dark:bg-[--gray-1]">
               <div className="overflow-x-auto">
                 <div className="p-4 sm:p-6">
                   <SyntaxHighlighter
-                    language={lang || "text"}
+                    language={language || "text"}
                     style={{
                       ...oneLight,
                       'punctuation': {
@@ -627,7 +758,7 @@ export default new Template({}, ({ http, args }) => {
                       }
                     }}
                   >
-                    {String(children).replace(/\n$/, "")}
+                    {code}
                   </SyntaxHighlighter>
                 </div>
               </div>
@@ -641,7 +772,7 @@ export default new Template({}, ({ http, args }) => {
           <div className="scroll-container overflow-x-auto">
             <div className="min-w-[640px] sm:min-w-0">
               <div className="border border-[--gray-6] rounded-lg bg-white dark:bg-[--gray-1]">
-                <table className="w-full border-collapse text-xs sm:text-sm" {...props}>
+                <table className="w-full border-collapse" {...props}>
                   {children}
                 </table>
               </div>
@@ -650,77 +781,66 @@ export default new Template({}, ({ http, args }) => {
         </div>
       ),
       
-      th: ({ children, ...props }: ComponentPropsWithoutRef<'th'>) => (
-        <th 
-          className="px-4 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase tracking-wider
-                    text-[--gray-12] break-words hyphens-auto
-                    bg-[--gray-3] dark:bg-[--gray-3]
-                    first:rounded-tl-lg last:rounded-tr-lg
-                    border-b border-[--gray-6]"
-          {...props}
-        >
-          {children}
-        </th>
-      ),
+      th: ({ children, style, ...props }: ComponentPropsWithoutRef<'th'> & { style?: React.CSSProperties }) => {
+        // 获取对齐方式
+        const getAlignment = () => {
+          if (style?.textAlign === 'center') return 'text-center';
+          if (style?.textAlign === 'right') return 'text-right';
+          return 'text-left';
+        };
+
+        return (
+          <th 
+            className={`px-4 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase tracking-wider
+                      text-[--gray-12] break-words hyphens-auto
+                      bg-[--gray-3] dark:bg-[--gray-3]
+                      first:rounded-tl-lg last:rounded-tr-lg
+                      border-b border-[--gray-6]
+                      align-top ${getAlignment()}`}
+            {...props}
+          >
+            {children}
+          </th>
+        );
+      },
       
-      td: ({ children, ...props }: ComponentPropsWithoutRef<'td'>) => (
-        <td 
-          className="px-4 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-xs sm:text-sm text-[--gray-11] break-words hyphens-auto
-                  [&:first-child]:font-medium [&:first-child]:text-[--gray-12]" 
-          {...props}
-        >
-          {children}
-        </td>
-      ),
+      td: ({ children, style, ...props }: ComponentPropsWithoutRef<'td'> & { style?: React.CSSProperties }) => {
+        // 获取父级 th 的对齐方式
+        const getAlignment = () => {
+          if (style?.textAlign === 'center') return 'text-center';
+          if (style?.textAlign === 'right') return 'text-right';
+          return 'text-left';
+        };
+
+        return (
+          <td 
+            className={`px-4 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-xs sm:text-sm text-[--gray-11] break-words hyphens-auto
+                      [&:first-child]:font-medium [&:first-child]:text-[--gray-12]
+                      align-top ${getAlignment()}`}
+            {...props}
+          >
+            {children}
+          </td>
+        );
+      },
       // 修改 details 组件
-      details: ({ children, ...props }: ComponentPropsWithoutRef<'details'>) => (
+      details: ({ node, ...props }: ComponentPropsWithoutRef<'details'> & { node?: any }) => (
         <details 
           className="my-4 rounded-lg border border-[--gray-6] bg-[--gray-2] overflow-hidden
                      marker:text-[--gray-11] [&[open]]:bg-[--gray-1]" 
           {...props}
-        >
-          {children}
-        </details>
+        />
       ),
       
       // 修改 summary 组件
-      summary: ({ children, ...props }: ComponentPropsWithoutRef<'summary'>) => (
+      summary: ({ node, ...props }: ComponentPropsWithoutRef<'summary'> & { node?: any }) => (
         <summary 
           className="px-4 py-3 cursor-pointer hover:bg-[--gray-3] transition-colors
                      text-[--gray-12] font-medium select-none
                      marker:text-[--gray-11]"
           {...props}
-        >
-          {children}
-        </summary>
+        />
       ),
-      pre: ({ children, ...props }: ComponentPropsWithoutRef<'pre'>) => {
-        // 添加调试日志
-        console.log('Pre Component Props:', props);
-        console.log('Pre Component Children:', children);
-        
-        // 检查children的具体结构
-        if (Array.isArray(children)) {
-          children.forEach((child, index) => {
-            console.log(`Child ${index}:`, child);
-            console.log(`Child ${index} props:`, (child as any)?.props);
-          });
-        }
-        
-        const content = (children as any)?.[0]?.props?.children || '';
-        console.log('Extracted content:', content);
-        
-        return (
-          <pre 
-            className="my-4 p-4 bg-[--gray-3] rounded-lg overflow-x-auto text-sm
-                       border border-[--gray-6] text-[--gray-12]"
-            {...props}
-          >
-            {/* 直接输出原始内容,不经过 markdown 解析 */}
-            {typeof content === 'string' ? content : children}
-          </pre>
-        );
-      },
     };
   }, []);
 
@@ -850,7 +970,7 @@ export default new Template({}, ({ http, args }) => {
 
       {isMounted && showToc && (
         <div 
-          className="lg:hidden fixed inset-0 z-50 bg-black/50 transition-opacity duration-300"
+          className="lg:hidden fixed top-[var(--header-height)] inset-x-0 bottom-0 z-50 bg-black/50 transition-opacity duration-300"
           onClick={() => setShowToc(false)}
         >
           <div 
@@ -859,35 +979,47 @@ export default new Template({}, ({ http, args }) => {
               translate-x-0 animate-in slide-in-from-right"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center p-4 border-b border-[--gray-6]">
-              <Text size="2" weight="medium" className="text-[--gray-12]">
-                目录
-              </Text>
-              <Button 
-                variant="ghost" 
-                onClick={() => setShowToc(false)}
-                className="hover:bg-[--gray-4] active:bg-[--gray-5] transition-colors"
-              >
-                关闭
-              </Button>
-            </div>
-
             <ScrollArea
               type="hover"
               scrollbars="vertical"
-              className="scroll-container h-[calc(100vh-64px)] p-4"
+              className="scroll-container h-full p-4"
             >
               <div className="space-y-2">
                 {tocItems.map((item, index) => {
                   if (item.level > 3) return null;
+                  const isActive = activeId === item.id;
+                  
                   return (
                     <a
                       key={`${item.id}-${index}`}
                       href={`#${item.id}`}
+                      ref={node => {
+                        // 当目录打开且是当前高亮项时，将其滚动到居中位置
+                        if (node && isActive && showToc) {
+                          requestAnimationFrame(() => {
+                            // 直接查找最近的滚动容器
+                            const scrollContainer = node.closest('.rt-ScrollAreaViewport');
+                            if (scrollContainer) {
+                              const containerHeight = scrollContainer.clientHeight;
+                              const elementTop = node.offsetTop;
+                              const elementHeight = node.clientHeight;
+                              
+                              // 确保计算的滚动位置是正数
+                              const scrollTop = Math.max(0, elementTop - (containerHeight / 2) + (elementHeight / 2));
+                              
+                              // 使用 scrollContainer 而不是 container
+                              scrollContainer.scrollTo({
+                                top: scrollTop,
+                                behavior: 'smooth'
+                              });
+                            }
+                          });
+                        }
+                      }}
                       className={`
                         block py-1.5 px-3 rounded transition-colors
                         ${
-                          activeId === item.id
+                          isActive
                             ? "text-[--accent-11] font-medium bg-[--accent-3]"
                             : "text-[--gray-11] hover:text-[--gray-12] hover:bg-[--gray-3]"
                         }
@@ -897,7 +1029,7 @@ export default new Template({}, ({ http, args }) => {
                             ? "text-sm font-medium"
                             : item.level === 2 
                               ? "text-[0.8125rem]" 
-                              : `text-xs ${activeId === item.id ? "text-[--accent-11]" : "text-[--gray-10]"}`
+                              : `text-xs ${isActive ? "text-[--accent-11]" : "text-[--gray-10]"}`
                         }
                       `}
                       onClick={(e) => {
@@ -924,7 +1056,7 @@ export default new Template({}, ({ http, args }) => {
     </>
   );
 
-  // 在组件顶部添加 useMemo 包裹静态内容
+  // 在组件顶部添加 useMemo 包静态内容
   const PostContent = useMemo(() => {
     // 在渲染内容前重置 headingIds
     if (headingIdsArrays[mockPost.id]) {
@@ -947,6 +1079,7 @@ export default new Template({}, ({ http, args }) => {
             components={components}
             remarkPlugins={[remarkGfm, remarkEmoji]}
             rehypePlugins={[rehypeRaw]}
+            skipHtml={false}
           >
             {mockPost.content}
           </ReactMarkdown>
@@ -967,7 +1100,7 @@ export default new Template({}, ({ http, args }) => {
         className="relative flex-col lg:flex-row" 
         gap={{initial: "4", lg: "8"}}
       >
-        {/* 文章主体 - 调整宽度计算 */}
+        {/* 文章体 - 调整宽度计算 */}
         <Box className="w-full lg:w-[calc(100%-12rem)] xl:w-[calc(100%-13rem)]">
           <Box className="p-4 sm:p-6 md:p-8">
             {/* 头部 */}
@@ -1014,11 +1147,11 @@ export default new Template({}, ({ http, args }) => {
 
                 {/* 分类 */}
                 <Flex gap="2">
-                  {mockPost.categories?.map((category) => {
+                  {mockPost.taxonomies?.categories.map((category) => {
                     const color = getColorScheme(category.name);
                     return (
                       <Text
-                        key={category.name}
+                        key={category.slug}
                         size="2"
                         className={`px-3 py-0.5 ${color.bg} ${color.text} rounded-md 
                                     border ${color.border} font-medium ${color.hover}
@@ -1035,11 +1168,11 @@ export default new Template({}, ({ http, args }) => {
 
                 {/* 标签 */}
                 <Flex gap="2">
-                  {mockPost.tags?.map((tag) => {
+                  {mockPost.taxonomies?.tags.map((tag) => {
                     const color = getColorScheme(tag.name);
                     return (
                       <Text
-                        key={tag.name}
+                        key={tag.slug}
                         size="2"
                         className={`px-3 py-1 ${color.bg} ${color.text} rounded-md 
                                     border ${color.border} ${color.hover}
@@ -1060,7 +1193,7 @@ export default new Template({}, ({ http, args }) => {
               </Flex>
             </Box>
 
-            {/* 面图片 */}
+            {/* 封面 */}
             {mockPost.coverImage && (
               <Box className="mb-16 rounded-xl overflow-hidden aspect-[2/1] shadow-lg">
                 <img
