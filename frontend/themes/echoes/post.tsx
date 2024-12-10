@@ -29,10 +29,6 @@ const mockPost: PostDisplay = {
   id: 1,
   title: "Markdown 完全指南：从基础到高级排版",
   content: `
-# Markdown 完全指南：从基础到高级排版
-
-这篇指南介绍 Markdown 的基础语法和高级排版技巧。
-
 ## 1. 基础语法
 
 ### 1.1 粗体文本
@@ -195,11 +191,79 @@ function greet(user: User): string {
 
 :smile: :heart: :star: :rocket:
 
-## 2. 高级排版
+### 1.14 可折叠内容
+
+\`\`\`markdown
+<details>
+<summary >
+  🎯 如何选择合适的写作工具？
+</summary>
+
+选择写作工具时需要考虑以下几点：
+
+1. **跨平台支持** - 确保在不同设备上都能访问
+2. **实时预览** - Markdown 实时渲染很重要
+3. **版本控制** - 最好能支持文章的版本管理
+4. **导出功能** - 支持导出为多种格式
+</details>
+\`\`\`
+
+<details>
+<summary>
+  🎯 如何选择合适的写作工具？
+</summary>
+
+选择写作工具时需要考虑以下几点：
+
+1. **跨平台支持** - 确保在不同设备上都能访问
+2. **实时预览** - Markdown 实时渲染很重要
+3. **版本控制** - 最好能支持文章的版本管理
+4. **导出功能** - 支持导出为多种格式
+</details>
+
+### 1.15 引用式
+
+\`\`\`markdown
+> 📌 **最佳实践**
+> 
+> 好的文章需要有清晰的结构和流畅的表达。以下是一些建议：
+> 
+> 1. 开门见山，直入主题
+> 2. 层次分明，逻辑清晰
+> 3. 语言简洁，表达准确
+> 
+> *— 写作指南*
+\`\`\`
+
+> 📌 **最佳实践**
+> 
+> 好的文章需要有清晰的结构和流畅的表达。以下是一些建议：
+> 
+> 1. 开门见山，直入主题
+> 2. 层次分明，逻辑清晰
+> 3. 语言简洁，表达准确
+> 
+> *— 写作指南*
+
+
+### 1.16 脚注
+
+\`\`\`markdown
+这里有一个脚注[^1]。
+[^2]: 这是脚注的内容。
+\`\`\`
+
+这里有一个脚注[^1]。
+
+[^1]:这是脚注的内容。
+
+
+
+## 2. HTML排版
 
 ### 2.1 图文混排布局
 
-<pre>
+\`\`\`markdown
 <div class="flex items-center gap-6 my-8">
   <img src="https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&h=400" 
        alt="写作工具" 
@@ -209,7 +273,7 @@ function greet(user: User): string {
     <p>使用合适的写作工具可以极大提升写作效率。推荐使用支持即时预览的编辑器，这样可以实时查看排版效果。</p>
   </div>
 </div>
-</pre>
+\`\`\`
 
 <div class="flex items-center gap-6 my-8">
   <img src="https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&h=400" 
@@ -221,39 +285,11 @@ function greet(user: User): string {
   </div>
 </div>
 
-### 2.2 可折叠内容
 
-<pre>
-<details class="my-4">
-<summary class="cursor-pointer p-4 bg-gray-100 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-  🎯 如何选择合适的写作工具？
-</summary>
 
-选择写作工具时需要考虑以下几点：
+### 2.2 并排卡片
 
-1. **跨平台支持** - 确保在不同设备上都能访问
-2. **实时预览** - Markdown 实时渲染很重要
-3. **版本控制** - 最好能支持文章的版本管理
-4. **导出功能** - 支持导出为多种格式
-</details>
-</pre>
-
-<details class="my-4">
-<summary class="cursor-pointer p-4 bg-gray-100 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-  🎯 如何选择合适的写作工具？
-</summary>
-
-选择写作工具时需要考虑以下几点：
-
-1. **跨平台支持** - 确保在不同设备上都能访问
-2. **实时预览** - Markdown 实时渲染很重要
-3. **版本控制** - 最好能支持文章的版本管理
-4. **导出功能** - 支持导出为多种格式
-</details>
-
-### 2.3 并排卡片
-
-<pre>
+\`\`\`markdown
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
   <div class="p-6 bg-gray-100 rounded-lg">
     <h4 class="text-lg font-bold mb-2">🚀 快速上手</h4>
@@ -264,7 +300,7 @@ function greet(user: User): string {
     <p>专注于内容创作，让工具自动处理排版，提高写作效率。</p>
   </div>
 </div>
-</pre>
+\`\`\`
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
   <div class="p-6 bg-gray-100 rounded-lg">
@@ -279,12 +315,12 @@ function greet(user: User): string {
 
 ### 2.4 高亮提示框
 
-<pre>
+\`\`\`markdown
 <div class="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-lg my-8">
   <h4 class="text-lg font-bold text-blue-700 mb-2">💡 小贴士</h4>
   <p class="text-blue-600">在写作时，可以先列出文章大纲，再逐步充实内容。这可以保证文章结构清晰，内容完整。</p>
 </div>
-</pre>
+\`\`\`
 
 <div class="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-lg my-8">
   <h4 class="text-lg font-bold text-blue-700 mb-2">小贴士</h4>
@@ -293,7 +329,7 @@ function greet(user: User): string {
 
 ### 2.5 时间线
 
-<pre>
+\`\`\`markdown
 <div class="relative pl-8 my-8 border-l-2 border-gray-200">
   <div class="mb-8 relative">
     <div class="absolute -left-10 w-4 h-4 bg-blue-500 rounded-full"></div>
@@ -307,7 +343,7 @@ function greet(user: User): string {
     <p>广泛搜集相关资料，为写作做充实准备。</p>
   </div>
 </div>
-</pre>
+\`\`\`
 
 <div class="relative pl-8 my-8 border-l-2 border-gray-200">
   <div class="mb-8 relative">
@@ -323,53 +359,9 @@ function greet(user: User): string {
   </div>
 </div>
 
-### 2.6 引用式
 
-<pre>
-> 📌 **最佳实践**
-> 
-> 好的文章需要有清晰的结构和流畅的表达。以下是一些建议：
-> 
-> 1. 开门见山，直入主题
-> 2. 层次分明，逻辑清晰
-> 3. 语言简洁，表达准确
-> 
-> *— 写作指南*
-</pre>
 
-> 📌 **最佳实践**
-> 
-> 好的文章需要有清晰的结构和流畅的表达。以下是一些建议：
-> 
-> 1. 开门见山，直入主题
-> 2. 层次分明，逻辑清晰
-> 3. 语言简洁，表达准确
-> 
-> *— 写作指南*
-
-## 3. 特殊语法
-
-### 3.1 脚注
-
-<pre>
-这里有一个脚注[^1]。
-
-[^1]: 这是脚注的内容。
-</pre>
-
-这里有一个脚注[^1]。
-
-[^1]: 这是脚注的内容。
-
-### 3.2 表情符号
-
-<pre>
-:smile: :heart: :star: :rocket:
-</pre>
-
-:smile: :heart: :star: :rocket:
-
-## 4. 总结
+## 3. 总结
 
 本文展示了 Markdown 从基础到高级的各种用法：
 
@@ -700,7 +692,8 @@ export default new Template({}, ({ http, args }) => {
       }) => {
         const match = /language-(\w+)/.exec(className || '');
         const code = String(children).replace(/\n$/, '');
-
+      
+        // 如果是内联代码
         if (!className || inline) {
           return (
             <code 
@@ -711,8 +704,11 @@ export default new Template({}, ({ http, args }) => {
             </code>
           );
         }
-
+      
         const language = match ? match[1] : '';
+        
+        // 特殊处理表格语法
+        const isTable = code.includes('|') && code.includes('\n') && code.includes('---');
         
         return (
           <div className="my-4 sm:my-6">
@@ -730,36 +726,50 @@ export default new Template({}, ({ http, args }) => {
             <div className="border border-[--gray-6] rounded-b-lg bg-white dark:bg-[--gray-1]">
               <div className="overflow-x-auto">
                 <div className="p-4 sm:p-6">
-                  <SyntaxHighlighter
-                    language={language || "text"}
-                    style={{
-                      ...oneLight,
-                      'punctuation': {
-                        color: 'var(--gray-12)'
-                      },
-                      'operator': {
-                        color: 'var(--gray-12)'
-                      },
-                      'symbol': {
-                        color: 'var(--gray-12)'
-                      }
-                    }}
-                    customStyle={{
-                      margin: 0,
-                      padding: 0,
-                      background: "none",
-                      fontSize: "0.9rem",
-                      lineHeight: 1.6,
-                    }}
-                    codeTagProps={{
-                      className: "dark:text-[--gray-12]",
-                      style: {
-                        color: "inherit"
-                      }
-                    }}
-                  >
-                    {code}
-                  </SyntaxHighlighter>
+                  {isTable ? (
+                    // 对表格使用 pre 标签保持格式
+                    <pre
+                      className="m-0 p-0 bg-transparent font-mono text-[0.9rem] leading-relaxed overflow-x-auto"
+                      style={{
+                        color: 'inherit',
+                        whiteSpace: 'pre'
+                      }}
+                    >
+                      {code}
+                    </pre>
+                  ) : (
+                    // 其他代码使用 SyntaxHighlighter
+                    <SyntaxHighlighter
+                      language={language || "text"}
+                      style={{
+                        ...oneLight,
+                        'punctuation': {
+                          color: 'var(--gray-12)'
+                        },
+                        'operator': {
+                          color: 'var(--gray-12)'
+                        },
+                        'symbol': {
+                          color: 'var(--gray-12)'
+                        }
+                      }}
+                      customStyle={{
+                        margin: 0,
+                        padding: 0,
+                        background: "none",
+                        fontSize: "0.9rem",
+                        lineHeight: 1.6,
+                      }}
+                      codeTagProps={{
+                        className: "dark:text-[--gray-12]",
+                        style: {
+                          color: "inherit"
+                        }
+                      }}
+                    >
+                      {code}
+                    </SyntaxHighlighter>
+                  )}
                 </div>
               </div>
             </div>
@@ -837,7 +847,8 @@ export default new Template({}, ({ http, args }) => {
         <summary 
           className="px-4 py-3 cursor-pointer hover:bg-[--gray-3] transition-colors
                      text-[--gray-12] font-medium select-none
-                     marker:text-[--gray-11]"
+                     marker:text-[--gray-11]
+                     "
           {...props}
         />
       ),

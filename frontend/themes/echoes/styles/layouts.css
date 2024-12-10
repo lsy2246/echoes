@@ -316,3 +316,84 @@ html[class~="dark"] .scroll-container::-webkit-scrollbar-thumb:hover {
 .scroll-hidden::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
+
+/* 可折叠块样式 */
+details {
+  transition: all 0.2s ease;
+  background-color: transparent;
+  border: 1px solid var(--gray-6);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 亮色模式样式 */
+details summary {
+  padding: 1rem;
+  background-color: var(--gray-2);
+  font-weight: 500;
+  color: var(--gray-12);
+  border-bottom: 1px solid transparent; /* 添加透明边框 */
+  transition: all 0.2s ease; /* 添加过渡效果 */
+}
+
+details summary:hover {
+  background-color: var(--gray-4);
+}
+
+details[open] {
+  background-color: var(--gray-2);
+}
+
+
+/* 暗色模式样式覆盖 */
+html[class~="dark"] details {
+  background-color: var(--gray-3);
+  background-color: transparent;
+}
+
+html[class~="dark"] details summary {
+  background-color: var(--gray-3);
+  color: var(--gray-12);
+}
+
+html[class~="dark"] details summary:hover {
+  background-color: var(--gray-5);
+}
+
+html[class~="dark"] details[open] {
+  background-color: var(--gray-3);
+}
+
+/* 内容区域样式 */
+details > *:not(summary) {
+  padding: 1rem;
+  color: var(--gray-11);
+}
+
+/* 移除默认的三角形标记 */
+details summary::-webkit-details-marker,
+details summary::marker {
+  display: none;
+}
+
+/* 自定义展开/折叠指示器 */
+details summary {
+  position: relative;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+details summary::after {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.2s ease;
+  color: var(--gray-11);
+}
+
+/* 暗色模式下的指示器颜色 */
+html[class~="dark"] details summary::after {
+  color: var(--gray-10);
+}
