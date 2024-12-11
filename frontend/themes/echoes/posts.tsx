@@ -19,7 +19,7 @@ const mockArticles: PostDisplay[] = [
     content: "在现代前端开发中，一个高效的工作流程对于提高开发效率至关重要...",
     authorName: "张三",
     publishedAt: new Date("2024-03-15"),
-    coverImage: "https://avatars.githubusercontent.com/u/72159?v=4",
+    coverImage: "https://www.helloimg.com/i/2024/12/11/6759312352499.png",
     status: "published",
     isEditor: false,
     createdAt: new Date("2024-03-15"),
@@ -197,6 +197,30 @@ const mockArticles: PostDisplay[] = [
         { name: "single-spa", slug: "single-spa", type: "tag" },
         { name: "模块联邦", slug: "module-federation", type: "tag" },
         { name: "应用通信", slug: "application-communication", type: "tag" }
+      ]
+    }
+  },
+  {
+    id: 9,
+    title: "AI 驱动的前端开发：从概念到实践",
+    content: "探索如何将人工智能技术融入前端开发流程，包括智能代码补全、自动化测试、UI 生成、性能优化建议等实践应用...",
+    authorName: "陈十一",
+    publishedAt: new Date("2024-03-08"),
+    coverImage: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=500&auto=format",
+    status: "published",
+    isEditor: false,
+    createdAt: new Date("2024-03-08"),
+    updatedAt: new Date("2024-03-08"),
+    taxonomies: {
+      categories: [
+        { name: "人工智能", slug: "artificial-intelligence", type: "category" },
+        { name: "前端开发", slug: "frontend-development", type: "category" }
+      ],
+      tags: [
+        { name: "AI开发", slug: "ai-development", type: "tag" },
+        { name: "智能化", slug: "intelligence", type: "tag" },
+        { name: "自动化", slug: "automation", type: "tag" },
+        { name: "开发效率", slug: "development-efficiency", type: "tag" }
       ]
     }
   }

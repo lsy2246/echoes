@@ -837,7 +837,9 @@ export default new Template({}, ({ http, args }) => {
       details: ({ node, ...props }: ComponentPropsWithoutRef<'details'> & { node?: any }) => (
         <details 
           className="my-4 rounded-lg border border-[--gray-6] bg-[--gray-2] overflow-hidden
-                     marker:text-[--gray-11] [&[open]]:bg-[--gray-1]" 
+                     marker:text-[--gray-11] [&[open]]:bg-[--gray-1]
+                     [&>*:not(summary)]:px-10 [&>*:not(summary)]:py-3
+                     " 
           {...props}
         />
       ),

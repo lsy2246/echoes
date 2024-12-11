@@ -447,7 +447,7 @@ export const ParticleImage = ({
   }, [cleanup]);
 
   // 修改 updateParticles 函数
-  const updateParticles = useCallback((width: number, height: number) => {
+  const updateParticles = useCallback((width: number, height: number, instanceId: string) => {
     if (!sceneRef.current || isAnimatingRef.current || !isMountedRef.current) return;
 
     // 只有当src不为空时才执行cleanup
@@ -504,16 +504,16 @@ export const ParticleImage = ({
         },
         onComplete: () => {
           completedAnimations++;
-          // 当所有动画完成时设置标记
           if (completedAnimations === totalAnimations && sceneRef.current) {
             sceneRef.current.userData.isSmileComplete = true;
+            loadingQueue.remove('', instanceId);
           }
         }
       });
     });
   }, [cleanup, src]);
 
-  // 将 resize 处理逻辑移到组件顶层
+  // 将 handleResize 移到 ParticleImage 组件内部
   const handleResize = useCallback(() => {
     if (!containerRef.current || !cameraRef.current || !rendererRef.current || 
         !sceneRef.current || !isMountedRef.current) return;
@@ -542,7 +542,7 @@ export const ParticleImage = ({
         cleanupResources(sceneRef.current);
       }
       sceneRef.current.userData.previousSize = currentSize;
-      updateParticles(width, height);
+      updateParticles(width, height, ''); // 传入空字符串作为 instanceId
     }
   }, [src, updateParticles]);
 
@@ -578,7 +578,7 @@ export const ParticleImage = ({
       canvas: document.createElement('canvas')
     });
 
-    // 在初始化渲染器后立即添加错误检查
+    // 在初始化渲染后立即添加错误检查
     if (!renderer.capabilities.isWebGL2) {
       console.warn('WebGL2 not supported, falling back...');
       renderer.dispose();
@@ -742,7 +742,7 @@ export const ParticleImage = ({
       });
     };
 
-    // 加载图
+    // 加载
     const img = new Image();
     img.crossOrigin = 'anonymous';
     
@@ -757,8 +757,8 @@ export const ParticleImage = ({
       const ctx = canvas.getContext('2d');
       
       if (ctx) {
-        // 增加一个小的边距以确保完全覆盖
-        const padding = 2; // 添加2像素的内边距
+        // 增加一个小的边距以确保��盖
+        const padding = 2; // 添加2像素的距
         canvas.width = width + padding * 2;
         canvas.height = height + padding * 2;
         
@@ -823,8 +823,8 @@ export const ParticleImage = ({
                 delay: normalizedDistance * 0.3
               });
 
-              // 随机初始位置（根据距离调范围）
-              const spread = 1 - normalizedDistance * 0.5; // 距离越远，始扩散越小
+              // 机初始位置（根据距离调范围）
+              const spread = 1 - normalizedDistance * 0.5; // 距离越远，扩散越小
               positionArray.push(
                 (Math.random() - 0.5) * width * spread,
                 (Math.random() - 0.5) * height * spread,
@@ -925,17 +925,14 @@ export const ParticleImage = ({
             .to(material, {
               opacity: 0,
               duration: 0.8
-            }, "-=0.6"); // 提前开始消失
+            }, "-=0.6"); // 前开始消失
         }
 
         return { particles, positionArray, colorArray, particleSize };
       }
     };
 
-    img.onerror = () => {
-      clearTimeout(timeoutId);
-      showErrorAnimation();
-    };
+    
 
     img.src = src || '';
 
@@ -964,7 +961,7 @@ export const ParticleImage = ({
         containerRef.current.removeChild(renderer.domElement);
         renderer.dispose();
       }
-      // 清所有 GSAP 动画
+      // 清有 GSAP ���画
       gsap.killTweensOf('*');
       
       // 移除 resize 监听
@@ -978,7 +975,236 @@ export const ParticleImage = ({
   return <div ref={containerRef} className="w-full h-full" />;
 }; 
 
-// 图片加载组件
+let instanceCounter = 0;
+
+// 添加性能检测函数
+const detectDevicePerformance = () => {
+  // 检查是否在浏览器环境
+  if (typeof window === 'undefined') {
+    return 1; // 服务器端返回默认值
+  }
+
+  try {
+    // 检查是否支持 hardwareConcurrency
+    const cores = navigator?.hardwareConcurrency || 2;
+    
+    // 检查设备内 (如果支持)
+    const memory = (navigator as any)?.deviceMemory || 4;
+    
+    // 检查是否为移动设备
+    const isMobile = typeof navigator !== 'undefined' 
+      ? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      : false;
+    
+    // 基于性能指标计算并发数
+    let concurrent = 1; // 默认值
+
+    if (!isMobile) {
+      if (cores >= 8 && memory >= 8) {
+        concurrent = 4; // 高性能设备
+      } else if (cores >= 4 && memory >= 4) {
+        concurrent = 3; // 中等性能设备
+      } else {
+        concurrent = 2; // 较低性能设备
+      }
+    }
+
+    return concurrent;
+  } catch (error) {
+    console.warn('性能检测失败，使用默认值:', error);
+    return 1; // 出错时返回最保守的值
+  }
+};
+
+// 修改队列管理
+const loadingQueue = {
+  items: new Map<string, {
+    isProcessing: boolean;
+    instanceId: string;
+    isLongConnection: boolean;
+    lastActiveTime?: number;
+    lastProcessState?: boolean;
+    lastLogTime?: number;  // 添加这个字段来控制日志输出频率
+  }>(),
+  pendingQueue: new Set<string>(), // 备选队列，存储已加载完成的长连接
+  maxConcurrent: 1,
+  currentProcessing: 0,
+  
+  get availableSlots() {
+    // 只计算普通请求的槽位，排除错误和长连接
+    const normalProcessing = Array.from(this.items.values())
+      .filter(item => 
+        item.isProcessing && 
+        !item.isLongConnection
+      ).length;
+    return this.maxConcurrent - normalProcessing;
+  },
+  
+  add(url: string, instanceId: string, isLongConnection = false) {
+    const key = `${instanceId}:${url}`;
+    if (!this.items.has(key)) {
+      console.log('[Queue] Adding:', key, 
+        isLongConnection ? '(long connection)' : '',
+        'Current processing:', this.currentProcessing,
+        'Max concurrent:', this.maxConcurrent
+      );
+      
+      this.items.set(key, {
+        isProcessing: false,
+        instanceId,
+        isLongConnection,
+        lastActiveTime: Date.now()
+      });
+      
+      // 连接不再直接进入备选队列，而是等待加载完成后再加入
+      this.processQueue();
+      return true;
+    }
+    return false;
+  },
+  
+  processQueue() {
+    console.log('[Queue] Processing queue:', {
+      availableSlots: this.availableSlots,
+      currentProcessing: this.currentProcessing,
+      pendingQueueSize: this.pendingQueue.size,
+      totalItems: this.items.size
+    });
+
+    if (this.availableSlots > 0) {
+      let nextKey: string | undefined;
+      
+      // 优先从备选队列中获取已加载完成的长连接
+      if (this.pendingQueue.size > 0) {
+        nextKey = Array.from(this.pendingQueue)[0];
+        this.pendingQueue.delete(nextKey);
+        console.log('[Queue] Processing from pending queue:', nextKey);
+      } else {
+        // 如果没有待处理的长连接，处理普通请求
+        const normalItem = Array.from(this.items.entries())
+          .find(([_, item]) => 
+            !item.isProcessing && 
+            !item.isLongConnection
+          );
+        if (normalItem) {
+          nextKey = normalItem[0];
+          console.log('[Queue] Processing normal request:', nextKey);
+        }
+      }
+      
+      if (nextKey) {
+        this.startProcessing(nextKey);
+      }
+    }
+  },
+  
+  startProcessing(key: string) {
+    const item = this.items.get(key);
+    if (item && !item.isProcessing) {
+      console.log('[Queue] Start processing:', key, {
+        isLongConnection: item.isLongConnection,
+        isError: key.includes('error')
+      });
+      
+      item.isProcessing = true;
+      
+      // 只有普通请求且不是错误状态时才增加处理数量
+      if (!item.isLongConnection && !key.includes('error')) {
+        this.currentProcessing++;
+        console.log('[Queue] Increased processing count:', this.currentProcessing);
+      }
+    }
+  },
+  
+  // 添加新方法：将长连接添加到备选队列
+  addToPending(url: string, instanceId: string) {
+    const key = `${instanceId}:${url}`;
+    const item = this.items.get(key);
+    if (item?.isLongConnection) {
+      this.pendingQueue.add(key);
+      console.log('[Queue] Added to pending queue:', key);
+    }
+  },
+  
+  remove(url: string, instanceId: string) {
+    const key = `${instanceId}:${url}`;
+    const item = this.items.get(key);
+    
+    console.log('[Queue] Removing:', key,
+      'Is long connection:', item?.isLongConnection,
+      'Was processing:', item?.isProcessing,
+      'Has error:', key.includes('error')
+    );
+    
+    // 只有普通请求且正在处理时才减少处理数量
+    if (item?.isProcessing && !item.isLongConnection && !key.includes('error')) {
+      this.currentProcessing--;
+      console.log('[Queue] Decreased processing count:', this.currentProcessing);
+    }
+    
+    // 确保从队列中移除
+    this.items.delete(key);
+    this.pendingQueue.delete(key);
+    
+    console.log('[Queue] After remove - Processing:', this.currentProcessing,
+      'Pending queue size:', this.pendingQueue.size,
+      'Total items:', this.items.size
+    );
+    
+    // 如果是错误状态，立即处理下一个请求
+    if (key.includes('error')) {
+      this.processQueue();
+    } else {
+      // 使用 requestAnimationFrame 来确保状态更新后再处理队列
+      requestAnimationFrame(() => {
+        this.processQueue();
+      });
+    }
+  },
+
+  canProcess(url: string, instanceId: string): boolean {
+    const key = `${instanceId}:${url}`;
+    const item = this.items.get(key);
+    
+    // 错误状态不占用槽位，只在第一次检查时输出日志
+    if (key.includes('error')) {
+      if (!item?.lastLogTime) {
+        console.log('[Queue] Can process (error):', key, true);
+        if (item) {
+          item.lastLogTime = Date.now();
+        }
+      }
+      return true;
+    }
+    
+    // 长连接在备选队列中时可以处理
+    if (item?.isLongConnection && this.pendingQueue.has(key)) {
+      if (!item.lastLogTime || Date.now() - item.lastLogTime > 1000) {
+        console.log('[Queue] Can process (pending long):', key, true);
+        item.lastLogTime = Date.now();
+      }
+      return true;
+    }
+    
+    const canProcess = item?.isProcessing || false;
+    // 只在状态发生变化时或者每秒最多输出一次日志
+    if (item && 
+        (item.lastProcessState !== canProcess || 
+         !item.lastLogTime || 
+         Date.now() - item.lastLogTime > 1000)) {
+      console.log('[Queue] Can process (normal):', key, canProcess);
+      item.lastProcessState = canProcess;
+      item.lastLogTime = Date.now();
+    }
+    return canProcess;
+  }
+};
+
+// 在组件挂载时更新 maxConcurrent
+if (typeof window !== 'undefined') {
+  loadingQueue.maxConcurrent = detectDevicePerformance();
+}
+
 export const ImageLoader = ({ 
   src, 
   alt,
@@ -988,6 +1214,9 @@ export const ImageLoader = ({
   alt: string; 
   className: string; 
 }) => {
+  // 为每个实例创唯一ID
+  const instanceId = useRef(`img-${++instanceCounter}`);
+  // 保持现有的状态和引用
   const [status, setStatus] = useState<LoaderStatus>({
     isLoading: true,
     hasError: false,
@@ -1000,6 +1229,65 @@ export const ImageLoader = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [animationComplete, setAnimationComplete] = useState(false);
 
+  // 把 useEffect 移到这里
+  useEffect(() => {
+    if (!src) return;
+    
+    console.log('[Queue] Effect triggered for:', src, 'Instance:', instanceId.current);
+    setShowImage(false);
+    setAnimationComplete(false);
+    setCanShowParticles(false);
+    
+    loadingQueue.add(src, instanceId.current);
+    
+    const checkQueue = () => {
+      if (loadingQueue.canProcess(src, instanceId.current)) {
+        const now = Date.now();
+        const timeSinceLastAnimation = now - lastAnimationTime;
+        
+        if (particleLoadQueue.size === 0) {
+          console.log('[Queue] Starting immediate animation for:', src, 'Instance:', instanceId.current);
+          particleLoadQueue.add(src);
+          setCanShowParticles(true);
+          lastAnimationTime = now;
+          return;
+        }
+        
+        const delay = Math.max(
+          MIN_DELAY,
+          Math.min(ANIMATION_THRESHOLD, timeSinceLastAnimation)
+        );
+        
+        console.log('[Queue] Scheduling delayed animation for:', src, 'Instance:', instanceId.current);
+        const timer = setTimeout(() => {
+          const key = `${instanceId.current}:${src}`;
+          if (!loadingQueue.items.has(key)) return;
+          
+          console.log('[Queue] Starting delayed animation for:', src, 'Instance:', instanceId.current);
+          particleLoadQueue.add(src);
+          setCanShowParticles(true);
+          lastAnimationTime = Date.now();
+        }, delay);
+        
+        return () => {
+          clearTimeout(timer);
+          particleLoadQueue.delete(src);
+        };
+      }
+      
+      const timer = setTimeout(checkQueue, 100);
+      return () => clearTimeout(timer);
+    };
+    
+    const cleanup = checkQueue();
+    
+    return () => {
+      console.log('[Queue] Cleanup effect for:', src, 'Instance:', instanceId.current);
+      cleanup?.();
+      loadingQueue.remove(src, instanceId.current);
+    };
+  }, [src]);
+
   // 处理图片加载
   const preloadImage = useCallback(() => {
     if (!src || loadingRef.current) return;
@@ -1008,96 +1296,125 @@ export const ImageLoader = ({
 
     // 清理之前的资源
     if (imageRef.current) {
-      imageRef.current.src = '';
-      imageRef.current = null;
+        imageRef.current.src = '';
+        imageRef.current = null;
     }
 
     if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+        clearTimeout(timeoutRef.current);
     }
 
     setStatus({
-      isLoading: true,
-      hasError: false,
-      timeoutError: false
+        isLoading: true,
+        hasError: false,
+        timeoutError: false
     });
     setShowImage(false);
 
     const img = new Image();
     img.crossOrigin = 'anonymous';
 
-    img.onload = () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      // 在图片加载成功后，立即创建和缓存一个适应容器大小的图片
-      if (containerRef.current) {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+    timeoutRef.current = setTimeout(() => {
+        loadingRef.current = false;
+        setStatus({
+            isLoading: false,
+            hasError: true,
+            timeoutError: true
+        });
         
-        if (ctx) {
-          const containerWidth = containerRef.current.offsetWidth;
-          const containerHeight = containerRef.current.offsetHeight;
-          
-          canvas.width = containerWidth;
-          canvas.height = containerHeight;
-          
-          // 保持比例绘制图片
-          const targetAspect = containerWidth / containerHeight;
-          const imgAspect = img.width / img.height;
-          
-          let sourceWidth = img.width;
-          let sourceHeight = img.height;
-          let sourceX = 0;
-          let sourceY = 0;
-          
-          if (imgAspect > targetAspect) {
-            sourceWidth = img.height * targetAspect;
-            sourceX = (img.width - sourceWidth) / 2;
-          } else {
-            sourceHeight = img.width / targetAspect;
-            sourceY = (img.height - sourceHeight) / 2;
-          }
-          
-          ctx.drawImage(
-            img,
-            sourceX, sourceY, sourceWidth, sourceHeight,
-            0, 0, containerWidth, containerHeight
-          );
-          
-          // 创建新的图片对象，使用调整后的canvas数据
-          const adjustedImage = new Image();
-          adjustedImage.src = canvas.toDataURL();
-          imageRef.current = adjustedImage;
+        // 超时时触发错误动画
+        setCanShowParticles(true);
+        if (src) {
+            loadingQueue.remove(src, instanceId.current);
+            particleLoadQueue.delete(src);
         }
-      } else {
-        imageRef.current = img;
-      }
+    }, 5000);
 
-      loadingRef.current = false;
-      setStatus({
-        isLoading: false,
-        hasError: false,
-        timeoutError: false
-      });
+    img.onload = () => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+
+        // 在图片加载成功后，立即创建缓存一个适应容器大小的图片
+        if (containerRef.current) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            if (ctx) {
+                const containerWidth = containerRef.current.offsetWidth;
+                const containerHeight = containerRef.current.offsetHeight;
+                
+                canvas.width = containerWidth;
+                canvas.height = containerHeight;
+                
+                // 保持比例绘制图片
+                const targetAspect = containerWidth / containerHeight;
+                const imgAspect = img.width / img.height;
+                
+                let sourceWidth = img.width;
+                let sourceHeight = img.height;
+                let sourceX = 0;
+                let sourceY = 0;
+                
+                if (imgAspect > targetAspect) {
+                    sourceWidth = img.height * targetAspect;
+                    sourceX = (img.width - sourceWidth) / 2;
+                } else {
+                    sourceHeight = img.width / targetAspect;
+                    sourceY = (img.height - sourceHeight) / 2;
+                }
+                
+                ctx.drawImage(
+                    img,
+                    sourceX, sourceY, sourceWidth, sourceHeight,
+                    0, 0, containerWidth, containerHeight
+                );
+                
+                // 创建新的图片对象，使用调整后的canvas数据
+                const adjustedImage = new Image();
+                adjustedImage.src = canvas.toDataURL();
+                imageRef.current = adjustedImage;
+            }
+        } else {
+            imageRef.current = img;
+        }
+
+        // 如果是长连接，加载成功后添加到备选队列
+        if (src && src === src) { // 相同URL判断
+            loadingQueue.addToPending(src, instanceId.current);
+        }
+
+        loadingRef.current = false;
+        setStatus({
+            isLoading: false,
+            hasError: false,
+            timeoutError: false
+        });
     };
 
     img.onerror = () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      loadingRef.current = false;
-      setStatus({
-        isLoading: false,
-        hasError: true,
-        timeoutError: false
-      });
+        console.log('[Image Loader] Error loading image:', src);
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+        loadingRef.current = false;
+        setStatus({
+            isLoading: false,
+            hasError: true,
+            timeoutError: false
+        });
+        
+        // 错误时立即触发错误动画
+        setCanShowParticles(true);
+        
+        if (src) {
+            loadingQueue.remove(src, instanceId.current);
+            particleLoadQueue.delete(src);
+        }
     };
 
-    // 确保src存在再设置
     if (src) {
-      img.src = src;
+        img.src = src;
     }
   }, [src]);
 
@@ -1114,67 +1431,43 @@ export const ImageLoader = ({
 
   // 添加一个新的状来控制粒子动画
   const [canShowParticles, setCanShowParticles] = useState(false);
-
-  useEffect(() => {
-    if (!src) return;
-
-    // 重置状
-    setShowImage(false);
-    setAnimationComplete(false);
-    setCanShowParticles(false);
-
-    const now = Date.now();
-    const timeSinceLastAnimation = now - lastAnimationTime;
-
-    if (particleLoadQueue.size === 0) {
-      particleLoadQueue.add(src);
-      setCanShowParticles(true);
-      lastAnimationTime = now;
-      return;
-    }
-
-    const delay = Math.max(
-      MIN_DELAY,
-      Math.min(ANIMATION_THRESHOLD, timeSinceLastAnimation)
-    );
-
-    const timer = setTimeout(() => {
-      particleLoadQueue.add(src);
-      setCanShowParticles(true);
-      lastAnimationTime = Date.now();
-    }, delay);
-
-    return () => {
-      clearTimeout(timer);
-      particleLoadQueue.delete(src);
-    };
-  }, [src]);
+  
+  // 添加加载动画组件
+  const LoadingSpinner = () => (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-[--accent-9] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
     <div className="relative w-full h-full overflow-hidden">
       <div className={`absolute inset-0 ${BG_CONFIG.className} rounded-lg overflow-hidden`}>
-        {(!src || (!animationComplete && canShowParticles)) && (
+        {src && (status.isLoading || !canShowParticles) && <LoadingSpinner />}
+        
+        {(!src || (src && !animationComplete && canShowParticles)) && (
           <ParticleImage 
             src={src} 
             status={status}
             onLoad={() => {
+              console.log('[ParticleImage] onLoad START:', src);
               if (imageRef.current) {
                 // 保持为空
               }
+              console.log('[ParticleImage] onLoad END:', src);
             }}
             onAnimationComplete={() => {
+              console.log('[ParticleImage] Animation START:', src);
               if (imageRef.current && src) {
-                // 先显示图片，保持透明
                 setShowImage(true);
                 
-                // 等待一帧确保图片已经渲染
                 requestAnimationFrame(() => {
-                  // 标记动画完成，触发粒子消失
+                  console.log('[ParticleImage] Setting animation complete:', src);
                   setAnimationComplete(true);
                   particleLoadQueue.delete(src);
+                  loadingQueue.remove(src, instanceId.current);
                   
-                  // 给图一个短暂延迟再开始淡入
                   setTimeout(() => {
+                    console.log('[ParticleImage] Fading image:', src);
                     const img = document.querySelector(`img[src="${imageRef.current?.src}"]`) as HTMLImageElement;
                     if (img) {
                       img.style.opacity = '1';
@@ -1182,19 +1475,18 @@ export const ImageLoader = ({
                   }, 50);
                 });
               }
+              console.log('[ParticleImage] Animation END:', src);
             }}
           />
         )}
       </div>
+      {/* 保持现图片渲染部分 */}
       {!status.hasError && !status.timeoutError && imageRef.current && (
         <div className="absolute inset-0 rounded-lg overflow-hidden">
           <img 
             src={imageRef.current.src}
             alt={alt}
-            className={`
-              w-full h-full object-cover
-              ${className}
-            `}
+            className={`w-full h-full object-cover ${className}`}
             style={{ 
               opacity: 0,
               visibility: showImage ? 'visible' : 'hidden',
@@ -1202,8 +1494,8 @@ export const ImageLoader = ({
               objectPosition: 'center',
               willChange: 'opacity, transform',
               transition: 'opacity 0.5s ease-in-out',
-              transform: 'scale(1.015)', // 增加缩放比例到 1.015
-              transformOrigin: 'center bottom', // 从底部中心开始缩放
+              transform: 'scale(1.015)',
+              transformOrigin: 'center bottom',
             }}
           />
         </div>
