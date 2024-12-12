@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import typography from '@tailwindcss/typography';
+import typography from "@tailwindcss/typography";
 
 export default {
   content: [
@@ -9,7 +9,7 @@ export default {
     "./hooks/**/*.{js,jsx,ts,tsx}",
     "./themes/**/*.{js,jsx,ts,tsx}",
   ],
-  darkMode: 'class',
+  darkMode: "class",
   important: true,
   theme: {
     extend: {
@@ -30,7 +30,5 @@ export default {
       },
     },
   },
-  plugins: [
-    typography,
-  ],
+  plugins: [typography],
 } satisfies Config;

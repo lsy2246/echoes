@@ -5,10 +5,13 @@ mod storage;
 
 use crate::common::config;
 use common::error::{CustomErrorInto, CustomResult};
+use rocket::http::Method;
 use rocket::Shutdown;
+use rocket_cors::{AllowedHeaders, AllowedOrigins, Cors, CorsOptions};
 use std::sync::Arc;
 use storage::sql;
 use tokio::sync::Mutex;
+
 pub struct AppState {
     db: Arc<Mutex<Option<sql::Database>>>,
     shutdown: Arc<Mutex<Option<Shutdown>>>,
@@ -61,6 +64,25 @@ impl AppState {
     }
 }
 
+fn cors() -> Cors {
+    CorsOptions {
+        allowed_origins: AllowedOrigins::all(),
+        allowed_methods: vec![Method::Get, Method::Post, Method::Options]
+            .into_iter()
+            .map(From::from)
+            .collect(),
+        allowed_headers: AllowedHeaders::all(),
+        allow_credentials: true,
+        expose_headers: Default::default(),
+        max_age: None,
+        send_wildcard: false,
+        fairing_route_base: "/".to_string(),
+        fairing_route_rank: 0,
+    }
+    .to_cors()
+    .expect("CORS配置错误")
+}
+
 #[rocket::main]
 async fn main() -> CustomResult<()> {
     let config = config::Config::read().unwrap_or_else(|e| {
@@ -75,7 +97,8 @@ async fn main() -> CustomResult<()> {
 
     let mut rocket_builder = rocket::build()
         .configure(rocket_config)
-        .manage(state.clone());
+        .manage(state.clone())
+        .attach(cors());
 
     if !config.init.sql {
         rocket_builder = rocket_builder.mount("/", rocket::routes![api::setup::setup_sql]);

@@ -1,3 +1,4 @@
+import { DEFAULT_CONFIG } from "~/env";
 export interface ErrorResponse {
   title: string;
   message: string;
@@ -73,18 +74,17 @@ export class HttpClient {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
-    prefix = "api",
+    url: string,
   ): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
       const config = await this.setHeaders(options);
-      const url = endpoint.startsWith(`/__/${prefix}`)
-        ? endpoint
-        : `/__/${prefix}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+      const baseUrl = url.startsWith("http") ? url : `http://${url}`;
+      const newUrl = new URL(endpoint, baseUrl);
 
-      const response = await fetch(url, {
+      const response = await fetch(newUrl, {
         ...config,
         signal: controller.signal,
         credentials: "include",
@@ -116,11 +116,16 @@ export class HttpClient {
   }
 
   public async api<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    return this.request<T>(endpoint, options, "api");
+    const url =
+      import.meta.env.VITE_API_BASE_URL ?? DEFAULT_CONFIG.VITE_API_BASE_URL;
+    return this.request<T>(endpoint, options, url);
   }
 
   public async dev<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    return this.request<T>(endpoint, options, "express");
+    const address = import.meta.env.VITE_ADDRESS ?? DEFAULT_CONFIG.VITE_ADDRESS;
+    const port =
+      Number(import.meta.env.VITE_PORT ?? DEFAULT_CONFIG.VITE_PORT) + 1;
+    return this.request<T>(endpoint, options, `${address}:${port}`);
   }
 
   public async get<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

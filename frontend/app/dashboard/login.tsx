@@ -4,9 +4,9 @@ import { Container, Heading, Text, Box, Flex, Button } from "@radix-ui/themes";
 import { PersonIcon, LockClosedIcon } from "@radix-ui/react-icons";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { gsap } from "gsap";
-import { AnimatedBackground } from 'hooks/Background';
-import { useThemeMode, ThemeModeToggle } from 'hooks/ThemeMode';
-import { useNotification } from 'hooks/Notification';
+import { AnimatedBackground } from "hooks/Background";
+import { useThemeMode, ThemeModeToggle } from "hooks/ThemeMode";
+import { useNotification } from "hooks/Notification";
 
 export default new Template({}, ({ http, args }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -59,16 +59,16 @@ export default new Template({}, ({ http, args }) => {
 
     try {
       // 这里添加登录逻辑
-      await new Promise(resolve => setTimeout(resolve, 1500)); // 模拟API请求
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500)); // 模拟API请求
+
       // 登录成功的通知
-      notification.success('登录成功', '欢迎回来！');
-      
+      notification.success("登录成功", "欢迎回来！");
+
       // 登录成功后的处理
       console.log("Login successful");
     } catch (error) {
       // 登录失败的通知
-      notification.error('登录失败', '用户名或密码错误');
+      notification.error("登录失败", "用户名或密码错误");
       console.error("Login failed:", error);
     } finally {
       setIsLoading(false);
@@ -76,29 +76,35 @@ export default new Template({}, ({ http, args }) => {
   };
 
   const handleBackgroundError = () => {
-    console.log('Background failed to load, switching to fallback');
+    console.log("Background failed to load, switching to fallback");
     setHasBackgroundError(true);
   };
 
   // 使用 useMemo 包裹背景组件
-  const backgroundComponent = useMemo(() => (
-    !hasBackgroundError && <AnimatedBackground onError={handleBackgroundError} />
-  ), [hasBackgroundError]);
+  const backgroundComponent = useMemo(
+    () =>
+      !hasBackgroundError && (
+        <AnimatedBackground onError={handleBackgroundError} />
+      ),
+    [hasBackgroundError],
+  );
 
   return (
     <div className="relative min-h-screen">
       {backgroundComponent}
-      
-      <Box 
+
+      <Box
         className="fixed top-4 right-4 z-20 w-10 h-10 flex items-center justify-center [&_button]:w-10 [&_button]:h-10 [&_svg]:w-6 [&_svg]:h-6"
-        style={{
-          '--button-color': 'var(--gray-12)',
-          '--button-hover-color': 'var(--accent-9)'
-        } as React.CSSProperties}
+        style={
+          {
+            "--button-color": "var(--gray-12)",
+            "--button-hover-color": "var(--accent-9)",
+          } as React.CSSProperties
+        }
       >
         <ThemeModeToggle />
       </Box>
-      
+
       <Container
         ref={containerRef}
         className={`relative z-10 h-screen w-full flex items-center justify-center transition-all duration-300 ${
@@ -106,11 +112,14 @@ export default new Template({}, ({ http, args }) => {
         }`}
       >
         <Box className="w-full max-w-md mx-auto px-4">
-          <Box 
+          <Box
             className="login-box backdrop-blur-sm rounded-lg shadow-lg p-8 border transition-colors duration-300"
             style={{
-              backgroundColor: mode === 'dark' ? 'var(--gray-2-alpha-80)' : 'var(--white-alpha-80)',
-              borderColor: 'var(--gray-6)'
+              backgroundColor:
+                mode === "dark"
+                  ? "var(--gray-2-alpha-80)"
+                  : "var(--white-alpha-80)",
+              borderColor: "var(--gray-6)",
             }}
           >
             {/* Logo */}
@@ -118,7 +127,6 @@ export default new Template({}, ({ http, args }) => {
               <Heading size="6" className="text-center mb-2">
                 后台
               </Heading>
-
             </Flex>
 
             {/* 登录表单 */}
@@ -151,11 +159,13 @@ export default new Template({}, ({ http, args }) => {
                 {/* 登录按钮 */}
                 <Button
                   className="login-button w-full h-10 transition-colors duration-300 hover:bg-[--hover-bg]"
-                  style={{
-                    backgroundColor: 'var(--accent-9)',
-                    color: 'white',
-                    '--hover-bg': 'var(--accent-10)'
-                  } as React.CSSProperties}
+                  style={
+                    {
+                      backgroundColor: "var(--accent-9)",
+                      color: "white",
+                      "--hover-bg": "var(--accent-10)",
+                    } as React.CSSProperties
+                  }
                   size="3"
                   type="submit"
                   disabled={isLoading}
@@ -165,13 +175,15 @@ export default new Template({}, ({ http, args }) => {
 
                 {/* 其他选项 */}
                 <Flex justify="center" className="form-element">
-                  <Text 
-                    size="2" 
+                  <Text
+                    size="2"
                     className="cursor-pointer transition-colors duration-300 hover:text-[--hover-color]"
-                    style={{
-                      color: 'var(--gray-11)',
-                      '--hover-color': 'var(--accent-9)'
-                    } as React.CSSProperties}
+                    style={
+                      {
+                        color: "var(--gray-11)",
+                        "--hover-color": "var(--accent-9)",
+                      } as React.CSSProperties
+                    }
                   >
                     忘记密码？
                   </Text>
@@ -183,4 +195,4 @@ export default new Template({}, ({ http, args }) => {
       </Container>
     </div>
   );
-}); 
+});

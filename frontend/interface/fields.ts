@@ -52,7 +52,7 @@ export interface Setting {
 
 export interface Metadata {
   id: number;
-  targetType: 'post' | 'page';
+  targetType: "post" | "page";
   targetId: number;
   metaKey: string;
   metaValue?: string;
@@ -60,7 +60,7 @@ export interface Metadata {
 
 export interface CustomField {
   id: number;
-  targetType: 'post' | 'page';
+  targetType: "post" | "page";
   targetId: number;
   fieldKey: string;
   fieldValue?: string;
@@ -70,7 +70,7 @@ export interface CustomField {
 export interface Taxonomy {
   name: string;
   slug: string;
-  type: 'tag' | 'category';
+  type: "tag" | "category";
   parentId?: string;
 }
 

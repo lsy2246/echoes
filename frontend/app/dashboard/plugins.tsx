@@ -1,10 +1,10 @@
 import { Template } from "interface/template";
-import { 
-  Container, 
-  Heading, 
-  Text, 
-  Box, 
-  Flex, 
+import {
+  Container,
+  Heading,
+  Text,
+  Box,
+  Flex,
   Card,
   Button,
   TextField,
@@ -13,7 +13,7 @@ import {
   Dialog,
   Tabs,
   Switch,
-  IconButton
+  IconButton,
 } from "@radix-ui/themes";
 import {
   PlusIcon,
@@ -25,13 +25,17 @@ import {
   CheckIcon,
   UpdateIcon,
   TrashIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 import type { PluginConfig } from "interface/plugin";
 
 // 模拟插件数据
-const mockPlugins: (PluginConfig & { id: number; preview?: string; installed?: boolean })[] = [
+const mockPlugins: (PluginConfig & {
+  id: number;
+  preview?: string;
+  installed?: boolean;
+})[] = [
   {
     id: 1,
     name: "comment-system",
@@ -41,7 +45,8 @@ const mockPlugins: (PluginConfig & { id: number; preview?: string; installed?: b
     author: "Admin",
     enabled: true,
     icon: "https://api.iconify.design/material-symbols:comment.svg",
-    preview: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=500&auto=format",
+    preview:
+      "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=500&auto=format",
     managePath: "/dashboard/plugins/comment-system",
     installed: true,
     configuration: {
@@ -51,11 +56,11 @@ const mockPlugins: (PluginConfig & { id: number; preview?: string; installed?: b
         data: {
           provider: "gitalk",
           clientId: "",
-          clientSecret: ""
-        }
-      }
+          clientSecret: "",
+        },
+      },
     },
-    routes: new Set()
+    routes: new Set(),
   },
   {
     id: 2,
@@ -66,7 +71,8 @@ const mockPlugins: (PluginConfig & { id: number; preview?: string; installed?: b
     author: "ThirdParty",
     enabled: false,
     icon: "https://api.iconify.design/material-symbols:image.svg",
-    preview: "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=500&auto=format",
+    preview:
+      "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=500&auto=format",
     installed: true,
     configuration: {
       system: {
@@ -75,12 +81,12 @@ const mockPlugins: (PluginConfig & { id: number; preview?: string; installed?: b
         data: {
           quality: 80,
           maxWidth: 1920,
-          watermark: false
-        }
-      }
+          watermark: false,
+        },
+      },
     },
-    routes: new Set()
-  }
+    routes: new Set(),
+  },
 ];
 
 // 模拟市场插件数据
@@ -104,9 +110,10 @@ const marketPlugins: MarketPlugin[] = [
     version: "1.0.0",
     description: "自动优化上传的图片，支持压缩、裁剪、水印等功能",
     author: "ThirdParty",
-    preview: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=500&auto=format",
+    preview:
+      "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=500&auto=format",
     downloads: 1200,
-    rating: 4.5
+    rating: 4.5,
   },
   {
     id: 5,
@@ -115,22 +122,25 @@ const marketPlugins: MarketPlugin[] = [
     version: "2.0.0",
     description: "增强的Markdown编辑器，支持更多扩展语法和实时预览",
     author: "ThirdParty",
-    preview: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&auto=format",
+    preview:
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&auto=format",
     downloads: 3500,
-    rating: 4.8
-  }
+    rating: 4.8,
+  },
 ];
 
 export default new Template({}, ({ http, args }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [selectedPlugin, setSelectedPlugin] = useState<typeof mockPlugins[0] | null>(null);
+  const [selectedPlugin, setSelectedPlugin] = useState<
+    (typeof mockPlugins)[0] | null
+  >(null);
 
   // 处理插件启用/禁用
   const handleTogglePlugin = (pluginId: number) => {
     // 这里添加启用/禁用插件的逻辑
-    console.log('Toggle plugin:', pluginId);
+    console.log("Toggle plugin:", pluginId);
   };
 
   return (
@@ -145,7 +155,7 @@ export default new Template({}, ({ http, args }) => {
             共 {mockPlugins.length} 个插件
           </Text>
         </Box>
-        <Button 
+        <Button
           className="bg-[--accent-9]"
           onClick={() => setIsAddDialogOpen(true)}
         >
@@ -156,10 +166,12 @@ export default new Template({}, ({ http, args }) => {
 
       {/* 搜索栏 */}
       <Box className="w-full sm:w-64 mb-6">
-        <TextField.Root 
+        <TextField.Root
           placeholder="搜索插件..."
           value={searchTerm}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setSearchTerm(e.target.value)
+          }
         >
           <TextField.Slot>
             <MagnifyingGlassIcon height="16" width="16" />
@@ -170,12 +182,15 @@ export default new Template({}, ({ http, args }) => {
       {/* 插件列表 */}
       <Box className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {mockPlugins.map((plugin) => (
-          <Card key={plugin.id} className="p-4 border border-[--gray-6] hover-card">
+          <Card
+            key={plugin.id}
+            className="p-4 border border-[--gray-6] hover-card"
+          >
             {/* 插件预览图 */}
             {plugin.preview && (
               <Box className="aspect-video mb-4 rounded-lg overflow-hidden bg-[--gray-3]">
-                <img 
-                  src={plugin.preview} 
+                <img
+                  src={plugin.preview}
                   alt={plugin.displayName}
                   className="w-full h-full object-cover"
                 />
@@ -186,7 +201,7 @@ export default new Template({}, ({ http, args }) => {
             <Flex direction="column" gap="2">
               <Flex justify="between" align="center">
                 <Heading size="3">{plugin.displayName}</Heading>
-                <Switch 
+                <Switch
                   checked={plugin.enabled}
                   onCheckedChange={() => handleTogglePlugin(plugin.id)}
                 />
@@ -203,11 +218,11 @@ export default new Template({}, ({ http, args }) => {
               {/* 操作按钮 */}
               <Flex gap="2" mt="2">
                 {plugin.managePath && plugin.enabled && (
-                  <Button 
-                    variant="soft" 
+                  <Button
+                    variant="soft"
                     className="flex-1"
                     onClick={() => {
-                      if(plugin.managePath) {
+                      if (plugin.managePath) {
                         window.location.href = plugin.managePath;
                       }
                     }}
@@ -216,11 +231,7 @@ export default new Template({}, ({ http, args }) => {
                     配置
                   </Button>
                 )}
-                <Button 
-                  variant="soft"
-                  color="red" 
-                  className="flex-1"
-                >
+                <Button variant="soft" color="red" className="flex-1">
                   <TrashIcon className="w-4 h-4" />
                   卸载
                 </Button>
@@ -249,10 +260,7 @@ export default new Template({}, ({ http, args }) => {
                   console.log(e.target.files);
                 }}
               />
-              <label 
-                htmlFor="plugin-upload"
-                className="cursor-pointer"
-              >
+              <label htmlFor="plugin-upload" className="cursor-pointer">
                 <CodeIcon className="w-12 h-12 mx-auto mb-4 text-[--gray-9]" />
                 <Text className="text-[--gray-11] mb-2">
                   点击上传插件包或拖拽到此处
@@ -271,9 +279,7 @@ export default new Template({}, ({ http, args }) => {
               </Button>
             </Dialog.Close>
             <Dialog.Close>
-              <Button className="bg-[--accent-9]">
-                开始安装
-              </Button>
+              <Button className="bg-[--accent-9]">开始安装</Button>
             </Dialog.Close>
           </Flex>
         </Dialog.Content>

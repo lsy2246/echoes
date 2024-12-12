@@ -66,7 +66,7 @@ const Routes = memo(() => {
       if (!subPath) {
         return renderDashboardContent(dashboard);
       }
-      
+
       // 根据子路径返回对应的管理页面
       switch (subPath) {
         case "posts":

@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "build": "remix vite:build",
-    "dev": "concurrently \"node --trace-warnings ./node_modules/vite/bin/vite.js\" \"cross-env VITE_ADDRESS=localhost VITE_PORT=22100 tsx --trace-warnings server/express.ts\"",
+    "dev": "tsx start.ts",
     "format": "prettier --write \"./**/*.{ts,tsx,js,jsx}\"",
     "lint": "eslint \"./**/*.{ts,tsx,js,jsx}\" --fix",
-    "start": "remix-serve ./build/server/index.js",
+    "start": "cross-env NODE_ENV=production tsx start.ts",
     "typecheck": "tsc"
   },
   "dependencies": {

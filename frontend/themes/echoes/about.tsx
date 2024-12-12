@@ -93,7 +93,7 @@ export default new Template({}, ({ http, args }) => {
         <Flex direction="column" align="center" className="text-center mb-16">
           <Box className="w-40 h-40 mb-8 relative">
             <div className="absolute inset-0 bg-gradient-to-br from-[rgb(10,37,77)] via-[rgb(8,27,57)] to-[rgb(2,8,23)] rounded-full overflow-hidden">
-              <ImageLoader 
+              <ImageLoader
                 src="/images/avatar-placeholder.png"
                 alt="avatar"
                 className="w-full h-full"

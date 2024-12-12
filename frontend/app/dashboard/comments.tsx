@@ -1,10 +1,10 @@
 import { Template } from "interface/template";
-import { 
-  Container, 
-  Heading, 
-  Text, 
-  Box, 
-  Flex, 
+import {
+  Container,
+  Heading,
+  Text,
+  Box,
+  Flex,
   Table,
   Button,
   TextField,
@@ -12,7 +12,7 @@ import {
   ScrollArea,
   DataList,
   Avatar,
-  Badge
+  Badge,
 } from "@radix-ui/themes";
 import {
   MagnifyingGlassIcon,
@@ -32,7 +32,7 @@ const mockComments = [
     postTitle: "构建现代化的前端开发工作流",
     createdAt: new Date("2024-03-15"),
     status: "pending", // pending, approved, rejected
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=1"
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=1",
   },
   {
     id: 2,
@@ -41,7 +41,7 @@ const mockComments = [
     postTitle: "React 18 新特性详解",
     createdAt: new Date("2024-03-14"),
     status: "approved",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=2"
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=2",
   },
   // 可以添加更多模拟数据
 ];
@@ -51,24 +51,24 @@ export default new Template({}, ({ http, args }) => {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
   const getStatusStyle = (status: string) => {
-    switch(status) {
-      case 'approved':
-        return 'bg-[--green-3] text-[--green-11]';
-      case 'rejected':
-        return 'bg-[--red-3] text-[--red-11]';
+    switch (status) {
+      case "approved":
+        return "bg-[--green-3] text-[--green-11]";
+      case "rejected":
+        return "bg-[--red-3] text-[--red-11]";
       default:
-        return 'bg-[--yellow-3] text-[--yellow-11]';
+        return "bg-[--yellow-3] text-[--yellow-11]";
     }
   };
 
   const getStatusText = (status: string) => {
-    switch(status) {
-      case 'approved':
-        return '已通过';
-      case 'rejected':
-        return '已拒绝';
+    switch (status) {
+      case "approved":
+        return "已通过";
+      case "rejected":
+        return "已拒绝";
       default:
-        return '待审核';
+        return "待审核";
     }
   };
 
@@ -87,15 +87,14 @@ export default new Template({}, ({ http, args }) => {
       </Flex>
 
       {/* 搜索和筛选栏 */}
-      <Flex 
-        gap="4" 
-        className="mb-6 flex-col sm:flex-row"
-      >
+      <Flex gap="4" className="mb-6 flex-col sm:flex-row">
         <Box className="w-full sm:w-64">
-          <TextField.Root 
+          <TextField.Root
             placeholder="搜索评论..."
             value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchTerm(e.target.value)
+            }
           >
             <TextField.Slot>
               <MagnifyingGlassIcon height="16" width="16" />
@@ -106,20 +105,20 @@ export default new Template({}, ({ http, args }) => {
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
             <Button variant="surface">
-              状态: {selectedStatus === 'all' ? '全部' : selectedStatus}
+              状态: {selectedStatus === "all" ? "全部" : selectedStatus}
             </Button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
-            <DropdownMenu.Item onClick={() => setSelectedStatus('all')}>
+            <DropdownMenu.Item onClick={() => setSelectedStatus("all")}>
               全部
             </DropdownMenu.Item>
-            <DropdownMenu.Item onClick={() => setSelectedStatus('pending')}>
+            <DropdownMenu.Item onClick={() => setSelectedStatus("pending")}>
               待审核
             </DropdownMenu.Item>
-            <DropdownMenu.Item onClick={() => setSelectedStatus('approved')}>
+            <DropdownMenu.Item onClick={() => setSelectedStatus("approved")}>
               已通过
             </DropdownMenu.Item>
-            <DropdownMenu.Item onClick={() => setSelectedStatus('rejected')}>
+            <DropdownMenu.Item onClick={() => setSelectedStatus("rejected")}>
               已拒绝
             </DropdownMenu.Item>
           </DropdownMenu.Content>
@@ -158,20 +157,22 @@ export default new Template({}, ({ http, args }) => {
                       </Flex>
                     </Table.Cell>
                     <Table.Cell>
-                      <Text className="line-clamp-2">
-                        {comment.content}
-                      </Text>
+                      <Text className="line-clamp-2">{comment.content}</Text>
                     </Table.Cell>
                     <Table.Cell>
-                      <Text className="line-clamp-1">
-                        {comment.postTitle}
-                      </Text>
+                      <Text className="line-clamp-1">{comment.postTitle}</Text>
                     </Table.Cell>
                     <Table.Cell>
                       <Flex gap="2">
-                        {comment.status === 'approved' && <Badge color="green">已通过</Badge>}
-                        {comment.status === 'pending' && <Badge color="orange">待审核</Badge>}
-                        {comment.status === 'rejected' && <Badge color="red">已拒绝</Badge>}
+                        {comment.status === "approved" && (
+                          <Badge color="green">已通过</Badge>
+                        )}
+                        {comment.status === "pending" && (
+                          <Badge color="orange">待审核</Badge>
+                        )}
+                        {comment.status === "rejected" && (
+                          <Badge color="red">已拒绝</Badge>
+                        )}
                       </Flex>
                     </Table.Cell>
                     <Table.Cell>
@@ -179,25 +180,21 @@ export default new Template({}, ({ http, args }) => {
                     </Table.Cell>
                     <Table.Cell>
                       <Flex gap="2">
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="1"
                           className="text-[--green-11] hover:text-[--green-12]"
                         >
                           <CheckIcon className="w-4 h-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="1"
                           className="text-[--red-11] hover:text-[--red-12]"
                         >
                           <Cross2Icon className="w-4 h-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="1"
-                          color="red"
-                        >
+                        <Button variant="ghost" size="1" color="red">
                           <TrashIcon className="w-4 h-4" />
                         </Button>
                       </Flex>
@@ -211,7 +208,10 @@ export default new Template({}, ({ http, args }) => {
           {/* 移动端列表视图 */}
           <div className="block sm:hidden">
             {mockComments.map((comment) => (
-              <DataList.Root key={comment.id} className="p-4 border-b border-[--gray-6] last:border-b-0">
+              <DataList.Root
+                key={comment.id}
+                className="p-4 border-b border-[--gray-6] last:border-b-0"
+              >
                 <DataList.Item>
                   <DataList.Label minWidth="88px">评论者</DataList.Label>
                   <DataList.Value>
@@ -245,9 +245,15 @@ export default new Template({}, ({ http, args }) => {
                   <DataList.Label minWidth="88px">状态</DataList.Label>
                   <DataList.Value>
                     <Flex gap="2">
-                      {comment.status === 'approved' && <Badge color="green">已通过</Badge>}
-                      {comment.status === 'pending' && <Badge color="orange">待审核</Badge>}
-                      {comment.status === 'rejected' && <Badge color="red">已拒绝</Badge>}
+                      {comment.status === "approved" && (
+                        <Badge color="green">已通过</Badge>
+                      )}
+                      {comment.status === "pending" && (
+                        <Badge color="orange">待审核</Badge>
+                      )}
+                      {comment.status === "rejected" && (
+                        <Badge color="red">已拒绝</Badge>
+                      )}
                     </Flex>
                   </DataList.Value>
                 </DataList.Item>
@@ -263,25 +269,21 @@ export default new Template({}, ({ http, args }) => {
                   <DataList.Label minWidth="88px">操作</DataList.Label>
                   <DataList.Value>
                     <Flex gap="2">
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="1"
                         className="text-[--green-11] hover:text-[--green-12]"
                       >
                         <CheckIcon className="w-4 h-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="1"
                         className="text-[--red-11] hover:text-[--red-12]"
                       >
                         <Cross2Icon className="w-4 h-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="1"
-                        color="red"
-                      >
+                      <Button variant="ghost" size="1" color="red">
                         <TrashIcon className="w-4 h-4" />
                       </Button>
                     </Flex>
@@ -294,4 +296,4 @@ export default new Template({}, ({ http, args }) => {
       </Box>
     </Box>
   );
-}); 
+});

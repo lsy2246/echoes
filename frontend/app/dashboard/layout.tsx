@@ -159,7 +159,7 @@ export default new Layout(({ children }) => {
           {/* 主内容区域 */}
           <Box className="flex-1 flex flex-col lg:ml-0 w-full relative">
             {/* 顶部导航栏 */}
-            <Box 
+            <Box
               className={`
                 h-16 border-b border-[--gray-6] bg-[--gray-1] 
                 sticky top-0 z-20 w-full
@@ -191,7 +191,7 @@ export default new Layout(({ children }) => {
                       <HamburgerMenuIcon className="w-5 h-5" />
                     </Button>
                   )}
-                  
+
                   <Button
                     variant="ghost"
                     size="3"
@@ -209,12 +209,12 @@ export default new Layout(({ children }) => {
                   </Box>
 
                   {/* 返回主页按钮 */}
-                  <Button 
+                  <Button
                     variant="ghost"
                     size="3"
                     className="gap-2 text-base"
                     onClick={() => {
-                      window.location.href = '/';
+                      window.location.href = "/";
                     }}
                   >
                     <HomeIcon className="w-5 h-5" />
@@ -222,13 +222,13 @@ export default new Layout(({ children }) => {
                   </Button>
 
                   {/* 退出登录按钮 */}
-                  <Button 
+                  <Button
                     variant="ghost"
                     size="3"
                     className="gap-2 text-base"
                     onClick={() => {
                       // 这里添加退出登录的逻辑
-                      console.log('退出登录');
+                      console.log("退出登录");
                     }}
                   >
                     <ExitIcon className="w-5 h-5" />
@@ -239,14 +239,11 @@ export default new Layout(({ children }) => {
             </Box>
 
             {/* 页面内容区域 */}
-            <Box 
-              id="main-content" 
+            <Box
+              id="main-content"
               className="flex-1 overflow-y-auto bg-[--gray-2]"
             >
-              <Container 
-                size="4" 
-                className="py-6 px-4"
-              >
+              <Container size="4" className="py-6 px-4">
                 {children}
               </Container>
             </Box>

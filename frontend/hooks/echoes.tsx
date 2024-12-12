@@ -7,18 +7,18 @@ export const Echoes: React.FC = () => {
   useEffect(() => {
     // 优化动画性能
     if (svgRef.current) {
-      svgRef.current.style.willChange = 'transform';
-      
+      svgRef.current.style.willChange = "transform";
+
       // 使用 requestAnimationFrame 来优化动画
-      const paths = svgRef.current.querySelectorAll('path');
-      paths.forEach(path => {
-        path.style.willChange = 'transform';
+      const paths = svgRef.current.querySelectorAll("path");
+      paths.forEach((path) => {
+        path.style.willChange = "transform";
       });
     }
 
     return () => {
       if (svgRef.current) {
-        svgRef.current.style.willChange = 'auto';
+        svgRef.current.style.willChange = "auto";
       }
     };
   }, []);
@@ -31,8 +31,8 @@ export const Echoes: React.FC = () => {
       viewBox="50.4 44.600006 234.1 86"
       xmlns="http://www.w3.org/2000/svg"
       style={{
-        transform: 'translateZ(0)', // 启用硬件加速
-        backfaceVisibility: 'hidden'
+        transform: "translateZ(0)", // 启用硬件加速
+        backfaceVisibility: "hidden",
       }}
     >
       <path

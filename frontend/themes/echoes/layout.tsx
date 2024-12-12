@@ -1,7 +1,14 @@
 import { Layout } from "interface/layout";
 import { ThemeModeToggle } from "hooks/ThemeMode";
 import { Echoes } from "hooks/Echoes";
-import { Container, Flex, Box, Link, TextField, Button } from "@radix-ui/themes";
+import {
+  Container,
+  Flex,
+  Box,
+  Link,
+  TextField,
+  Button,
+} from "@radix-ui/themes";
 import {
   MagnifyingGlassIcon,
   HamburgerMenuIcon,
@@ -14,12 +21,12 @@ import { useState, useEffect, useCallback } from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import throttle from "lodash/throttle";
 import "./styles/layouts.css";
-import parse from 'html-react-parser';
+import parse from "html-react-parser";
 
 // 直接导出 Layout 实例
 export default new Layout(({ children, args }) => {
   const [moreState, setMoreState] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       return window.innerWidth >= 1024 ? false : false;
     }
     return false;
@@ -28,9 +35,9 @@ export default new Layout(({ children, args }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
 
   const handleScroll = useCallback(() => {
-    const container = document.querySelector('#main-content');
+    const container = document.querySelector("#main-content");
     if (!container) return;
-    
+
     const scrollTop = container.scrollTop;
     const scrollHeight = container.scrollHeight;
     const clientHeight = container.clientHeight;
@@ -39,11 +46,11 @@ export default new Layout(({ children, args }) => {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    const container = document.querySelector('#main-content');
+    const container = document.querySelector("#main-content");
     if (container) {
-      container.addEventListener('scroll', handleScroll);
+      container.addEventListener("scroll", handleScroll);
     }
 
     const throttledResize = throttle(() => {
@@ -58,22 +65,25 @@ export default new Layout(({ children, args }) => {
 
     return () => {
       if (container) {
-        container.removeEventListener('scroll', handleScroll);
+        container.removeEventListener("scroll", handleScroll);
       }
       window.removeEventListener("resize", throttledResize);
       throttledResize.cancel();
     };
   }, [handleScroll]);
 
-  const navString = typeof args === 'object' && args && 'nav' in args ? args.nav as string : '';
+  const navString =
+    typeof args === "object" && args && "nav" in args
+      ? (args.nav as string)
+      : "";
 
   // 添加回到顶部的处理函数
   const scrollToTop = () => {
-    const container = document.querySelector('#main-content');
+    const container = document.querySelector("#main-content");
     if (container) {
       container.scrollTo({
         top: 0,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
   };
@@ -82,11 +92,9 @@ export default new Layout(({ children, args }) => {
   const mobileMenu = (
     <Box className="flex lg:hidden gap-2 items-center">
       {/* 添加移动端进度指示器 */}
-      <Box 
+      <Box
         className={`w-10 h-10 flex items-center justify-center ${
-          scrollProgress > 0 
-            ? 'block' 
-            : 'hidden'
+          scrollProgress > 0 ? "block" : "hidden"
         }`}
       >
         <Button
@@ -94,19 +102,16 @@ export default new Layout(({ children, args }) => {
           className="w-10 h-10 p-0 text-[--gray-12] hover:text-[--accent-9] transition-colors flex items-center justify-center [&_text]:text-[--gray-12] [&_text:hover]:text-[--accent-9]"
           onClick={scrollToTop}
         >
-          <svg 
-            className="w-6 h-6"
-            viewBox="0 0 100 100"
-          >
+          <svg className="w-6 h-6" viewBox="0 0 100 100">
             <text
               x="50"
               y="55"
               className="progress-indicator font-bold transition-colors"
               dominantBaseline="middle"
               textAnchor="middle"
-              style={{ 
-                fontSize: '56px',
-                fill: 'currentColor'
+              style={{
+                fontSize: "56px",
+                fill: "currentColor",
               }}
             >
               {Math.round(scrollProgress)}
@@ -115,7 +120,7 @@ export default new Layout(({ children, args }) => {
         </Button>
       </Box>
 
-      <Button 
+      <Button
         className="w-10 h-10 p-0 hover:text-[--accent-9] transition-colors flex items-center justify-center group bg-transparent border-0"
         onClick={() => setMoreState(!moreState)}
       >
@@ -128,7 +133,7 @@ export default new Layout(({ children, args }) => {
 
       {/* 移动端菜单内容 */}
       {moreState && (
-        <div 
+        <div
           className="absolute top-full right-4 w-[180px] mt-2 rounded-md bg-[--gray-1] border border-[--gray-a5] shadow-lg
             animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 
             duration-200 z-[90]"
@@ -149,10 +154,7 @@ export default new Layout(({ children, args }) => {
                 placeholder="搜索..."
                 className="w-full [&_input]:pl-3 hover:border-[--accent-9] border transition-colors group"
               >
-                <TextField.Slot
-                  side="right"
-                  className="p-2"
-                >
+                <TextField.Slot side="right" className="p-2">
                   <MagnifyingGlassIcon className="h-4 w-4 text-[--gray-11] transition-colors group-hover:text-[--accent-9]" />
                 </TextField.Slot>
               </TextField.Root>
@@ -163,8 +165,8 @@ export default new Layout(({ children, args }) => {
               <Flex gap="3" align="center">
                 {/* 用户信息/登录按钮 - 调整为 70% 宽度 */}
                 <Box className="w-[70%]">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="w-full justify-start gap-2 text-[--gray-12] hover:text-[--accent-9] hover:bg-[--gray-a3] transition-colors"
                   >
                     {loginState ? (
@@ -200,10 +202,7 @@ export default new Layout(({ children, args }) => {
       radius="large"
       panelBackground="solid"
     >
-      <Box
-        className="h-screen flex flex-col overflow-hidden"
-        id="nav"
-      >
+      <Box className="h-screen flex flex-col overflow-hidden" id="nav">
         {/* 导航栏 */}
         <Box
           asChild
@@ -211,17 +210,10 @@ export default new Layout(({ children, args }) => {
         >
           <nav>
             <Container size="4">
-              <Flex
-                justify="between"
-                align="center"
-                className="h-20 px-4"
-              >
+              <Flex justify="between" align="center" className="h-20 px-4">
                 {/* Logo 区域 */}
                 <Flex align="center">
-                  <Link
-                    href="/"
-                    className="hover-text flex items-center"
-                  >
+                  <Link href="/" className="hover-text flex items-center">
                     <Box className="w-20 h-20 [&_path]:transition-all [&_path]:duration-200 group-hover:[&_path]:stroke-[--accent-9]">
                       <Echoes />
                     </Box>
@@ -256,8 +248,8 @@ export default new Layout(({ children, args }) => {
                       <Box className="flex items-center">
                         <DropdownMenuPrimitive.Root>
                           <DropdownMenuPrimitive.Trigger asChild>
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="ghost"
                               className="w-10 h-10 p-0 text-[--gray-12] hover:text-[--accent-9] transition-colors flex items-center justify-center"
                             >
                               {loginState ? (
@@ -304,11 +296,9 @@ export default new Layout(({ children, args }) => {
                         </Box>
 
                         {/* 读进度指示器 */}
-                        <Box 
+                        <Box
                           className={`w-10 h-10 flex items-center justify-center ${
-                            scrollProgress > 0 
-                              ? 'block' 
-                              : 'hidden'
+                            scrollProgress > 0 ? "block" : "hidden"
                           }`}
                         >
                           <Button
@@ -316,19 +306,16 @@ export default new Layout(({ children, args }) => {
                             className="w-10 h-10 p-0 text-[--gray-12] hover:text-[--accent-9] transition-colors flex items-center justify-center [&_text]:text-[--gray-12] [&_text:hover]:text-[--accent-9]"
                             onClick={scrollToTop}
                           >
-                            <svg 
-                              className="w-6 h-6"
-                              viewBox="0 0 100 100"
-                            >
+                            <svg className="w-6 h-6" viewBox="0 0 100 100">
                               <text
                                 x="50"
                                 y="55"
                                 className="progress-indicator font-bold transition-colors"
                                 dominantBaseline="middle"
                                 textAnchor="middle"
-                                style={{ 
-                                  fontSize: '56px',
-                                  fill: 'currentColor'
+                                style={{
+                                  fontSize: "56px",
+                                  fill: "currentColor",
                                 }}
                               >
                                 {Math.round(scrollProgress)}
@@ -349,14 +336,8 @@ export default new Layout(({ children, args }) => {
         </Box>
 
         {/* 主要内容区域 */}
-        <Box 
-          id="main-content" 
-          className="flex-1 w-full overflow-auto"
-        >
-          <Container
-            size="4"
-            className="py-8"
-          >
+        <Box id="main-content" className="flex-1 w-full overflow-auto">
+          <Container size="4" className="py-8">
             <main>{children}</main>
           </Container>
         </Box>
@@ -364,4 +345,3 @@ export default new Layout(({ children, args }) => {
     </Theme>
   );
 });
-

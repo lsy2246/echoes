@@ -541,7 +541,9 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
         .add_field(Field::new(
             "status",
             FieldType::VarChar(20),
-            FieldConstraint::new().not_null().check(content_state_check.clone()),
+            FieldConstraint::new()
+                .not_null()
+                .check(content_state_check.clone()),
             ValidationLevel::Strict,
         )?);
 
@@ -587,7 +589,9 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
         .add_field(Field::new(
             "status",
             FieldType::VarChar(20),
-            FieldConstraint::new().not_null().check(content_state_check.clone()),
+            FieldConstraint::new()
+                .not_null()
+                .check(content_state_check.clone()),
             ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
@@ -728,7 +732,9 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
         .add_field(Field::new(
             "target_type",
             FieldType::VarChar(20),
-            FieldConstraint::new().not_null().check(target_type_check.clone()),
+            FieldConstraint::new()
+                .not_null()
+                .check(target_type_check.clone()),
             ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
@@ -782,7 +788,9 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
         .add_field(Field::new(
             "target_type",
             FieldType::VarChar(20),
-            FieldConstraint::new().not_null().check(target_type_check.clone()),
+            FieldConstraint::new()
+                .not_null()
+                .check(target_type_check.clone()),
             ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
@@ -843,10 +851,7 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
                     WhereClause::Condition(Condition::new(
                         "type".to_string(),
                         Operator::Eq,
-                        Some(SafeValue::Text(
-                            "'tag'".to_string(),
-                            ValidationLevel::Raw,
-                        )),
+                        Some(SafeValue::Text("'tag'".to_string(), ValidationLevel::Raw)),
                     )?),
                     WhereClause::Condition(Condition::new(
                         "type".to_string(),

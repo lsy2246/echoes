@@ -1,10 +1,10 @@
 import { Template } from "interface/template";
-import { 
-  Container, 
-  Heading, 
-  Text, 
-  Box, 
-  Flex, 
+import {
+  Container,
+  Heading,
+  Text,
+  Box,
+  Flex,
   Card,
   Button,
   TextField,
@@ -25,7 +25,11 @@ import { useState } from "react";
 import type { ThemeConfig } from "interface/theme";
 
 // 模拟主题数据
-const mockThemes: (ThemeConfig & { id: number; preview: string; active: boolean })[] = [
+const mockThemes: (ThemeConfig & {
+  id: number;
+  preview: string;
+  active: boolean;
+})[] = [
   {
     id: 1,
     name: "echoes",
@@ -33,7 +37,8 @@ const mockThemes: (ThemeConfig & { id: number; preview: string; active: boolean 
     version: "1.0.0",
     description: "默认主题",
     author: "Admin",
-    preview: "https://images.unsplash.com/photo-1481487196290-c152efe083f5?w=500&auto=format",
+    preview:
+      "https://images.unsplash.com/photo-1481487196290-c152efe083f5?w=500&auto=format",
     templates: new Map(),
     configuration: {
       theme: {
@@ -42,44 +47,47 @@ const mockThemes: (ThemeConfig & { id: number; preview: string; active: boolean 
         data: {
           colors: {
             mode: "light",
-            layout: "default"
-          }
-        }
-      }
+            layout: "default",
+          },
+        },
+      },
     },
     routes: new Map(),
-    active: true
+    active: true,
   },
   {
     id: 2,
     name: "minimal",
     displayName: "Minimal",
-    version: "1.0.0", 
+    version: "1.0.0",
     description: "简约风格主题",
     author: "Admin",
-    preview: "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=500&auto=format",
+    preview:
+      "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=500&auto=format",
     templates: new Map(),
     configuration: {
-        theme: {
-            title: "主题配置",
-            description: "Echoes主题配置项",
-            data: {
-              colors: {
-                mode: "light",
-                layout: "default"
-              }
-            }
-          }
+      theme: {
+        title: "主题配置",
+        description: "Echoes主题配置项",
+        data: {
+          colors: {
+            mode: "light",
+            layout: "default",
+          },
+        },
+      },
     },
     routes: new Map(),
-    active: false
-  }
+    active: false,
+  },
 ];
 
 export default new Template({}, ({ http, args }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<typeof mockThemes[0] | null>(null);
+  const [selectedTheme, setSelectedTheme] = useState<
+    (typeof mockThemes)[0] | null
+  >(null);
 
   return (
     <Box>
@@ -93,7 +101,7 @@ export default new Template({}, ({ http, args }) => {
             共 {mockThemes.length} 个主题
           </Text>
         </Box>
-        <Button 
+        <Button
           className="bg-[--accent-9]"
           onClick={() => setIsAddDialogOpen(true)}
         >
@@ -114,11 +122,14 @@ export default new Template({}, ({ http, args }) => {
       {/* 主题列表 */}
       <Box className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {mockThemes.map((theme) => (
-          <Card key={theme.id} className="p-4 border border-[--gray-6] hover-card">
+          <Card
+            key={theme.id}
+            className="p-4 border border-[--gray-6] hover-card"
+          >
             {/* 预览图 */}
             <Box className="aspect-video mb-4 rounded-lg overflow-hidden bg-[--gray-3]">
-              <img 
-                src={theme.preview} 
+              <img
+                src={theme.preview}
                 alt={theme.displayName}
                 className="w-full h-full object-cover"
               />
@@ -129,7 +140,10 @@ export default new Template({}, ({ http, args }) => {
               <Flex justify="between" align="center">
                 <Heading size="3">{theme.displayName}</Heading>
                 {theme.active && (
-                  <Text size="1" className="px-2 py-1 bg-[--accent-3] text-[--accent-9] rounded">
+                  <Text
+                    size="1"
+                    className="px-2 py-1 bg-[--accent-3] text-[--accent-9] rounded"
+                  >
                     当前使用
                   </Text>
                 )}
@@ -146,29 +160,29 @@ export default new Template({}, ({ http, args }) => {
               {/* 操作按钮 */}
               <Flex gap="2" mt="2">
                 {theme.active ? (
-                  <Button 
-                    variant="soft" 
+                  <Button
+                    variant="soft"
                     className="flex-1"
-                    onClick={() => window.location.href = `/dashboard/themes/${theme.name}/settings`}
+                    onClick={() =>
+                      (window.location.href = `/dashboard/themes/${theme.name}/settings`)
+                    }
                   >
                     <GearIcon className="w-4 h-4" />
                     配置
                   </Button>
                 ) : (
                   <>
-                    <Button 
-                      className="flex-1 bg-[--accent-9]"
-                    >
+                    <Button className="flex-1 bg-[--accent-9]">
                       <CheckIcon className="w-4 h-4" />
                       启用
                     </Button>
-                    <Button 
-                      variant="soft" 
-                      color="red" 
+                    <Button
+                      variant="soft"
+                      color="red"
                       className="flex-1"
                       onClick={() => {
                         // 这里添加卸载主题的处理逻辑
-                        console.log('卸载主题:', theme.name);
+                        console.log("卸载主题:", theme.name);
                       }}
                     >
                       <Cross2Icon className="w-4 h-4" />
@@ -201,10 +215,7 @@ export default new Template({}, ({ http, args }) => {
                   console.log(e.target.files);
                 }}
               />
-              <label 
-                htmlFor="theme-upload"
-                className="cursor-pointer"
-              >
+              <label htmlFor="theme-upload" className="cursor-pointer">
                 <CodeIcon className="w-12 h-12 mx-auto mb-4 text-[--gray-9]" />
                 <Text className="text-[--gray-11] mb-2">
                   点击上传主题包或拖拽到此处
@@ -227,4 +238,4 @@ export default new Template({}, ({ http, args }) => {
       </Dialog.Root>
     </Box>
   );
-}); 
+});

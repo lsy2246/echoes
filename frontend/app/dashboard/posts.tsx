@@ -1,17 +1,17 @@
 import { Template } from "interface/template";
-import { 
-  Container, 
-  Heading, 
-  Text, 
-  Box, 
-  Flex, 
+import {
+  Container,
+  Heading,
+  Text,
+  Box,
+  Flex,
   Table,
   Button,
   TextField,
   DropdownMenu,
   ScrollArea,
   DataList,
-  Badge
+  Badge,
 } from "@radix-ui/themes";
 import {
   PlusIcon,
@@ -40,7 +40,7 @@ const mockPosts: PostDisplay[] = [
     metaKeywords: "",
     metaDescription: "",
     categories: [{ name: "前端开发" }],
-    tags: [{ name: "工程化" }, { name: "效率提升" }]
+    tags: [{ name: "工程化" }, { name: "效率提升" }],
   },
   // ... 可以添加更多模拟数据
 ];
@@ -63,15 +63,17 @@ export default new Template({}, ({ http, args }) => {
       </Flex>
 
       {/* 搜索和筛选栏 */}
-      <Flex 
-        gap="4" 
-        className="mb-6 flex-col sm:flex-row"  // 移动端垂直布局，桌面端水平布局
+      <Flex
+        gap="4"
+        className="mb-6 flex-col sm:flex-row" // 移动端垂直布局，桌面端水平布局
       >
         <Box className="w-full sm:w-64">
-          <TextField.Root 
+          <TextField.Root
             placeholder="搜索文章..."
             value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchTerm(e.target.value)
+            }
           >
             <TextField.Slot side="right">
               <MagnifyingGlassIcon height="16" width="16" />
@@ -82,17 +84,17 @@ export default new Template({}, ({ http, args }) => {
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
             <Button variant="surface">
-              状态: {selectedStatus === 'all' ? '全部' : selectedStatus}
+              状态: {selectedStatus === "all" ? "全部" : selectedStatus}
             </Button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
-            <DropdownMenu.Item onClick={() => setSelectedStatus('all')}>
+            <DropdownMenu.Item onClick={() => setSelectedStatus("all")}>
               全部
             </DropdownMenu.Item>
-            <DropdownMenu.Item onClick={() => setSelectedStatus('published')}>
+            <DropdownMenu.Item onClick={() => setSelectedStatus("published")}>
               已发布
             </DropdownMenu.Item>
-            <DropdownMenu.Item onClick={() => setSelectedStatus('draft')}>
+            <DropdownMenu.Item onClick={() => setSelectedStatus("draft")}>
               草稿
             </DropdownMenu.Item>
           </DropdownMenu.Content>
@@ -117,7 +119,10 @@ export default new Template({}, ({ http, args }) => {
               </Table.Header>
               <Table.Body>
                 {mockPosts.map((post) => (
-                  <Table.Row key={post.id} className="hover:bg-[--gray-3] block sm:table-row mb-4 sm:mb-0">
+                  <Table.Row
+                    key={post.id}
+                    className="hover:bg-[--gray-3] block sm:table-row mb-4 sm:mb-0"
+                  >
                     <Table.Cell className="font-medium block sm:table-cell py-2 sm:py-3 before:content-['标题：'] before:inline-block before:w-20 before:font-normal sm:before:content-none">
                       {post.title}
                     </Table.Cell>
@@ -127,7 +132,7 @@ export default new Template({}, ({ http, args }) => {
                     <Table.Cell className="block sm:table-cell py-2 sm:py-3 before:content-['分类：'] before:inline-block before:w-20 before:font-normal sm:before:content-none">
                       <Flex gap="2" className="inline-flex">
                         {post.categories?.map((category) => (
-                          <Text 
+                          <Text
                             key={category.name}
                             size="1"
                             className="px-2 py-0.5 bg-[--gray-4] rounded"
@@ -139,7 +144,7 @@ export default new Template({}, ({ http, args }) => {
                     </Table.Cell>
                     <Table.Cell className="block sm:table-cell py-2 sm:py-3 before:content-['状态：'] before:inline-block before:w-20 before:font-normal sm:before:content-none">
                       <Flex gap="2">
-                        {post.status === 'published' ? (
+                        {post.status === "published" ? (
                           <Badge color="green">已发布</Badge>
                         ) : (
                           <Badge color="orange">草稿</Badge>
@@ -171,7 +176,10 @@ export default new Template({}, ({ http, args }) => {
           {/* 移动端列表视图 */}
           <div className="block sm:hidden">
             {mockPosts.map((post) => (
-              <DataList.Root key={post.id} className="p-4 border-b border-[--gray-6] last:border-b-0">
+              <DataList.Root
+                key={post.id}
+                className="p-4 border-b border-[--gray-6] last:border-b-0"
+              >
                 <DataList.Item>
                   <DataList.Label minWidth="88px">标题</DataList.Label>
                   <DataList.Value>
@@ -189,7 +197,7 @@ export default new Template({}, ({ http, args }) => {
                   <DataList.Value>
                     <Flex gap="2">
                       {post.categories?.map((category) => (
-                        <Text 
+                        <Text
                           key={category.name}
                           size="1"
                           className="px-2 py-0.5 bg-[--gray-4] rounded"
@@ -205,7 +213,7 @@ export default new Template({}, ({ http, args }) => {
                   <DataList.Label minWidth="88px">状态</DataList.Label>
                   <DataList.Value>
                     <Flex gap="2">
-                      {post.status === 'published' ? (
+                      {post.status === "published" ? (
                         <Badge color="green">已发布</Badge>
                       ) : (
                         <Badge color="orange">草稿</Badge>
@@ -244,4 +252,4 @@ export default new Template({}, ({ http, args }) => {
       </Box>
     </Box>
   );
-}); 
+});

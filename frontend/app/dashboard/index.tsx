@@ -100,13 +100,13 @@ export default new Template({}, ({ http, args }) => {
                   {stat.trend}
                 </Text>
               </Box>
-              <Box 
+              <Box
                 className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: `color-mix(in srgb, ${stat.color} 15%, transparent)` }}
+                style={{
+                  backgroundColor: `color-mix(in srgb, ${stat.color} 15%, transparent)`,
+                }}
               >
-                <Box style={{ color: stat.color }}>
-                  {stat.icon}
-                </Box>
+                <Box style={{ color: stat.color }}>{stat.icon}</Box>
               </Box>
             </Flex>
           </Card>
@@ -120,7 +120,7 @@ export default new Template({}, ({ http, args }) => {
         </Heading>
         <Box className="space-y-4">
           {recentPosts.map((post, index) => (
-            <Box 
+            <Box
               key={index}
               className="p-3 rounded-lg border border-[--gray-6] hover:border-[--accent-9] transition-colors cursor-pointer"
             >
@@ -150,14 +150,15 @@ export default new Template({}, ({ http, args }) => {
                     </Flex>
                   </Flex>
                 </Box>
-                <Box 
+                <Box
                   className={`px-2 py-1 rounded-full text-xs
-                    ${post.status === 'published' 
-                      ? 'bg-[--green-3] text-[--green-11]' 
-                      : 'bg-[--gray-3] text-[--gray-11]'
+                    ${
+                      post.status === "published"
+                        ? "bg-[--green-3] text-[--green-11]"
+                        : "bg-[--gray-3] text-[--gray-11]"
                     }`}
                 >
-                  {post.status === 'published' ? '已发布' : '草稿'}
+                  {post.status === "published" ? "已发布" : "草稿"}
                 </Box>
               </Flex>
             </Box>
@@ -166,4 +167,4 @@ export default new Template({}, ({ http, args }) => {
       </Card>
     </Box>
   );
-}); 
+});

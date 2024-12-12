@@ -1,23 +1,23 @@
 import { Template } from "interface/template";
-import { 
-  Container, 
-  Heading, 
-  Text, 
-  Box, 
-  Flex, 
+import {
+  Container,
+  Heading,
+  Text,
+  Box,
+  Flex,
   Card,
   Button,
   TextField,
   Switch,
   Tabs,
-  TextArea
+  TextArea,
 } from "@radix-ui/themes";
 import {
   GearIcon,
   PersonIcon,
   LockClosedIcon,
   BellIcon,
-  GlobeIcon
+  GlobeIcon,
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 
@@ -62,7 +62,9 @@ export default new Template({}, ({ http, args }) => {
                 </Text>
                 <TextField.Root
                   value={siteName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSiteName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSiteName(e.target.value)
+                  }
                 />
               </Box>
 
@@ -72,7 +74,9 @@ export default new Template({}, ({ http, args }) => {
                 </Text>
                 <TextArea
                   value={siteDescription}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSiteDescription(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    setSiteDescription(e.target.value)
+                  }
                   className="min-h-[100px]"
                 />
               </Box>
@@ -81,9 +85,7 @@ export default new Template({}, ({ http, args }) => {
                 <Text as="label" size="2" weight="bold" className="block mb-2">
                   站点语言
                 </Text>
-                <select 
-                  className="w-full h-9 px-3 rounded-md bg-[--gray-1] border border-[--gray-6] text-[--gray-12]"
-                >
+                <select className="w-full h-9 px-3 rounded-md bg-[--gray-1] border border-[--gray-6] text-[--gray-12]">
                   <option value="zh-CN">简体中文</option>
                   <option value="en-US">English</option>
                 </select>
@@ -93,9 +95,7 @@ export default new Template({}, ({ http, args }) => {
                 <Text as="label" size="2" weight="bold" className="block mb-2">
                   时区设置
                 </Text>
-                <select 
-                  className="w-full h-9 px-3 rounded-md bg-[--gray-1] border border-[--gray-6] text-[--gray-12]"
-                >
+                <select className="w-full h-9 px-3 rounded-md bg-[--gray-1] border border-[--gray-6] text-[--gray-12]">
                   <option value="UTC+8">UTC+8 北京时间</option>
                   <option value="UTC+0">UTC+0 格林威治时间</option>
                 </select>
@@ -156,18 +156,9 @@ export default new Template({}, ({ http, args }) => {
                   修改密码
                 </Text>
                 <Flex direction="column" gap="2">
-                  <TextField.Root 
-                    type="password" 
-                    placeholder="当前密码" 
-                  />
-                  <TextField.Root 
-                    type="password" 
-                    placeholder="新密码" 
-                  />
-                  <TextField.Root 
-                    type="password" 
-                    placeholder="确认新密码" 
-                  />
+                  <TextField.Root type="password" placeholder="当前密码" />
+                  <TextField.Root type="password" placeholder="新密码" />
+                  <TextField.Root type="password" placeholder="确认新密码" />
                 </Flex>
               </Box>
 
@@ -196,7 +187,7 @@ export default new Template({}, ({ http, args }) => {
                       接收新评论和系统通知的邮件提醒
                     </Text>
                   </Box>
-                  <Switch 
+                  <Switch
                     checked={emailNotifications}
                     onCheckedChange={setEmailNotifications}
                   />
@@ -221,10 +212,8 @@ export default new Template({}, ({ http, args }) => {
 
       {/* 保存按钮 */}
       <Flex justify="end" className="mt-6">
-        <Button className="bg-[--accent-9]">
-          保存更改
-        </Button>
+        <Button className="bg-[--accent-9]">保存更改</Button>
       </Flex>
     </Box>
   );
-}); 
+});

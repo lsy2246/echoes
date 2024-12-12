@@ -1,10 +1,10 @@
 import { Template } from "interface/template";
-import { 
-  Container, 
-  Heading, 
-  Text, 
-  Box, 
-  Flex, 
+import {
+  Container,
+  Heading,
+  Text,
+  Box,
+  Flex,
   Table,
   Button,
   TextField,
@@ -12,7 +12,7 @@ import {
   Dialog,
   Avatar,
   DropdownMenu,
-  Badge
+  Badge,
 } from "@radix-ui/themes";
 import {
   PlusIcon,
@@ -22,7 +22,7 @@ import {
   PersonIcon,
   DotsHorizontalIcon,
   LockClosedIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 import type { User } from "interface/fields";
@@ -55,36 +55,38 @@ const mockUsers: (User & { id: number })[] = [
     id: 3,
     username: "user",
     email: "user@example.com",
-    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=3", 
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=3",
     role: "user",
     createdAt: new Date("2024-03-01"),
     updatedAt: new Date("2024-03-13"),
     lastLoginAt: new Date("2024-03-13"),
     passwordHash: "",
-  }
+  },
 ];
 
 export default new Template({}, ({ http, args }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<typeof mockUsers[0] | null>(null);
+  const [selectedUser, setSelectedUser] = useState<
+    (typeof mockUsers)[0] | null
+  >(null);
   const [newUserData, setNewUserData] = useState({
     username: "",
     email: "",
     password: "",
-    role: "user"
+    role: "user",
   });
 
   // 获取角色标签样式
   const getRoleBadgeColor = (role: string) => {
-    switch(role) {
-      case 'admin':
-        return 'red';
-      case 'editor':
-        return 'blue';
+    switch (role) {
+      case "admin":
+        return "red";
+      case "editor":
+        return "blue";
       default:
-        return 'gray';
+        return "gray";
     }
   };
 
@@ -96,11 +98,9 @@ export default new Template({}, ({ http, args }) => {
           <Heading size="6" className="text-[--gray-12] mb-2">
             用户管理
           </Heading>
-          <Text className="text-[--gray-11]">
-            共 {mockUsers.length} 个用户
-          </Text>
+          <Text className="text-[--gray-11]">共 {mockUsers.length} 个用户</Text>
         </Box>
-        <Button 
+        <Button
           className="bg-[--accent-9]"
           onClick={() => setIsAddDialogOpen(true)}
         >
@@ -111,10 +111,12 @@ export default new Template({}, ({ http, args }) => {
 
       {/* 搜索栏 */}
       <Box className="w-full sm:w-64 mb-6">
-        <TextField.Root 
+        <TextField.Root
           placeholder="搜索用户..."
           value={searchTerm}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setSearchTerm(e.target.value)
+          }
         >
           <TextField.Slot>
             <MagnifyingGlassIcon height="16" width="16" />
@@ -157,16 +159,14 @@ export default new Template({}, ({ http, args }) => {
                       {user.role}
                     </Badge>
                   </Table.Cell>
-                  <Table.Cell>
-                    {user.createdAt.toLocaleDateString()}
-                  </Table.Cell>
+                  <Table.Cell>{user.createdAt.toLocaleDateString()}</Table.Cell>
                   <Table.Cell>
                     {user.lastLoginAt?.toLocaleDateString()}
                   </Table.Cell>
                   <Table.Cell>
                     <Flex gap="2">
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="1"
                         onClick={() => {
                           setSelectedUser(user);
@@ -203,8 +203,8 @@ export default new Template({}, ({ http, args }) => {
               <TextField.Root
                 placeholder="输入用户名"
                 value={newUserData.username}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                  setNewUserData({...newUserData, username: e.target.value})
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewUserData({ ...newUserData, username: e.target.value })
                 }
               />
             </Box>
@@ -216,8 +216,8 @@ export default new Template({}, ({ http, args }) => {
               <TextField.Root
                 placeholder="输入邮箱"
                 value={newUserData.email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                  setNewUserData({...newUserData, email: e.target.value})
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewUserData({ ...newUserData, email: e.target.value })
                 }
               />
             </Box>
@@ -230,8 +230,8 @@ export default new Template({}, ({ http, args }) => {
                 type="password"
                 placeholder="输入密码"
                 value={newUserData.password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                  setNewUserData({...newUserData, password: e.target.value})
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewUserData({ ...newUserData, password: e.target.value })
                 }
               />
             </Box>
@@ -243,7 +243,9 @@ export default new Template({}, ({ http, args }) => {
               <select
                 className="w-full h-9 px-3 rounded-md bg-[--gray-1] border border-[--gray-6] text-[--gray-12]"
                 value={newUserData.role}
-                onChange={(e) => setNewUserData({...newUserData, role: e.target.value})}
+                onChange={(e) =>
+                  setNewUserData({ ...newUserData, role: e.target.value })
+                }
               >
                 <option value="user">普通用户</option>
                 <option value="editor">编辑</option>
@@ -259,9 +261,7 @@ export default new Template({}, ({ http, args }) => {
               </Button>
             </Dialog.Close>
             <Dialog.Close>
-              <Button className="bg-[--accent-9]">
-                创建
-              </Button>
+              <Button className="bg-[--accent-9]">创建</Button>
             </Dialog.Close>
           </Flex>
         </Dialog.Content>
@@ -279,25 +279,36 @@ export default new Template({}, ({ http, args }) => {
 
               <Flex direction="column" gap="4">
                 <Box>
-                  <Text as="label" size="2" weight="bold" className="block mb-2">
+                  <Text
+                    as="label"
+                    size="2"
+                    weight="bold"
+                    className="block mb-2"
+                  >
                     用户名
                   </Text>
-                  <TextField.Root
-                    defaultValue={selectedUser.username}
-                  />
+                  <TextField.Root defaultValue={selectedUser.username} />
                 </Box>
 
                 <Box>
-                  <Text as="label" size="2" weight="bold" className="block mb-2">
+                  <Text
+                    as="label"
+                    size="2"
+                    weight="bold"
+                    className="block mb-2"
+                  >
                     邮箱
                   </Text>
-                  <TextField.Root
-                    defaultValue={selectedUser.email}
-                  />
+                  <TextField.Root defaultValue={selectedUser.email} />
                 </Box>
 
                 <Box>
-                  <Text as="label" size="2" weight="bold" className="block mb-2">
+                  <Text
+                    as="label"
+                    size="2"
+                    weight="bold"
+                    className="block mb-2"
+                  >
                     角色
                   </Text>
                   <select
@@ -311,13 +322,15 @@ export default new Template({}, ({ http, args }) => {
                 </Box>
 
                 <Box>
-                  <Text as="label" size="2" weight="bold" className="block mb-2">
+                  <Text
+                    as="label"
+                    size="2"
+                    weight="bold"
+                    className="block mb-2"
+                  >
                     重置密码
                   </Text>
-                  <TextField.Root
-                    type="password"
-                    placeholder="留空则不修改"
-                  />
+                  <TextField.Root type="password" placeholder="留空则不修改" />
                 </Box>
               </Flex>
 
@@ -328,9 +341,7 @@ export default new Template({}, ({ http, args }) => {
                   </Button>
                 </Dialog.Close>
                 <Dialog.Close>
-                  <Button className="bg-[--accent-9]">
-                    保存
-                  </Button>
+                  <Button className="bg-[--accent-9]">保存</Button>
                 </Dialog.Close>
               </Flex>
             </>

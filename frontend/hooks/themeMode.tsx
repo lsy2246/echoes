@@ -37,7 +37,7 @@ export const ThemeScript = () => {
 // 客户端专用的 hook
 const useClientOnly = (callback: () => void, deps: any[] = []) => {
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       callback();
     }
   }, deps);
@@ -46,15 +46,15 @@ const useClientOnly = (callback: () => void, deps: any[] = []) => {
 export const ThemeModeToggle: React.FC = () => {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<string>(() => {
-    if (typeof document !== 'undefined') {
-      return document.documentElement.dataset.theme || 'light';
+    if (typeof document !== "undefined") {
+      return document.documentElement.dataset.theme || "light";
     }
-    return 'light';
+    return "light";
   });
 
   useClientOnly(() => {
-    const currentTheme = document.documentElement.dataset.theme || 'light';
-    document.documentElement.classList.remove('light', 'dark');
+    const currentTheme = document.documentElement.dataset.theme || "light";
+    document.documentElement.classList.remove("light", "dark");
     document.documentElement.classList.add(currentTheme);
     setTheme(currentTheme);
     setMounted(true);
@@ -63,28 +63,29 @@ export const ThemeModeToggle: React.FC = () => {
   useEffect(() => {
     if (!mounted) return;
 
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
     const handleSystemThemeChange = (e: MediaQueryListEvent) => {
       if (!localStorage.getItem(THEME_KEY)) {
-        const newTheme = e.matches ? 'dark' : 'light';
+        const newTheme = e.matches ? "dark" : "light";
         updateTheme(newTheme);
       }
     };
-    
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
-    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+
+    mediaQuery.addEventListener("change", handleSystemThemeChange);
+    return () =>
+      mediaQuery.removeEventListener("change", handleSystemThemeChange);
   }, [mounted]);
 
   const updateTheme = (newTheme: string) => {
     document.documentElement.dataset.theme = newTheme;
-    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.remove("light", "dark");
     document.documentElement.classList.add(newTheme);
     setTheme(newTheme);
   };
 
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    const newTheme = theme === "dark" ? "light" : "dark";
     updateTheme(newTheme);
     localStorage.setItem(THEME_KEY, newTheme);
   };
@@ -108,7 +109,7 @@ export const ThemeModeToggle: React.FC = () => {
       className="w-full h-full p-0 rounded-lg transition-all duration-300 transform"
       aria-label="Toggle theme"
     >
-      {theme === 'dark' ? (
+      {theme === "dark" ? (
         <SunIcon className="w-full h-full" />
       ) : (
         <MoonIcon className="w-full h-full" />
@@ -123,7 +124,9 @@ export const useThemeMode = () => {
 
   useClientOnly(() => {
     const handleThemeChange = () => {
-      const currentTheme = document.documentElement.dataset.theme as "light" | "dark";
+      const currentTheme = document.documentElement.dataset.theme as
+        | "light"
+        | "dark";
       setMode(currentTheme || "light");
     };
 
@@ -132,7 +135,7 @@ export const useThemeMode = () => {
 
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'data-theme') {
+        if (mutation.attributeName === "data-theme") {
           handleThemeChange();
         }
       });
@@ -140,7 +143,7 @@ export const useThemeMode = () => {
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-theme']
+      attributeFilter: ["data-theme"],
     });
 
     return () => observer.disconnect();

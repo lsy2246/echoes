@@ -1,4 +1,10 @@
-import React, { useMemo, useState, useCallback, useRef, useEffect } from "react";
+import React, {
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+} from "react";
 import { Template } from "interface/template";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -13,16 +19,16 @@ import {
   ScrollArea,
 } from "@radix-ui/themes";
 import { CalendarIcon, CodeIcon } from "@radix-ui/react-icons";
-import type {  PostDisplay } from "interface/fields";
+import type { PostDisplay } from "interface/fields";
 import type { MetaFunction } from "@remix-run/node";
 import { getColorScheme } from "themes/echoes/utils/colorScheme";
-import MarkdownIt from 'markdown-it';
-import { ComponentPropsWithoutRef } from 'react';
-import remarkGfm from 'remark-gfm';
+import MarkdownIt from "markdown-it";
+import { ComponentPropsWithoutRef } from "react";
+import remarkGfm from "remark-gfm";
 import { toast } from "hooks/Notification";
-import rehypeRaw from 'rehype-raw';
-import remarkEmoji from 'remark-emoji';
-import ReactDOMServer from 'react-dom/server';
+import rehypeRaw from "rehype-raw";
+import remarkEmoji from "remark-emoji";
+import ReactDOMServer from "react-dom/server";
 
 // 示例文章数据
 const mockPost: PostDisplay = {
@@ -373,45 +379,51 @@ function greet(user: User): string {
 `,
   authorName: "Markdown 专家",
   publishedAt: new Date("2024-03-15"),
-  coverImage: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=1200&h=600",
+  coverImage:
+    "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=1200&h=600",
   status: "published",
   isEditor: true,
   createdAt: new Date("2024-03-15"),
   updatedAt: new Date("2024-03-15"),
   taxonomies: {
-    categories: [{ 
-      name: "教程",
-      slug: "tutorial",
-      type: "category"
-    }],
+    categories: [
+      {
+        name: "教程",
+        slug: "tutorial",
+        type: "category",
+      },
+    ],
     tags: [
       { name: "Markdown", slug: "markdown", type: "tag" },
       { name: "排版", slug: "typography", type: "tag" },
-      { name: "写作", slug: "writing", type: "tag" }
-    ]
+      { name: "写作", slug: "writing", type: "tag" },
+    ],
   },
   metadata: [
-    { 
+    {
       id: 1,
       targetType: "post",
       targetId: 1,
       metaKey: "description",
-      metaValue: "从基础语法到高级排版，全面了解 Markdown 的各种用法和技巧。"
+      metaValue: "从基础语法到高级排版，全面了解 Markdown 的各种用法和技巧。",
     },
     {
       id: 2,
       targetType: "post",
       targetId: 1,
       metaKey: "keywords",
-      metaValue: "Markdown,基础语法,高级排版,布局设计"
-    }
-  ]
+      metaValue: "Markdown,基础语法,高级排版,布局设计",
+    },
+  ],
 };
 
 // 添 meta 函数
 export const meta: MetaFunction = () => {
-  const description = mockPost.metadata?.find(m => m.metaKey === "description")?.metaValue || "";
-  const keywords = mockPost.metadata?.find(m => m.metaKey === "keywords")?.metaValue || "";
+  const description =
+    mockPost.metadata?.find((m) => m.metaKey === "description")?.metaValue ||
+    "";
+  const keywords =
+    mockPost.metadata?.find((m) => m.metaKey === "keywords")?.metaValue || "";
 
   return [
     { title: mockPost.title },
@@ -429,7 +441,6 @@ export const meta: MetaFunction = () => {
     { name: "twitter:image", content: mockPost.coverImage },
   ];
 };
-
 
 // 添加复制能的接口
 interface CopyButtonProps {
@@ -449,7 +460,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ code }) => {
         setCopied(false);
       }, 3000);
     } catch (err) {
-      console.error('复制失败:', err);
+      console.error("复制失败:", err);
       toast.error("复制失败", "请检查浏览器权限设置");
     }
   };
@@ -479,17 +490,17 @@ interface TocItem {
 // 修改 generateSequentialId 函数的实现
 const generateSequentialId = (() => {
   const idMap = new Map<string, number>();
-  
+
   return (postId: string, reset = false) => {
     if (reset) {
       idMap.delete(postId);
-      return '';
+      return "";
     }
-    
+
     if (!idMap.has(postId)) {
       idMap.set(postId, 0);
     }
-    
+
     const counter = idMap.get(postId)!;
     const id = `heading-${counter}`;
     idMap.set(postId, counter + 1);
@@ -498,15 +509,15 @@ const generateSequentialId = (() => {
 })();
 
 export default new Template({}, ({ http, args }) => {
-
-  
   const [toc, setToc] = useState<string[]>([]);
   const [tocItems, setTocItems] = useState<TocItem[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
   const [showToc, setShowToc] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [headingIdsArrays, setHeadingIdsArrays] = useState<{[key: string]: string[]}>({});
+  const [headingIdsArrays, setHeadingIdsArrays] = useState<{
+    [key: string]: string[];
+  }>({});
   const headingIds = useRef<string[]>([]); // 保持原有的 ref
   const containerRef = useRef<HTMLDivElement>(null);
   const isClickScrolling = useRef(false);
@@ -516,56 +527,56 @@ export default new Template({}, ({ http, args }) => {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const md = new MarkdownIt();
     const tocArray: TocItem[] = [];
-    
+
     // 重计数器,传入文章ID
     generateSequentialId(mockPost.id.toString(), true);
-    
+
     let isInCodeBlock = false;
-    
+
     md.renderer.rules.fence = (tokens, idx, options, env, self) => {
       isInCodeBlock = true;
       const result = self.renderToken(tokens, idx, options);
       isInCodeBlock = false;
       return result;
     };
-    
+
     md.renderer.rules.heading_open = (tokens, idx) => {
       const token = tokens[idx];
       const level = parseInt(token.tag.slice(1));
-      
+
       if (level <= 3 && !isInCodeBlock) {
         const content = tokens[idx + 1].content;
         const id = generateSequentialId(mockPost.id.toString());
-        
-        token.attrSet('id', id);
+
+        token.attrSet("id", id);
         tocArray.push({
           id,
           text: content,
-          level
+          level,
         });
       }
       return md.renderer.renderToken(tokens, idx, md.options);
     };
 
     md.render(mockPost.content);
-    
+
     // 只在 ID 数组发生变化时更新
-    const newIds = tocArray.map(item => item.id);
+    const newIds = tocArray.map((item) => item.id);
     if (JSON.stringify(headingIds.current) !== JSON.stringify(newIds)) {
       headingIds.current = [...newIds];
-      setHeadingIdsArrays(prev => ({
+      setHeadingIdsArrays((prev) => ({
         ...prev,
-        [mockPost.id]: [...newIds]
+        [mockPost.id]: [...newIds],
       }));
     }
-    
+
     setToc(newIds);
     setTocItems(tocArray);
-    
+
     if (tocArray.length > 0 && !activeId) {
       setActiveId(tocArray[0].id);
     }
@@ -579,62 +590,94 @@ export default new Template({}, ({ http, args }) => {
 
   const components = useMemo(() => {
     return {
-      h1: ({ children, ...props }: ComponentPropsWithoutRef<'h1'>) => {
+      h1: ({ children, ...props }: ComponentPropsWithoutRef<"h1">) => {
         const headingId = headingIds.current.shift();
         return (
-          <h1 id={headingId} className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mt-6 sm:mt-8 mb-3 sm:mb-4" {...props}>
+          <h1
+            id={headingId}
+            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mt-6 sm:mt-8 mb-3 sm:mb-4"
+            {...props}
+          >
             {children}
           </h1>
         );
       },
-      h2: ({ children, ...props }: ComponentPropsWithoutRef<'h2'>) => {
+      h2: ({ children, ...props }: ComponentPropsWithoutRef<"h2">) => {
         const headingId = headingIds.current.shift();
         return (
-          <h2 id={headingId} className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold mt-5 sm:mt-6 mb-2 sm:mb-3" {...props}>
+          <h2
+            id={headingId}
+            className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold mt-5 sm:mt-6 mb-2 sm:mb-3"
+            {...props}
+          >
             {children}
           </h2>
         );
       },
-      h3: ({ children, ...props }: ComponentPropsWithoutRef<'h3'>) => {
+      h3: ({ children, ...props }: ComponentPropsWithoutRef<"h3">) => {
         const headingId = headingIds.current.shift();
         return (
-          <h3 id={headingId} className="text-base sm:text-lg md:text-xl lg:text-2xl font-medium mt-4 mb-2" {...props}>
+          <h3
+            id={headingId}
+            className="text-base sm:text-lg md:text-xl lg:text-2xl font-medium mt-4 mb-2"
+            {...props}
+          >
             {children}
           </h3>
         );
       },
-      p: ({ node, ...props }: ComponentPropsWithoutRef<'p'> & { node?: any }) => (
-        <p 
-          className="text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 text-[--gray-11]" 
+      p: ({
+        node,
+        ...props
+      }: ComponentPropsWithoutRef<"p"> & { node?: any }) => (
+        <p
+          className="text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 text-[--gray-11]"
           {...props}
         />
       ),
-      ul: ({ children, ...props }: ComponentPropsWithoutRef<'ul'>) => (
-        <ul className="list-disc pl-4 sm:pl-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-[--gray-11]" {...props}>
+      ul: ({ children, ...props }: ComponentPropsWithoutRef<"ul">) => (
+        <ul
+          className="list-disc pl-4 sm:pl-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-[--gray-11]"
+          {...props}
+        >
           {children}
         </ul>
       ),
-      ol: ({ children, ...props }: ComponentPropsWithoutRef<'ol'>) => (
-        <ol className="list-decimal pl-4 sm:pl-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-[--gray-11]" {...props}>
+      ol: ({ children, ...props }: ComponentPropsWithoutRef<"ol">) => (
+        <ol
+          className="list-decimal pl-4 sm:pl-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-[--gray-11]"
+          {...props}
+        >
           {children}
         </ol>
       ),
-      li: ({ children, ...props }: ComponentPropsWithoutRef<'li'>) => (
-        <li className="text-sm sm:text-base md:text-lg leading-relaxed" {...props}>
+      li: ({ children, ...props }: ComponentPropsWithoutRef<"li">) => (
+        <li
+          className="text-sm sm:text-base md:text-lg leading-relaxed"
+          {...props}
+        >
           {children}
         </li>
       ),
-      blockquote: ({ children, ...props }: ComponentPropsWithoutRef<'blockquote'>) => (
-        <blockquote className="border-l-4 border-[--gray-6] pl-4 sm:pl-6 py-2 my-3 sm:my-4 text-[--gray-11] italic" {...props}>
+      blockquote: ({
+        children,
+        ...props
+      }: ComponentPropsWithoutRef<"blockquote">) => (
+        <blockquote
+          className="border-l-4 border-[--gray-6] pl-4 sm:pl-6 py-2 my-3 sm:my-4 text-[--gray-11] italic"
+          {...props}
+        >
           {children}
         </blockquote>
       ),
-      pre: ({ children, ...props }: ComponentPropsWithoutRef<'pre'>) => {
+      pre: ({ children, ...props }: ComponentPropsWithoutRef<"pre">) => {
         const childArray = React.Children.toArray(children);
-        
+
         // 检查是否包含代码块
         const codeElement = childArray.find(
-          child => React.isValidElement(child) && child.props.className?.includes('language-')
+          (child) =>
+            React.isValidElement(child) &&
+            child.props.className?.includes("language-"),
         );
 
         // 如果是代码块，让 code 组件处理
@@ -643,76 +686,88 @@ export default new Template({}, ({ http, args }) => {
         }
 
         // 获取内容
-        let content = '';
-        if (typeof children === 'string') {
+        let content = "";
+        if (typeof children === "string") {
           content = children;
         } else if (Array.isArray(children)) {
-          content = children.map(child => {
-            if (typeof child === 'string') return child;
-            if (React.isValidElement(child)) {
-              // 使用 renderToString 而不是 renderToStaticMarkup
-              return ReactDOMServer.renderToString(child as React.ReactElement)
-                // 移除 React 添加的 data 属性
-                .replace(/\s+data-reactroot=""/g, '')
-                // 移除已经存在的 HTML 实体编码
-                .replace(/&quot;/g, '"')
-                .replace(/&amp;/g, '&')
-                .replace(/&lt;/g, '<')
-                .replace(/&gt;/g, '>')
-                .replace(/&#39;/g, "'");
-            }
-            return '';
-          }).join('');
+          content = children
+            .map((child) => {
+              if (typeof child === "string") return child;
+              if (React.isValidElement(child)) {
+                // 使用 renderToString 而不是 renderToStaticMarkup
+                return (
+                  ReactDOMServer.renderToString(child as React.ReactElement)
+                    // 移除 React 添加的 data 属性
+                    .replace(/\s+data-reactroot=""/g, "")
+                    // 移除已经存在的 HTML 实体编码
+                    .replace(/&quot;/g, '"')
+                    .replace(/&amp;/g, "&")
+                    .replace(/&lt;/g, "<")
+                    .replace(/&gt;/g, ">")
+                    .replace(/&#39;/g, "'")
+                );
+              }
+              return "";
+            })
+            .join("");
         } else if (React.isValidElement(children)) {
-          content = ReactDOMServer.renderToString(children as React.ReactElement)
-            .replace(/\s+data-reactroot=""/g, '')
+          content = ReactDOMServer.renderToString(
+            children as React.ReactElement,
+          )
+            .replace(/\s+data-reactroot=""/g, "")
             .replace(/&quot;/g, '"')
-            .replace(/&amp;/g, '&')
-            .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, "&")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
             .replace(/&#39;/g, "'");
         }
 
         // 普通预格式化文本
         return (
-          <pre 
+          <pre
             className="my-4 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap
                        bg-[--gray-3] border border-[--gray-6] text-[--gray-12]
                        text-sm leading-relaxed font-mono"
             {...props}
           >
-            {content
-             }
+            {content}
           </pre>
         );
       },
-      code: ({ inline, className, children, ...props }: ComponentPropsWithoutRef<'code'> & { 
-        inline?: boolean,
-        className?: string 
+      code: ({
+        inline,
+        className,
+        children,
+        ...props
+      }: ComponentPropsWithoutRef<"code"> & {
+        inline?: boolean;
+        className?: string;
       }) => {
-        const match = /language-(\w+)/.exec(className || '');
-        const code = String(children).replace(/\n$/, '');
-      
+        const match = /language-(\w+)/.exec(className || "");
+        const code = String(children).replace(/\n$/, "");
+
         // 如果是内联代码
         if (!className || inline) {
           return (
-            <code 
-              className="px-2 py-1 rounded-md bg-[--gray-4] text-[--accent-11] font-medium text-[0.85em]" 
+            <code
+              className="px-2 py-1 rounded-md bg-[--gray-4] text-[--accent-11] font-medium text-[0.85em]"
               {...props}
             >
               {children}
             </code>
           );
         }
-      
-        const language = match ? match[1] : '';
-        
+
+        const language = match ? match[1] : "";
+
         // 特殊处理表格语法
-        const isTable = code.includes('|') && code.includes('\n') && code.includes('---');
-        
+        const isTable =
+          code.includes("|") && code.includes("\n") && code.includes("---");
+
         return (
           <div className="my-4 sm:my-6">
-            <div className="flex justify-between items-center h-9 sm:h-10 px-4 sm:px-6 
+            <div
+              className="flex justify-between items-center h-9 sm:h-10 px-4 sm:px-6 
               border-t border-x border-[--gray-6] 
               bg-[--gray-3] dark:bg-[--gray-3]
               rounded-t-lg"
@@ -722,7 +777,7 @@ export default new Template({}, ({ http, args }) => {
               </div>
               <CopyButton code={code} />
             </div>
-            
+
             <div className="border border-[--gray-6] rounded-b-lg bg-white dark:bg-[--gray-1]">
               <div className="overflow-x-auto">
                 <div className="p-4 sm:p-6">
@@ -731,8 +786,8 @@ export default new Template({}, ({ http, args }) => {
                     <pre
                       className="m-0 p-0 bg-transparent font-mono text-[0.9rem] leading-relaxed overflow-x-auto"
                       style={{
-                        color: 'inherit',
-                        whiteSpace: 'pre'
+                        color: "inherit",
+                        whiteSpace: "pre",
                       }}
                     >
                       {code}
@@ -743,15 +798,15 @@ export default new Template({}, ({ http, args }) => {
                       language={language || "text"}
                       style={{
                         ...oneLight,
-                        'punctuation': {
-                          color: 'var(--gray-12)'
+                        punctuation: {
+                          color: "var(--gray-12)",
                         },
-                        'operator': {
-                          color: 'var(--gray-12)'
+                        operator: {
+                          color: "var(--gray-12)",
                         },
-                        'symbol': {
-                          color: 'var(--gray-12)'
-                        }
+                        symbol: {
+                          color: "var(--gray-12)",
+                        },
                       }}
                       customStyle={{
                         margin: 0,
@@ -763,8 +818,8 @@ export default new Template({}, ({ http, args }) => {
                       codeTagProps={{
                         className: "dark:text-[--gray-12]",
                         style: {
-                          color: "inherit"
-                        }
+                          color: "inherit",
+                        },
                       }}
                     >
                       {code}
@@ -777,7 +832,7 @@ export default new Template({}, ({ http, args }) => {
         );
       },
       // 修改表格相关组件的响应式设计
-      table: ({ children, ...props }: ComponentPropsWithoutRef<'table'>) => (
+      table: ({ children, ...props }: ComponentPropsWithoutRef<"table">) => (
         <div className="w-full my-4 sm:my-6 -mx-4 sm:mx-0 overflow-hidden">
           <div className="scroll-container overflow-x-auto">
             <div className="min-w-[640px] sm:min-w-0">
@@ -790,17 +845,21 @@ export default new Template({}, ({ http, args }) => {
           </div>
         </div>
       ),
-      
-      th: ({ children, style, ...props }: ComponentPropsWithoutRef<'th'> & { style?: React.CSSProperties }) => {
+
+      th: ({
+        children,
+        style,
+        ...props
+      }: ComponentPropsWithoutRef<"th"> & { style?: React.CSSProperties }) => {
         // 获取对齐方式
         const getAlignment = () => {
-          if (style?.textAlign === 'center') return 'text-center';
-          if (style?.textAlign === 'right') return 'text-right';
-          return 'text-left';
+          if (style?.textAlign === "center") return "text-center";
+          if (style?.textAlign === "right") return "text-right";
+          return "text-left";
         };
 
         return (
-          <th 
+          <th
             className={`px-4 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase tracking-wider
                       text-[--gray-12] break-words hyphens-auto
                       bg-[--gray-3] dark:bg-[--gray-3]
@@ -813,17 +872,21 @@ export default new Template({}, ({ http, args }) => {
           </th>
         );
       },
-      
-      td: ({ children, style, ...props }: ComponentPropsWithoutRef<'td'> & { style?: React.CSSProperties }) => {
+
+      td: ({
+        children,
+        style,
+        ...props
+      }: ComponentPropsWithoutRef<"td"> & { style?: React.CSSProperties }) => {
         // 获取父级 th 的对齐方式
         const getAlignment = () => {
-          if (style?.textAlign === 'center') return 'text-center';
-          if (style?.textAlign === 'right') return 'text-right';
-          return 'text-left';
+          if (style?.textAlign === "center") return "text-center";
+          if (style?.textAlign === "right") return "text-right";
+          return "text-left";
         };
 
         return (
-          <td 
+          <td
             className={`px-4 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-xs sm:text-sm text-[--gray-11] break-words hyphens-auto
                       [&:first-child]:font-medium [&:first-child]:text-[--gray-12]
                       align-top ${getAlignment()}`}
@@ -834,19 +897,25 @@ export default new Template({}, ({ http, args }) => {
         );
       },
       // 修改 details 组件
-      details: ({ node, ...props }: ComponentPropsWithoutRef<'details'> & { node?: any }) => (
-        <details 
+      details: ({
+        node,
+        ...props
+      }: ComponentPropsWithoutRef<"details"> & { node?: any }) => (
+        <details
           className="my-4 rounded-lg border border-[--gray-6] bg-[--gray-2] overflow-hidden
                      marker:text-[--gray-11] [&[open]]:bg-[--gray-1]
                      [&>*:not(summary)]:px-10 [&>*:not(summary)]:py-3
-                     " 
+                     "
           {...props}
         />
       ),
-      
+
       // 修改 summary 组件
-      summary: ({ node, ...props }: ComponentPropsWithoutRef<'summary'> & { node?: any }) => (
-        <summary 
+      summary: ({
+        node,
+        ...props
+      }: ComponentPropsWithoutRef<"summary"> & { node?: any }) => (
+        <summary
           className="px-4 py-3 cursor-pointer hover:bg-[--gray-3] transition-colors
                      text-[--gray-12] font-medium select-none
                      marker:text-[--gray-11]
@@ -859,7 +928,7 @@ export default new Template({}, ({ http, args }) => {
 
   // 修改滚动监听逻辑
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     let scrollTimeout: NodeJS.Timeout;
 
@@ -873,14 +942,16 @@ export default new Template({}, ({ http, args }) => {
 
         // 添加防抖，等待滚动结束后再更新高亮
         scrollTimeout = setTimeout(() => {
-          const visibleEntries = entries.filter(entry => entry.isIntersecting);
-          
+          const visibleEntries = entries.filter(
+            (entry) => entry.isIntersecting,
+          );
+
           if (visibleEntries.length > 0) {
             const visibleHeadings = visibleEntries
-              .map(entry => ({
+              .map((entry) => ({
                 id: entry.target.id,
                 top: entry.boundingClientRect.top,
-                y: entry.intersectionRatio
+                y: entry.intersectionRatio,
               }))
               .sort((a, b) => {
                 if (Math.abs(a.y - b.y) < 0.1) {
@@ -890,8 +961,8 @@ export default new Template({}, ({ http, args }) => {
               });
 
             const mostVisible = visibleHeadings[0];
-            
-            setActiveId(currentActiveId => {
+
+            setActiveId((currentActiveId) => {
               if (mostVisible.id !== currentActiveId) {
                 return mostVisible.id;
               }
@@ -902,9 +973,9 @@ export default new Template({}, ({ http, args }) => {
       },
       {
         root: document.querySelector("#main-content"),
-        rootMargin: '-10% 0px -70% 0px',
-        threshold: [0, 0.25, 0.5, 0.75, 1]
-      }
+        rootMargin: "-10% 0px -70% 0px",
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+      },
     );
 
     if (isMounted) {
@@ -932,7 +1003,7 @@ export default new Template({}, ({ http, args }) => {
   // 修改点击处理函数
   const handleTocClick = useCallback((e: React.MouseEvent, itemId: string) => {
     e.preventDefault();
-    
+
     const element = document.getElementById(itemId);
     const container = document.querySelector("#main-content");
     const contentBox = document.querySelector(".prose");
@@ -940,15 +1011,15 @@ export default new Template({}, ({ http, args }) => {
     if (element && container && contentBox) {
       // 设置点击滚动标志
       isClickScrolling.current = true;
-      
+
       // 立即更新高亮，不等待滚动
       setActiveId(itemId);
-      
+
       // 计算滚动位置
       const elementRect = element.getBoundingClientRect();
       const contentBoxRect = contentBox.getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
-      
+
       const relativeTop = elementRect.top - contentBoxRect.top;
       const contentOffset = contentBoxRect.top - containerRect.top;
       const scrollDistance = container.scrollTop + relativeTop + contentOffset;
@@ -958,7 +1029,7 @@ export default new Template({}, ({ http, args }) => {
         top: scrollDistance,
         behavior: "smooth",
       });
-      
+
       // 延迟重置 isClickScrolling 标志
       // 增加延迟时间，确保滚动完全结束
       const resetTimeout = setTimeout(() => {
@@ -982,15 +1053,15 @@ export default new Template({}, ({ http, args }) => {
       )}
 
       {isMounted && showToc && (
-        <div 
+        <div
           className="lg:hidden fixed top-[var(--header-height)] inset-x-0 bottom-0 z-50 bg-black/50 transition-opacity duration-300"
           onClick={() => setShowToc(false)}
         >
-          <div 
+          <div
             className="absolute right-0 top-0 bottom-0 w-72 bg-white dark:bg-[--gray-1] shadow-xl
               transform transition-transform duration-300 ease-out
               translate-x-0 animate-in slide-in-from-right"
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <ScrollArea
               type="hover"
@@ -1001,29 +1072,37 @@ export default new Template({}, ({ http, args }) => {
                 {tocItems.map((item, index) => {
                   if (item.level > 3) return null;
                   const isActive = activeId === item.id;
-                  
+
                   return (
                     <a
                       key={`${item.id}-${index}`}
                       href={`#${item.id}`}
-                      ref={node => {
+                      ref={(node) => {
                         // 当目录打开且是当前高亮项时，将其滚动到居中位置
                         if (node && isActive && showToc) {
                           requestAnimationFrame(() => {
                             // 直接查找最近的滚动容器
-                            const scrollContainer = node.closest('.rt-ScrollAreaViewport');
+                            const scrollContainer = node.closest(
+                              ".rt-ScrollAreaViewport",
+                            );
                             if (scrollContainer) {
-                              const containerHeight = scrollContainer.clientHeight;
+                              const containerHeight =
+                                scrollContainer.clientHeight;
                               const elementTop = node.offsetTop;
                               const elementHeight = node.clientHeight;
-                              
+
                               // 确保计算的滚动位置是正数
-                              const scrollTop = Math.max(0, elementTop - (containerHeight / 2) + (elementHeight / 2));
-                              
+                              const scrollTop = Math.max(
+                                0,
+                                elementTop -
+                                  containerHeight / 2 +
+                                  elementHeight / 2,
+                              );
+
                               // 使用 scrollContainer 而不是 container
                               scrollContainer.scrollTo({
                                 top: scrollTop,
-                                behavior: 'smooth'
+                                behavior: "smooth",
                               });
                             }
                           });
@@ -1040,8 +1119,8 @@ export default new Template({}, ({ http, args }) => {
                         ${
                           item.level === 1
                             ? "text-sm font-medium"
-                            : item.level === 2 
-                              ? "text-[0.8125rem]" 
+                            : item.level === 2
+                              ? "text-[0.8125rem]"
                               : `text-xs ${isActive ? "text-[--accent-11]" : "text-[--gray-10]"}`
                         }
                       `}
@@ -1050,7 +1129,7 @@ export default new Template({}, ({ http, args }) => {
                         const element = document.getElementById(item.id);
                         if (element) {
                           const yOffset = -80;
-                          element.scrollIntoView({ behavior: 'smooth' });
+                          element.scrollIntoView({ behavior: "smooth" });
                           window.scrollBy(0, yOffset);
                           setActiveId(item.id);
                           setShowToc(false);
@@ -1077,7 +1156,8 @@ export default new Template({}, ({ http, args }) => {
     }
 
     return (
-      <Box className="prose dark:prose-invert max-w-none 
+      <Box
+        className="prose dark:prose-invert max-w-none 
         [&_pre]:!bg-transparent [&_pre]:!p-0 [&_pre]:!m-0 [&_pre]:!border-0
         [&_.prism-code]:!bg-transparent [&_.prism-code]:!shadow-none
         [&_pre_.prism-code]:!bg-transparent [&_pre_.prism-code]:!shadow-none
@@ -1086,9 +1166,10 @@ export default new Template({}, ({ http, args }) => {
         [&_:not(pre)>code]:![&::before]:hidden [&_:not(pre)>code]:![&::after]:hidden
         [&_:not(pre)>code]:[&::before]:content-none [&_:not(pre)>code]:[&::after]:content-none
         [&_:not(pre)>code]:!bg-[--gray-4] [&_:not(pre)>code]:!text-[--accent-11]
-      ">
+      "
+      >
         <div ref={contentRef}>
-          <ReactMarkdown 
+          <ReactMarkdown
             components={components}
             remarkPlugins={[remarkGfm, remarkEmoji]}
             rehypePlugins={[rehypeRaw]}
@@ -1102,16 +1183,16 @@ export default new Template({}, ({ http, args }) => {
   }, [mockPost.content, components, mockPost.id, headingIdsArrays]); // 添加必要的依赖
 
   return (
-    <Container 
+    <Container
       ref={containerRef}
-      size={{initial: "2", sm: "3", md: "4"}}
+      size={{ initial: "2", sm: "3", md: "4" }}
       className="px-4 sm:px-6 md:px-8"
     >
       {isMounted && mobileMenu}
-      
-      <Flex 
-        className="relative flex-col lg:flex-row" 
-        gap={{initial: "4", lg: "8"}}
+
+      <Flex
+        className="relative flex-col lg:flex-row"
+        gap={{ initial: "4", lg: "8" }}
       >
         {/* 文章体 - 调整宽度计算 */}
         <Box className="w-full lg:w-[calc(100%-12rem)] xl:w-[calc(100%-13rem)]">
@@ -1119,21 +1200,18 @@ export default new Template({}, ({ http, args }) => {
             {/* 头部 */}
             <Box className="mb-4 sm:mb-8">
               <Heading
-                size={{initial: "6", sm: "7", md: "8"}}
+                size={{ initial: "6", sm: "7", md: "8" }}
                 className="mb-4 sm:mb-6 leading-tight text-[--gray-12] font-bold tracking-tight"
               >
                 {mockPost.title}
               </Heading>
 
               <Flex
-                gap={{initial: "3", sm: "4", md: "6"}}
+                gap={{ initial: "3", sm: "4", md: "6" }}
                 className="items-center text-[--gray-11] flex-wrap"
               >
                 {/* 作者名字 */}
-                <Text
-                  size="2"
-                  weight="medium"
-                >
+                <Text size="2" weight="medium">
                   {mockPost.authorName}
                 </Text>
 
@@ -1141,10 +1219,7 @@ export default new Template({}, ({ http, args }) => {
                 <Box className="w-px h-4 bg-[--gray-6]" />
 
                 {/* 发布日期 */}
-                <Flex
-                  align="center"
-                  gap="2"
-                >
+                <Flex align="center" gap="2">
                   <CalendarIcon className="w-3.5 h-3.5" />
                   <Text size="2">
                     {mockPost.publishedAt?.toLocaleDateString("zh-CN", {
@@ -1258,9 +1333,9 @@ export default new Template({}, ({ http, args }) => {
                         }
                         ${item.level === 2 ? "ml-3" : item.level === 3 ? "ml-6" : ""}
                         ${
-                          item.level === 2 
-                            ? "text-[0.75rem]" 
-                            : item.level === 3 
+                          item.level === 2
+                            ? "text-[0.75rem]"
+                            : item.level === 3
                               ? `text-[0.7rem] ${activeId === item.id ? "text-[--accent-11]" : "text-[--gray-10]"}`
                               : ""
                         }

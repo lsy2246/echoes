@@ -490,16 +490,16 @@ export default function SetupPage() {
   useEffect(() => {
     // 标记客户端渲染完成
     setIsClient(true);
-    
+
     // 获取初始化状态
     const initStatus = Number(import.meta.env.VITE_INIT_STATUS ?? 0);
-    
+
     // 如果已完成初始化，直接刷新页面
     if (initStatus >= 3) {
       window.location.reload();
       return;
     }
-    
+
     // 否则设置当前步骤
     setCurrentStep(initStatus + 1);
   }, []);

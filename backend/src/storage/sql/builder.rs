@@ -254,7 +254,7 @@ pub enum Operator {
     Lte,
     Like,
     In,
-    IsNull
+    IsNull,
 }
 
 impl Operator {
@@ -268,7 +268,7 @@ impl Operator {
             Operator::Lte => "<=",
             Operator::Like => "LIKE",
             Operator::In => "IN",
-            Operator::IsNull => "IS NULL"
+            Operator::IsNull => "IS NULL",
         }
     }
 }
@@ -295,7 +295,7 @@ pub enum WhereClause {
     And(Vec<WhereClause>),
     Or(Vec<WhereClause>),
     Condition(Condition),
-    Not(Condition)
+    Not(Condition),
 }
 
 #[derive(Debug, Clone)]
