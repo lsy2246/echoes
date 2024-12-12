@@ -7,7 +7,7 @@ import {
 } from "@remix-run/react";
 import { NotificationProvider } from "hooks/Notification";
 import { Theme } from "@radix-ui/themes";
-import { ThemeScript } from "hooks/ThemeMode";
+import { ThemeScript } from "hooks/themeMode";
 
 import "~/index.css";
 
@@ -70,3 +70,4 @@ export function Layout() {
 export default function App() {
   return <Layout />;
 }
+

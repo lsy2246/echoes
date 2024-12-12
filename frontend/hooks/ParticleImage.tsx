@@ -757,7 +757,7 @@ export const ParticleImage = ({
       const ctx = canvas.getContext('2d');
       
       if (ctx) {
-        // 增加一个小的边距以确保��盖
+        // 增加一个小的边距以确保盖
         const padding = 2; // 添加2像素的距
         canvas.width = width + padding * 2;
         canvas.height = height + padding * 2;
@@ -961,7 +961,7 @@ export const ParticleImage = ({
         containerRef.current.removeChild(renderer.domElement);
         renderer.dispose();
       }
-      // 清有 GSAP ���画
+      // 清有 GSAP 画
       gsap.killTweensOf('*');
       
       // 移除 resize 监听
@@ -1043,11 +1043,6 @@ const loadingQueue = {
   add(url: string, instanceId: string, isLongConnection = false) {
     const key = `${instanceId}:${url}`;
     if (!this.items.has(key)) {
-      console.log('[Queue] Adding:', key, 
-        isLongConnection ? '(long connection)' : '',
-        'Current processing:', this.currentProcessing,
-        'Max concurrent:', this.maxConcurrent
-      );
       
       this.items.set(key, {
         isProcessing: false,
@@ -1056,7 +1051,7 @@ const loadingQueue = {
         lastActiveTime: Date.now()
       });
       
-      // 连接不再直接进入备选队列，而是等待加载完成后再加入
+      // 连接��再直接进入备选队列，而是等待加载完成后再加入
       this.processQueue();
       return true;
     }
@@ -1064,32 +1059,15 @@ const loadingQueue = {
   },
   
   processQueue() {
-    console.log('[Queue] Processing queue:', {
-      availableSlots: this.availableSlots,
-      currentProcessing: this.currentProcessing,
-      pendingQueueSize: this.pendingQueue.size,
-      totalItems: this.items.size
-    });
-
     if (this.availableSlots > 0) {
       let nextKey: string | undefined;
       
-      // 优先从备选队列中获取已加载完成的长连接
-      if (this.pendingQueue.size > 0) {
-        nextKey = Array.from(this.pendingQueue)[0];
-        this.pendingQueue.delete(nextKey);
-        console.log('[Queue] Processing from pending queue:', nextKey);
-      } else {
-        // 如果没有待处理的长连接，处理普通请求
-        const normalItem = Array.from(this.items.entries())
-          .find(([_, item]) => 
-            !item.isProcessing && 
-            !item.isLongConnection
-          );
-        if (normalItem) {
-          nextKey = normalItem[0];
-          console.log('[Queue] Processing normal request:', nextKey);
-        }
+      // 修改这部分逻辑，不再区分长连接和普通请求
+      const nextItem = Array.from(this.items.entries())
+        .find(([_, item]) => !item.isProcessing);
+        
+      if (nextItem) {
+        nextKey = nextItem[0];
       }
       
       if (nextKey) {
@@ -1101,17 +1079,12 @@ const loadingQueue = {
   startProcessing(key: string) {
     const item = this.items.get(key);
     if (item && !item.isProcessing) {
-      console.log('[Queue] Start processing:', key, {
-        isLongConnection: item.isLongConnection,
-        isError: key.includes('error')
-      });
-      
+
       item.isProcessing = true;
       
       // 只有普通请求且不是错误状态时才增加处理数量
       if (!item.isLongConnection && !key.includes('error')) {
         this.currentProcessing++;
-        console.log('[Queue] Increased processing count:', this.currentProcessing);
       }
     }
   },
@@ -1122,7 +1095,6 @@ const loadingQueue = {
     const item = this.items.get(key);
     if (item?.isLongConnection) {
       this.pendingQueue.add(key);
-      console.log('[Queue] Added to pending queue:', key);
     }
   },
   
@@ -1130,26 +1102,15 @@ const loadingQueue = {
     const key = `${instanceId}:${url}`;
     const item = this.items.get(key);
     
-    console.log('[Queue] Removing:', key,
-      'Is long connection:', item?.isLongConnection,
-      'Was processing:', item?.isProcessing,
-      'Has error:', key.includes('error')
-    );
     
     // 只有普通请求且正在处理时才减少处理数量
     if (item?.isProcessing && !item.isLongConnection && !key.includes('error')) {
       this.currentProcessing--;
-      console.log('[Queue] Decreased processing count:', this.currentProcessing);
     }
     
     // 确保从队列中移除
     this.items.delete(key);
     this.pendingQueue.delete(key);
-    
-    console.log('[Queue] After remove - Processing:', this.currentProcessing,
-      'Pending queue size:', this.pendingQueue.size,
-      'Total items:', this.items.size
-    );
     
     // 如果是错误状态，立即处理下一个请求
     if (key.includes('error')) {
@@ -1166,10 +1127,9 @@ const loadingQueue = {
     const key = `${instanceId}:${url}`;
     const item = this.items.get(key);
     
-    // 错误状态不占用槽位，只在第一次检查时输出日志
+    // 错误状态的处理保持不变
     if (key.includes('error')) {
       if (!item?.lastLogTime) {
-        console.log('[Queue] Can process (error):', key, true);
         if (item) {
           item.lastLogTime = Date.now();
         }
@@ -1177,22 +1137,13 @@ const loadingQueue = {
       return true;
     }
     
-    // 长连接在备选队列中时可以处理
-    if (item?.isLongConnection && this.pendingQueue.has(key)) {
-      if (!item.lastLogTime || Date.now() - item.lastLogTime > 1000) {
-        console.log('[Queue] Can process (pending long):', key, true);
-        item.lastLogTime = Date.now();
-      }
-      return true;
-    }
-    
+    // 移除长连接的特殊处理，统一处理所有请求
     const canProcess = item?.isProcessing || false;
-    // 只在状态发生变化时或者每秒最多输出一次日志
+    
     if (item && 
         (item.lastProcessState !== canProcess || 
          !item.lastLogTime || 
          Date.now() - item.lastLogTime > 1000)) {
-      console.log('[Queue] Can process (normal):', key, canProcess);
       item.lastProcessState = canProcess;
       item.lastLogTime = Date.now();
     }
@@ -1233,7 +1184,6 @@ export const ImageLoader = ({
   useEffect(() => {
     if (!src) return;
     
-    console.log('[Queue] Effect triggered for:', src, 'Instance:', instanceId.current);
     setShowImage(false);
     setAnimationComplete(false);
     setCanShowParticles(false);
@@ -1246,7 +1196,6 @@ export const ImageLoader = ({
         const timeSinceLastAnimation = now - lastAnimationTime;
         
         if (particleLoadQueue.size === 0) {
-          console.log('[Queue] Starting immediate animation for:', src, 'Instance:', instanceId.current);
           particleLoadQueue.add(src);
           setCanShowParticles(true);
           lastAnimationTime = now;
@@ -1258,12 +1207,10 @@ export const ImageLoader = ({
           Math.min(ANIMATION_THRESHOLD, timeSinceLastAnimation)
         );
         
-        console.log('[Queue] Scheduling delayed animation for:', src, 'Instance:', instanceId.current);
         const timer = setTimeout(() => {
           const key = `${instanceId.current}:${src}`;
           if (!loadingQueue.items.has(key)) return;
           
-          console.log('[Queue] Starting delayed animation for:', src, 'Instance:', instanceId.current);
           particleLoadQueue.add(src);
           setCanShowParticles(true);
           lastAnimationTime = Date.now();
@@ -1282,7 +1229,6 @@ export const ImageLoader = ({
     const cleanup = checkQueue();
     
     return () => {
-      console.log('[Queue] Cleanup effect for:', src, 'Instance:', instanceId.current);
       cleanup?.();
       loadingQueue.remove(src, instanceId.current);
     };
@@ -1393,7 +1339,6 @@ export const ImageLoader = ({
     };
 
     img.onerror = () => {
-        console.log('[Image Loader] Error loading image:', src);
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
         }
@@ -1429,7 +1374,7 @@ export const ImageLoader = ({
     };
   }, [src, preloadImage]);
 
-  // 添加一个新的状来控制粒子动画
+  // 添加一个���的状来控制粒子动画
   const [canShowParticles, setCanShowParticles] = useState(false);
   
   // 添加加载动画组件
@@ -1449,25 +1394,20 @@ export const ImageLoader = ({
             src={src} 
             status={status}
             onLoad={() => {
-              console.log('[ParticleImage] onLoad START:', src);
               if (imageRef.current) {
                 // 保持为空
               }
-              console.log('[ParticleImage] onLoad END:', src);
             }}
             onAnimationComplete={() => {
-              console.log('[ParticleImage] Animation START:', src);
               if (imageRef.current && src) {
                 setShowImage(true);
                 
                 requestAnimationFrame(() => {
-                  console.log('[ParticleImage] Setting animation complete:', src);
                   setAnimationComplete(true);
                   particleLoadQueue.delete(src);
                   loadingQueue.remove(src, instanceId.current);
                   
                   setTimeout(() => {
-                    console.log('[ParticleImage] Fading image:', src);
                     const img = document.querySelector(`img[src="${imageRef.current?.src}"]`) as HTMLImageElement;
                     if (img) {
                       img.style.opacity = '1';
@@ -1475,7 +1415,6 @@ export const ImageLoader = ({
                   }, 50);
                 });
               }
-              console.log('[ParticleImage] Animation END:', src);
             }}
           />
         )}

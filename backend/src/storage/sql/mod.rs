@@ -77,7 +77,7 @@ impl Database {
             db: Arc::new(db),
             prefix: Arc::new(database.db_prefix.clone()),
             db_type: Arc::new(match database.db_type.to_lowercase().as_str() {
-                // "postgresql" => DatabaseType::PostgreSQL,
+                "postgresql" => DatabaseType::PostgreSQL,
                 "mysql" => DatabaseType::MySQL,
                 "sqllite" => DatabaseType::SQLite,
                 _ => return Err("unknown database type".into_custom_error()),

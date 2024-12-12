@@ -1,7 +1,7 @@
 use super::builder::{Condition, Identifier, Operator, SafeValue, ValidationLevel, WhereClause};
 use super::DatabaseType;
 use crate::common::error::{CustomErrorInto, CustomResult};
-use std::fmt::Display;
+use std::fmt::{format, Display};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum FieldType {
@@ -200,6 +200,7 @@ impl Field {
                             Err("Invalid IN clause value".into_custom_error())
                         }
                     }
+                    Operator::IsNull => Ok(format!("{} IS NULL", field_name)),
                     Operator::Eq
                     | Operator::Ne
                     | Operator::Gt
@@ -220,9 +221,26 @@ impl Field {
                     _ => Err("Unsupported operator for CHECK constraint".into_custom_error()),
                 }
             }
-            _ => {
-                Err("Only simple conditions are supported for CHECK constraints"
-                    .into_custom_error())
+            WhereClause::And(conditions) => {
+                let conditions: CustomResult<Vec<String>> = conditions
+                    .iter()
+                    .map(|c| Self::build_check_constraint(c))
+                    .collect();
+                Ok(format!("({})", conditions?.join(" AND ")))
+            }
+            WhereClause::Or(conditions) => {
+                let conditions: CustomResult<Vec<String>> = conditions
+                    .iter()
+                    .map(|c| Self::build_check_constraint(c))
+                    .collect();
+                Ok(format!("({})", conditions?.join(" OR ")))
+            }
+            WhereClause::Not(condition) => {
+                let inner_condition = WhereClause::Condition(condition.clone());
+                Ok(format!(
+                    "NOT ({})",
+                    Self::build_check_constraint(&inner_condition)?
+                ))
             }
         }
     }
@@ -372,8 +390,62 @@ impl SchemaBuilder {
 pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomResult<String> {
     let db_prefix = db_prefix.to_string()?;
     let mut schema = SchemaBuilder::new();
-    let user_level = "('contributor', 'administrator')";
-    let content_state = "('draft', 'published', 'private', 'hidden')";
+    let role_check = WhereClause::Or(vec![
+        WhereClause::Condition(Condition::new(
+            "role".to_string(),
+            Operator::Eq,
+            Some(SafeValue::Text(
+                "'contributor'".to_string(),
+                ValidationLevel::Raw,
+            )),
+        )?),
+        WhereClause::Condition(Condition::new(
+            "role".to_string(),
+            Operator::Eq,
+            Some(SafeValue::Text(
+                "'administrator'".to_string(),
+                ValidationLevel::Raw,
+            )),
+        )?),
+    ]);
+    let content_state_check = WhereClause::Or(vec![
+        WhereClause::Condition(Condition::new(
+            "status".to_string(),
+            Operator::Eq,
+            Some(SafeValue::Text(
+                "'published'".to_string(),
+                ValidationLevel::Raw,
+            )),
+        )?),
+        WhereClause::Condition(Condition::new(
+            "status".to_string(),
+            Operator::Eq,
+            Some(SafeValue::Text(
+                "'private'".to_string(),
+                ValidationLevel::Raw,
+            )),
+        )?),
+        WhereClause::Condition(Condition::new(
+            "status".to_string(),
+            Operator::Eq,
+            Some(SafeValue::Text(
+                "'hidden'".to_string(),
+                ValidationLevel::Raw,
+            )),
+        )?),
+    ]);
+    let target_type_check = WhereClause::Or(vec![
+        WhereClause::Condition(Condition::new(
+            "target_type".to_string(),
+            Operator::Eq,
+            Some(SafeValue::Text("'post'".to_string(), ValidationLevel::Raw)),
+        )?),
+        WhereClause::Condition(Condition::new(
+            "target_type".to_string(),
+            Operator::Eq,
+            Some(SafeValue::Text("'page'".to_string(), ValidationLevel::Raw)),
+        )?),
+    ]);
 
     // 用户表
     let mut users_table = Table::new(&format!("{}users", db_prefix))?;
@@ -405,16 +477,7 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
         .add_field(Field::new(
             "role",
             FieldType::VarChar(20),
-            FieldConstraint::new()
-                .not_null()
-                .check(WhereClause::Condition(Condition::new(
-                    "role".to_string(),
-                    Operator::In,
-                    Some(SafeValue::Text(
-                        user_level.to_string(),
-                        ValidationLevel::Relaxed,
-                    )),
-                )?)),
+            FieldConstraint::new().not_null().check(role_check.clone()),
             ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
@@ -438,9 +501,7 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
         .add_field(Field::new(
             "last_login_at",
             FieldType::Timestamp,
-            FieldConstraint::new()
-            .not_null()
-            .default(SafeValue::Text(
+            FieldConstraint::new().not_null().default(SafeValue::Text(
                 "CURRENT_TIMESTAMP".to_string(),
                 ValidationLevel::Strict,
             )),
@@ -480,16 +541,7 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
         .add_field(Field::new(
             "status",
             FieldType::VarChar(20),
-            FieldConstraint::new()
-                .not_null()
-                .check(WhereClause::Condition(Condition::new(
-                    "status".to_string(),
-                    Operator::In,
-                    Some(SafeValue::Text(
-                        content_state.to_string(),
-                        ValidationLevel::Standard,
-                    )),
-                )?)),
+            FieldConstraint::new().not_null().check(content_state_check.clone()),
             ValidationLevel::Strict,
         )?);
 
@@ -535,16 +587,7 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
         .add_field(Field::new(
             "status",
             FieldType::VarChar(20),
-            FieldConstraint::new()
-                .not_null()
-                .check(WhereClause::Condition(Condition::new(
-                    "status".to_string(),
-                    Operator::In,
-                    Some(SafeValue::Text(
-                        content_state.to_string(),
-                        ValidationLevel::Standard,
-                    )),
-                )?)),
+            FieldConstraint::new().not_null().check(content_state_check.clone()),
             ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
@@ -678,46 +721,46 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
     metadata_table
         .add_field(Field::new(
             "id",
-            FieldType::Integer(true), 
+            FieldType::Integer(true),
             FieldConstraint::new().primary(),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "target_type",
             FieldType::VarChar(20),
-            FieldConstraint::new()
-                .not_null()
-                .check(WhereClause::Condition(Condition::new(
-                    "target_type".to_string(),
-                    Operator::In,
-                    Some(SafeValue::Text(
-                        "('post', 'page')".to_string(),
-                        ValidationLevel::Standard,
-                    )),
-                )?)),
+            FieldConstraint::new().not_null().check(target_type_check.clone()),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "target_id",
             FieldType::Integer(false),
-            FieldConstraint::new()
-                .not_null()
-                .check(WhereClause::Condition(Condition::new(
-                    "(target_type = 'post' AND EXISTS (SELECT 1 FROM posts WHERE id = target_id)) OR \
-                     (target_type = 'page' AND EXISTS (SELECT 1 FROM pages WHERE id = target_id))".to_string(),
-                    Operator::Raw,
-                    None,
-                )?)),
+            FieldConstraint::new().not_null(),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "meta_key",
             FieldType::VarChar(50),
             FieldConstraint::new().not_null(),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "meta_value",
             FieldType::Text,
             FieldConstraint::new(),
             ValidationLevel::Strict,
         )?);
+
+    metadata_table.add_index(Index::new(
+        "fk_metadata_posts",
+        vec!["target_id".to_string()],
+        false,
+    )?);
+
+    metadata_table.add_index(Index::new(
+        "fk_metadata_pages",
+        vec!["target_id".to_string()],
+        false,
+    )?);
 
     metadata_table.add_index(Index::new(
         "idx_metadata_target",
@@ -735,36 +778,32 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
             FieldType::Integer(true),
             FieldConstraint::new().primary(),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "target_type",
             FieldType::VarChar(20),
-            FieldConstraint::new()
-                .not_null()
-                .check(WhereClause::Condition(Condition::new(
-                    "target_type".to_string(),
-                    Operator::In,
-                    Some(SafeValue::Text(
-                        "('post', 'page')".to_string(),
-                        ValidationLevel::Standard,
-                    )),
-                )?)),
+            FieldConstraint::new().not_null().check(target_type_check.clone()),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "target_id",
             FieldType::Integer(false),
             FieldConstraint::new().not_null(),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "field_key",
             FieldType::VarChar(50),
             FieldConstraint::new().not_null(),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "field_value",
             FieldType::Text,
             FieldConstraint::new(),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "field_type",
             FieldType::VarChar(20),
             FieldConstraint::new().not_null(),
@@ -788,37 +827,45 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
             FieldType::VarChar(50),
             FieldConstraint::new().primary(),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "slug",
             FieldType::VarChar(50),
             FieldConstraint::new().not_null().unique(),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "type",
             FieldType::VarChar(20),
             FieldConstraint::new()
                 .not_null()
-                .check(WhereClause::Condition(Condition::new(
-                    "type".to_string(),
-                    Operator::In,
-                    Some(SafeValue::Text(
-                        "('tag', 'category')".to_string(),
-                        ValidationLevel::Standard,
-                    )),
-                )?)),
+                .check(WhereClause::Or(vec![
+                    WhereClause::Condition(Condition::new(
+                        "type".to_string(),
+                        Operator::Eq,
+                        Some(SafeValue::Text(
+                            "'tag'".to_string(),
+                            ValidationLevel::Raw,
+                        )),
+                    )?),
+                    WhereClause::Condition(Condition::new(
+                        "type".to_string(),
+                        Operator::Eq,
+                        Some(SafeValue::Text(
+                            "'category'".to_string(),
+                            ValidationLevel::Raw,
+                        )),
+                    )?),
+                ])),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
-            "parent_id",
+        )?)
+        .add_field(Field::new(
+            "parent_name",
             FieldType::VarChar(50),
             FieldConstraint::new()
                 .foreign_key(format!("{}taxonomies", db_prefix), "name".to_string())
                 .on_delete(ForeignKeyAction::SetNull)
-                .on_update(ForeignKeyAction::Cascade)
-                .check(WhereClause::Condition(Condition::new(
-                    "(type = 'category' OR parent_id IS NULL)".to_string(),
-                    Operator::Raw,
-                    None,
-                )?)),
+                .on_update(ForeignKeyAction::Cascade),
             ValidationLevel::Strict,
         )?);
 
@@ -836,7 +883,8 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
                 .on_delete(ForeignKeyAction::Cascade)
                 .on_update(ForeignKeyAction::Cascade),
             ValidationLevel::Strict,
-        )?).add_field(Field::new(
+        )?)
+        .add_field(Field::new(
             "taxonomy_id",
             FieldType::VarChar(50),
             FieldConstraint::new()

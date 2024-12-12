@@ -199,7 +199,7 @@ impl SafeValue {
             SafeValue::Float(f) => Ok(f.to_string()),
             SafeValue::Text(s, level) => {
                 TextValidator::default().validate(s, *level)?;
-                Ok(format!("{}", s.replace('\'', "''")))
+                Ok(format!("{}", s))
             }
             SafeValue::DateTime(dt) => Ok(format!("{}", dt.to_rfc3339())),
         }
@@ -254,8 +254,7 @@ pub enum Operator {
     Lte,
     Like,
     In,
-    IsNull,
-    IsNotNull,
+    IsNull
 }
 
 impl Operator {
@@ -269,8 +268,7 @@ impl Operator {
             Operator::Lte => "<=",
             Operator::Like => "LIKE",
             Operator::In => "IN",
-            Operator::IsNull => "IS NULL",
-            Operator::IsNotNull => "IS NOT NULL",
+            Operator::IsNull => "IS NULL"
         }
     }
 }
@@ -297,6 +295,7 @@ pub enum WhereClause {
     And(Vec<WhereClause>),
     Or(Vec<WhereClause>),
     Condition(Condition),
+    Not(Condition)
 }
 
 #[derive(Debug, Clone)]
@@ -462,6 +461,10 @@ impl QueryBuilder {
             }
             WhereClause::Condition(condition) => {
                 self.build_condition(condition, &mut params, param_index)?
+            }
+            WhereClause::Not(condition) => {
+                let condition_sql = self.build_condition(condition, &mut params, param_index)?;
+                format!("NOT ({})", condition_sql)
             }
         };
 

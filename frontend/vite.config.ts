@@ -1,5 +1,5 @@
 import { vitePlugin as remix } from "@remix-run/dev";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, ConfigEnv, UserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { resolve } from "path";
 import { readEnvFile } from "./server/env";
@@ -30,7 +30,7 @@ const createDefineConfig = (config: EnvConfig) => {
   );
 };
 
-export default defineConfig(async ({ mode }) => {
+export default defineConfig(async ({ mode }: ConfigEnv): Promise<UserConfig> => {
   // 确保每次都读取最新的环境变量
   const currentConfig = await getLatestEnv();
   const env = loadEnv(mode, process.cwd(), "VITE_");
@@ -64,8 +64,7 @@ export default defineConfig(async ({ mode }) => {
     ],
     define: createDefineConfig(currentConfig),
     server: {
-      host: true,
-      address: currentConfig.VITE_ADDRESS,
+      host: currentConfig.VITE_ADDRESS,
       port: Number(env.VITE_SYSTEM_PORT ?? currentConfig.VITE_PORT),
       strictPort: true,
       hmr: true,
@@ -89,9 +88,28 @@ export default defineConfig(async ({ mode }) => {
     envPrefix: "VITE_",
     build: {
       rollupOptions: {
-        // 移除 manualChunks 配置
+        output: {
+          manualChunks(id) {
+            // 根据模块路径进行代码分割
+            if (id.includes('node_modules')) {
+              return 'vendor';
+            }
+          }
+        }
       },
-      chunkSizeWarningLimit: 1500
+      chunkSizeWarningLimit: 1500,
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true
+        }
+      },
+      cssMinify: true,
+      cssCodeSplit: true,
+      sourcemap: mode !== 'production',
+      assetsInlineLimit: 4096,
+      reportCompressedSize: false,
     },
     ssr: {
       noExternal: ['three', '@react-three/fiber', '@react-three/drei', 'gsap']

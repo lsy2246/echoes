@@ -456,29 +456,74 @@ const AdminConfig: React.FC<StepProps> = ({ onNext }) => {
   );
 };
 
-const SetupComplete: React.FC = () => (
-  <StepContainer title="安装完成">
-    <Flex direction="column" align="center" gap="4">
-      <Text size="5" weight="medium">
-        恭喜！安装已完成
-      </Text>
-      <Text size="3">系统正在重启中，请稍候...</Text>
-      <Box mt="4">
-        <Flex justify="center">
-          <Box className="animate-spin rounded-full h-8 w-8 border-b-2 border-current"></Box>
-        </Flex>
-      </Box>
-    </Flex>
-  </StepContainer>
-);
+const SetupComplete: React.FC = () => {
+  useEffect(() => {
+    // 添加延迟后刷新页面
+    const timer = setTimeout(() => {
+      window.location.reload();
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <StepContainer title="安装完成">
+      <Flex direction="column" align="center" gap="4">
+        <Text size="5" weight="medium">
+          恭喜！安装已完成
+        </Text>
+        <Text size="3">系统正在重启中，请稍候...</Text>
+        <Box mt="4">
+          <Flex justify="center">
+            <Box className="animate-spin rounded-full h-8 w-8 border-b-2 border-current"></Box>
+          </Flex>
+        </Box>
+      </Flex>
+    </StepContainer>
+  );
+};
 
 export default function SetupPage() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isClient, setIsClient] = useState(false);
+
   useEffect(() => {
-    // 在客户端组件挂载后更新状态
-    const initStatus = Number(import.meta.env.VITE_INIT_STATUS ?? 0) + 1;
-    setCurrentStep(initStatus);
+    // 标记客户端渲染完成
+    setIsClient(true);
+    
+    // 获取初始化状态
+    const initStatus = Number(import.meta.env.VITE_INIT_STATUS ?? 0);
+    
+    // 如果已完成初始化，直接刷新页面
+    if (initStatus >= 3) {
+      window.location.reload();
+      return;
+    }
+    
+    // 否则设置当前步骤
+    setCurrentStep(initStatus + 1);
   }, []);
+
+  // 在服务端渲染时或客户端首次渲染时，返回加载状态
+  if (!isClient) {
+    return (
+      <Theme
+        grayColor="gray"
+        accentColor="gray"
+        radius="medium"
+        panelBackground="solid"
+        appearance="inherit"
+      >
+        <Box className="min-h-screen w-full">
+          <Flex justify="center" pt="2">
+            <Box className="w-20 h-20">
+              <Echoes />
+            </Box>
+          </Flex>
+        </Box>
+      </Theme>
+    );
+  }
 
   return (
     <Theme
@@ -490,7 +535,9 @@ export default function SetupPage() {
     >
       <Box className="min-h-screen w-full">
         <Box position="fixed" top="2" right="4">
-          <ThemeModeToggle />
+          <Box className="w-10 h-10 flex items-center justify-center [&_button]:w-10 [&_button]:h-10 [&_svg]:w-6 [&_svg]:h-6 [&_button]:text-[--gray-12] [&_button:hover]:text-[--accent-9]">
+            <ThemeModeToggle />
+          </Box>
         </Box>
 
         <Flex justify="center" pt="2">
