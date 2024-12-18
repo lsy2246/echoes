@@ -17,7 +17,7 @@ pub struct Sqlite {
 
 #[async_trait]
 impl DatabaseTrait for Sqlite {
-    async fn connect(db_config: &config::SqlConfig, db: bool) -> CustomResult<Self> {
+    async fn connect(db_config: &config::SqlConfig, _db: bool) -> CustomResult<Self> {
         let db_file = env::current_dir()?
             .join("assets")
             .join("sqllite")
@@ -111,7 +111,7 @@ impl DatabaseTrait for Sqlite {
         let pool = Self::connect(&db_config, false).await?.pool;
 
         pool.execute(grammar.as_str()).await?;
-        pool.close();
+        pool.close().await;
 
         Ok(())
     }

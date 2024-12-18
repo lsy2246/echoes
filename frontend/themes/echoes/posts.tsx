@@ -251,7 +251,7 @@ const mockArticles: PostDisplay[] = [
   },
 ];
 
-export default new Template({}, ({ http, args }) => {
+export default new Template(({}) => {
   const articleData = useMemo(() => mockArticles, []);
   const totalPages = 25; // 假设有25页
   const currentPage = 1; // 当前页码

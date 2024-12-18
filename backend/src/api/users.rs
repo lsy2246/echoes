@@ -4,6 +4,7 @@ use crate::storage::{sql, sql::builder};
 use regex::Regex;
 use rocket::{get, http::Status, post, response::status, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 
 #[derive(Deserialize, Serialize)]
 pub struct LoginData {
@@ -12,23 +13,29 @@ pub struct LoginData {
 }
 
 #[derive(Debug)]
+pub enum Role {
+    Administrator,
+    Visitor,
+}
+
+impl Display for Role {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        match self {
+            Role::Administrator => write!(f, "administrator"),
+            Role::Visitor => write!(f, "visitor"),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct RegisterData {
     pub username: String,
     pub email: String,
     pub password: String,
-    pub role: String,
+    pub role: Role,
 }
 
 pub async fn insert_user(sql: &sql::Database, data: RegisterData) -> CustomResult<()> {
-    let role = match data.role.as_str() {
-        "administrator" | "contributor" => data.role,
-        _ => {
-            return Err(
-                "Invalid role. Must be either 'administrator' or 'contributor'".into_custom_error(),
-            )
-        }
-    };
-
     let password_hash = bcrypt::generate_hash(&data.password)?;
 
     let re = Regex::new(r"([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)")?;
@@ -57,7 +64,7 @@ pub async fn insert_user(sql: &sql::Database, data: RegisterData) -> CustomResul
         )?
         .set_value(
             "role".to_string(),
-            builder::SafeValue::Text(role, builder::ValidationLevel::Strict),
+            builder::SafeValue::Text(data.role.to_string(), builder::ValidationLevel::Strict),
         )?;
 
     sql.get_db().execute_query(&builder).await?;

@@ -106,9 +106,7 @@ async fn main() -> CustomResult<()> {
         rocket_builder = rocket_builder.mount("/", rocket::routes![api::setup::setup_account]);
     } else {
         state.sql_link(&config.sql_config).await?;
-        rocket_builder = rocket_builder
-            .mount("/auth/token", api::jwt_routes())
-            .mount("/config", api::configure_routes());
+        rocket_builder = rocket_builder.mount("/auth/token", api::jwt_routes());
     }
 
     let rocket = rocket_builder.ignite().await?;

@@ -1,11 +1,15 @@
 pub mod auth;
-pub mod settings;
+pub mod fields;
+pub mod page;
+pub mod post;
 pub mod setup;
 pub mod users;
-use crate::security::jwt;
-use rocket::http::Status;
+
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket::routes;
+use crate::api::users::Role;
+use rocket::http::Status;
+use crate::security::jwt;
 
 pub struct Token(String);
 
@@ -26,6 +30,7 @@ impl<'r> FromRequest<'r> for Token {
     }
 }
 
+
 pub struct SystemToken(String);
 
 #[rocket::async_trait]
@@ -43,10 +48,11 @@ impl<'r> FromRequest<'r> for SystemToken {
     }
 }
 
+
 pub fn jwt_routes() -> Vec<rocket::Route> {
     routes![auth::token::token_system]
 }
 
-pub fn configure_routes() -> Vec<rocket::Route> {
-    routes![settings::system_config_get]
+pub fn fields_routes() -> Vec<rocket::Route> {
+    routes![]
 }

@@ -6,15 +6,17 @@ use chrono::Duration;
 use rocket::{http::Status, post, response::status, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use crate::api::Role;
+
 #[derive(Deserialize, Serialize)]
-pub struct TokenSystemData {
+pub struct TokenData {
     username: String,
     password: String,
 }
 #[post("/system", format = "application/json", data = "<data>")]
 pub async fn token_system(
     state: &State<Arc<AppState>>,
-    data: Json<TokenSystemData>,
+    data: Json<TokenData>,
 ) -> AppResult<String> {
     let sql = state.sql_get().await.into_app_result()?;
     let mut builder = builder::QueryBuilder::new(
@@ -40,17 +42,6 @@ pub async fn token_system(
             ),
             builder::WhereClause::Condition(
                 builder::Condition::new(
-                    "email".to_string(),
-                    builder::Operator::Eq,
-                    Some(builder::SafeValue::Text(
-                        "author@lsy22.com".into(),
-                        builder::ValidationLevel::Relaxed,
-                    )),
-                )
-                .into_app_result()?,
-            ),
-            builder::WhereClause::Condition(
-                builder::Condition::new(
                     "role".to_string(),
                     builder::Operator::Eq,
                     Some(builder::SafeValue::Text(
@@ -62,11 +53,14 @@ pub async fn token_system(
             ),
         ]));
 
+    println!("db: {:?}", sql.get_type());
+
     let values = sql
         .get_db()
         .execute_query(&builder)
         .await
         .into_app_result()?;
+
 
     let password = values
         .first()
@@ -80,6 +74,7 @@ pub async fn token_system(
     Ok(security::jwt::generate_jwt(
         security::jwt::CustomClaims {
             name: "system".into(),
+            role: Role::Administrator.to_string(),
         },
         Duration::minutes(1),
     )

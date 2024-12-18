@@ -1,17 +1,14 @@
 import { HttpClient } from "core/http";
-import { CapabilityService } from "core/capability";
 import { Serializable } from "interface/serializableType";
-import { createElement, memo } from "react";
+import React, { createElement, memo } from "react";
 
 export class Layout {
-  private http: HttpClient;
-  private capability: CapabilityService;
+  private readonly http: HttpClient;
   private readonly MemoizedElement: React.MemoExoticComponent<
     (props: {
       children: React.ReactNode;
       args?: Serializable;
-      onTouchStart?: (e: TouchEvent) => void;
-      onTouchEnd?: (e: TouchEvent) => void;
+      http: HttpClient;
     }) => React.ReactNode
   >;
 
@@ -19,29 +16,20 @@ export class Layout {
     public element: (props: {
       children: React.ReactNode;
       args?: Serializable;
-      onTouchStart?: (e: TouchEvent) => void;
-      onTouchEnd?: (e: TouchEvent) => void;
+      http: HttpClient;
     }) => React.ReactNode,
     services?: {
       http?: HttpClient;
-      capability?: CapabilityService;
     },
   ) {
     this.http = services?.http || HttpClient.getInstance();
-    this.capability = services?.capability || CapabilityService.getInstance();
     this.MemoizedElement = memo(element);
   }
 
-  render(props: {
-    children: React.ReactNode;
-    args?: Serializable;
-    onTouchStart?: (e: TouchEvent) => void;
-    onTouchEnd?: (e: TouchEvent) => void;
-  }) {
+  render(props: { children: React.ReactNode; args?: Serializable }) {
     return createElement(this.MemoizedElement, {
       ...props,
-      onTouchStart: props.onTouchStart,
-      onTouchEnd: props.onTouchEnd,
+      http: this.http,
     });
   }
 }

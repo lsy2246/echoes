@@ -210,11 +210,11 @@ export default new Layout(({ children, args }) => {
         >
           <nav>
             <Container size="4">
-              <Flex justify="between" align="center" className="h-20 px-4">
+              <Flex justify="between" align="center" className="h-16 px-4">
                 {/* Logo 区域 */}
                 <Flex align="center">
                   <Link href="/" className="hover-text flex items-center">
-                    <Box className="w-20 h-20 [&_path]:transition-all [&_path]:duration-200 group-hover:[&_path]:stroke-[--accent-9]">
+                    <Box className="w-20 h-8 [&_path]:transition-all [&_path]:duration-200 group-hover:[&_path]:stroke-[--accent-9]">
                       <Echoes />
                     </Box>
                   </Link>

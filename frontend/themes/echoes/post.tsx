@@ -4,9 +4,10 @@ import React, {
   useCallback,
   useRef,
   useEffect,
+  ComponentPropsWithoutRef,
 } from "react";
 import { Template } from "interface/template";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { Components } from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import {
@@ -20,10 +21,8 @@ import {
 } from "@radix-ui/themes";
 import { CalendarIcon, CodeIcon } from "@radix-ui/react-icons";
 import type { PostDisplay } from "interface/fields";
-import type { MetaFunction } from "@remix-run/node";
 import { getColorScheme } from "themes/echoes/utils/colorScheme";
 import MarkdownIt from "markdown-it";
-import { ComponentPropsWithoutRef } from "react";
 import remarkGfm from "remark-gfm";
 import { toast } from "hooks/Notification";
 import rehypeRaw from "rehype-raw";
@@ -372,7 +371,7 @@ function greet(user: User): string {
 本文展示了 Markdown 从基础到高级的各种用法：
 
 1. 基础语法：文本格式化、列表、代码、表格等
-2. 高级排版：图文混排、折叠面板、卡片布局等
+2. 高级排版：图文混排、叠面板、卡片布局等
 3. 特殊语法：数学公式、脚注、表情符号等
 
 > 💡 **提示**：部分高级排版功能可能需要特定的 Markdown 编辑器或渲染支持，请确认是否支持这些功能。
@@ -415,31 +414,6 @@ function greet(user: User): string {
       metaValue: "Markdown,基础语法,高级排版,布局设计",
     },
   ],
-};
-
-// 添 meta 函数
-export const meta: MetaFunction = () => {
-  const description =
-    mockPost.metadata?.find((m) => m.metaKey === "description")?.metaValue ||
-    "";
-  const keywords =
-    mockPost.metadata?.find((m) => m.metaKey === "keywords")?.metaValue || "";
-
-  return [
-    { title: mockPost.title },
-    { name: "description", content: description },
-    { name: "keywords", content: keywords },
-    // 添 Open Graph 标
-    { property: "og:title", content: mockPost.title },
-    { property: "og:description", content: description },
-    { property: "og:image", content: mockPost.coverImage },
-    { property: "og:type", content: "article" },
-    // 添加 Twitter 卡片标签
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: mockPost.title },
-    { name: "twitter:description", content: description },
-    { name: "twitter:image", content: mockPost.coverImage },
-  ];
 };
 
 // 添加复制能的接口
@@ -508,7 +482,7 @@ const generateSequentialId = (() => {
   };
 })();
 
-export default new Template({}, ({ http, args }) => {
+export default new Template(({}) => {
   const [toc, setToc] = useState<string[]>([]);
   const [tocItems, setTocItems] = useState<TocItem[]>([]);
   const [activeId, setActiveId] = useState<string>("");
@@ -564,7 +538,7 @@ export default new Template({}, ({ http, args }) => {
 
     md.render(mockPost.content);
 
-    // 只在 ID 数组发生变化时更新
+    // 只在 ID 数组发生化时更新
     const newIds = tocArray.map((item) => item.id);
     if (JSON.stringify(headingIds.current) !== JSON.stringify(newIds)) {
       headingIds.current = [...newIds];
@@ -580,15 +554,15 @@ export default new Template({}, ({ http, args }) => {
     if (tocArray.length > 0 && !activeId) {
       setActiveId(tocArray[0].id);
     }
-  }, [mockPost.content, mockPost.id, activeId]);
+  }, [activeId]);
 
   useEffect(() => {
     if (headingIdsArrays[mockPost.id] && headingIds.current.length === 0) {
       headingIds.current = [...headingIdsArrays[mockPost.id]];
     }
-  }, [headingIdsArrays, mockPost.id]);
+  }, [headingIdsArrays]);
 
-  const components = useMemo(() => {
+  const components: Components = useMemo(() => {
     return {
       h1: ({ children, ...props }: ComponentPropsWithoutRef<"h1">) => {
         const headingId = headingIds.current.shift();
@@ -626,14 +600,13 @@ export default new Template({}, ({ http, args }) => {
           </h3>
         );
       },
-      p: ({
-        node,
-        ...props
-      }: ComponentPropsWithoutRef<"p"> & { node?: any }) => (
+      p: ({ children, ...props }: ComponentPropsWithoutRef<"p">) => (
         <p
           className="text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 text-[--gray-11]"
           {...props}
-        />
+        >
+          {children}
+        </p>
       ),
       ul: ({ children, ...props }: ComponentPropsWithoutRef<"ul">) => (
         <ul
@@ -911,15 +884,11 @@ export default new Template({}, ({ http, args }) => {
       ),
 
       // 修改 summary 组件
-      summary: ({
-        node,
-        ...props
-      }: ComponentPropsWithoutRef<"summary"> & { node?: any }) => (
+      summary: (props: ComponentPropsWithoutRef<"summary">) => (
         <summary
           className="px-4 py-3 cursor-pointer hover:bg-[--gray-3] transition-colors
                      text-[--gray-12] font-medium select-none
-                     marker:text-[--gray-11]
-                     "
+                     marker:text-[--gray-11]"
           {...props}
         />
       ),
@@ -1148,7 +1117,7 @@ export default new Template({}, ({ http, args }) => {
     </>
   );
 
-  // 在组件顶部添加 useMemo 包静态内容
+  // 在组顶部添加 useMemo 包静态内容
   const PostContent = useMemo(() => {
     // 在渲染内容前重置 headingIds
     if (headingIdsArrays[mockPost.id]) {
@@ -1180,7 +1149,7 @@ export default new Template({}, ({ http, args }) => {
         </div>
       </Box>
     );
-  }, [mockPost.content, components, mockPost.id, headingIdsArrays]); // 添加必要的依赖
+  }, [components, headingIdsArrays]);
 
   return (
     <Container

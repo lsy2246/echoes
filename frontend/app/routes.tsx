@@ -1,27 +1,17 @@
 import ErrorPage from "hooks/Error";
-import layout from "themes/echoes/layout";
-import article from "themes/echoes/posts";
-import about from "themes/echoes/about";
 import { useLocation } from "react-router-dom";
 import post from "themes/echoes/post";
-import { memo, useCallback } from "react";
-import login from "~/dashboard/login";
+import React, { memo, useCallback } from "react";
 import adminLayout from "~/dashboard/layout";
 import dashboard from "~/dashboard/index";
-import posts from "~/dashboard/posts";
 import comments from "~/dashboard/comments";
-import categories from "./dashboard/categories";
-import settings from "./dashboard/settings";
-import files from "./dashboard/files";
-import themes from "./dashboard/themes";
+import categories from "~/dashboard/categories";
+import settings from "~/dashboard/settings";
+import files from "~/dashboard/files";
+import themes from "~/dashboard/themes";
 import users from "~/dashboard/users";
-import plugins from "./dashboard/plugins";
+import layout from "~/dashboard/layout";
 
-const args = {
-  title: "我的页面",
-  theme: "dark",
-  nav: '<a href="/">index</a><a href="/error">error</a><a href="/about">about</a><a href="/post">post</a><a href="/login">login</a><a href="/dashboard">dashboard</a>',
-} as const;
 
 // 创建布局渲染器的工厂函数
 const createLayoutRenderer = (layoutComponent: any) => {
@@ -33,9 +23,26 @@ const createLayoutRenderer = (layoutComponent: any) => {
   };
 };
 
+// 创建组件的工厂函数
+const createComponentRenderer = (path: string) => {
+  return React.lazy(async () => {
+    const module = await import(/* @vite-ignore */ path);
+    return {
+      default: (props: any) => {
+        if (typeof module.default.render === "function") {
+          return module.default.render(props);
+        }
+      },
+    };
+  });
+};
+
 // 使用工厂函数创建不同的布局渲染器
 const renderLayout = createLayoutRenderer(layout);
 const renderDashboardLayout = createLayoutRenderer(adminLayout);
+
+const Login = createComponentRenderer("./dashboard/login");
+const posts = createComponentRenderer("themes/echoes/posts");
 
 const Routes = memo(() => {
   const location = useLocation();
@@ -43,12 +50,26 @@ const Routes = memo(() => {
 
   // 使用 useCallback 缓存渲染函数
   const renderContent = useCallback((Component: any) => {
-    return renderLayout(Component.render(args));
+    if (React.isValidElement(Component)) {
+      return renderLayout(Component);
+    }
+    return renderLayout(
+      <React.Suspense fallback={<div>Loading...</div>}>
+        {Component.render ? Component.render(args) : <Component args={args} />}
+      </React.Suspense>,
+    );
   }, []);
 
   // 添加管理后台内容渲染函数
   const renderDashboardContent = useCallback((Component: any) => {
-    return renderDashboardLayout(Component.render(args));
+    if (React.isValidElement(Component)) {
+      return renderDashboardLayout(Component);
+    }
+    return renderDashboardLayout(
+      <React.Suspense fallback={<div>Loading...</div>}>
+        {Component.render ? Component.render(args) : <Component args={args} />}
+      </React.Suspense>,
+    );
   }, []);
 
   // 前台路由
@@ -59,8 +80,10 @@ const Routes = memo(() => {
       return renderContent(about);
     case "post":
       return renderContent(post);
+    case "posts":
+      return renderContent(posts);
     case "login":
-      return login.render(args);
+      return <Login args={args} />;
     case "dashboard":
       // 管理后台路由
       if (!subPath) {
@@ -83,8 +106,6 @@ const Routes = memo(() => {
           return renderDashboardContent(themes);
         case "users":
           return renderDashboardContent(users);
-        case "plugins":
-          return renderDashboardContent(plugins);
         default:
           return renderDashboardContent(<div>404 未找到页面</div>);
       }

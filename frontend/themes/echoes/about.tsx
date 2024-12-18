@@ -41,7 +41,7 @@ const skills = [
   { name: "Python", level: 70 },
 ];
 
-export default new Template({}, ({ http, args }) => {
+export default new Template(({}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 

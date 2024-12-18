@@ -1,4 +1,6 @@
-use super::{settings, users};
+use super::fields::{FieldType, TargetType};
+use super::users::Role;
+use super::{fields, users};
 use crate::common::config;
 use crate::common::error::{AppResult, AppResultInto};
 use crate::common::helpers;
@@ -45,7 +47,7 @@ pub struct StepAccountData {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct InstallReplyData {
+pub struct StepAccountResponse {
     token: String,
     username: String,
     password: String,
@@ -55,7 +57,7 @@ pub struct InstallReplyData {
 pub async fn setup_account(
     data: Json<StepAccountData>,
     state: &State<Arc<AppState>>,
-) -> AppResult<status::Custom<Json<InstallReplyData>>> {
+) -> AppResult<Json<StepAccountResponse>> {
     let mut config = config::Config::read().unwrap_or_default();
     if config.init.administrator {
         return Err(status::Custom(
@@ -73,10 +75,6 @@ pub async fn setup_account(
         state.sql_get().await.into_app_result()?
     };
 
-    let system_credentials = (
-        helpers::generate_random_string(20),
-        helpers::generate_random_string(20),
-    );
 
     users::insert_user(
         &sql,
@@ -84,32 +82,49 @@ pub async fn setup_account(
             username: data.username.clone(),
             email: data.email,
             password: data.password,
-            role: "administrator".to_string(),
+            role: Role::Administrator,
         },
     )
     .await
     .into_app_result()?;
+
+    let system_credentials = (
+        helpers::generate_random_string(20),
+        helpers::generate_random_string(20),
+    );
+
+    let system_account = users::RegisterData {
+        username: system_credentials.0.clone(),
+        email: "author@lsy22.com".to_string(),
+        password: system_credentials.1.clone(),
+        role: Role::Administrator,
+    };
 
     users::insert_user(
         &sql,
-        users::RegisterData {
-            username: system_credentials.0.clone(),
-            email: "author@lsy22.com".to_string(),
-            password: system_credentials.1.clone(),
-            role: "administrator".to_string(),
-        },
+        system_account, 
     )
     .await
     .into_app_result()?;
 
-    settings::insert_setting(
+    fields::insert_fields(
         &sql,
-        "system".to_string(),
-        "settings".to_string(),
-        Json(json!(settings::SystemConfigure {
-            author_name: data.username.clone(),
-            ..settings::SystemConfigure::default()
-        })),
+        TargetType::System,
+        0,
+        FieldType::Meta,
+        "keywords".to_string(),
+        "echoes,blog,个人博客".to_string(),
+    )
+    .await
+    .into_app_result()?;
+
+    fields::insert_fields(
+        &sql,
+        TargetType::System,
+        0,
+        FieldType::Data,
+        "current_theme".to_string(),
+        "echoes".to_string(),
     )
     .await
     .into_app_result()?;
@@ -117,6 +132,7 @@ pub async fn setup_account(
     let token = security::jwt::generate_jwt(
         security::jwt::CustomClaims {
             name: data.username,
+            role: Role::Administrator.to_string(),
         },
         Duration::days(7),
     )
@@ -125,12 +141,9 @@ pub async fn setup_account(
     config::Config::write(config).into_app_result()?;
     state.trigger_restart().await.into_app_result()?;
 
-    Ok(status::Custom(
-        Status::Ok,
-        Json(InstallReplyData {
-            token,
-            username: system_credentials.0,
-            password: system_credentials.1,
-        }),
-    ))
+    Ok(Json(StepAccountResponse {
+        token,
+        username: system_credentials.0,
+        password: system_credentials.1,
+    }))
 }

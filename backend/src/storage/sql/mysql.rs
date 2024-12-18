@@ -6,8 +6,7 @@ use crate::common::error::{CustomErrorInto, CustomResult};
 use crate::config;
 use async_trait::async_trait;
 use serde_json::Value;
-use sqlx::mysql::MySqlPool;
-use sqlx::{Column, Executor, Row, TypeInfo};
+use sqlx::{mysql::MySqlPool, Column, Executor, Row, TypeInfo};
 use std::collections::HashMap;
 
 #[derive(Clone)]
@@ -54,7 +53,7 @@ impl DatabaseTrait for Mysql {
         builder: &builder::QueryBuilder,
     ) -> CustomResult<Vec<HashMap<String, Value>>> {
         let (query, values) = builder.build()?;
-
+        println!("查询语句: {}", query);
         let mut sqlx_query = sqlx::query(&query);
 
         for value in values {
@@ -69,6 +68,7 @@ impl DatabaseTrait for Mysql {
         }
 
         let rows = sqlx_query.fetch_all(&self.pool).await?;
+        println!("查询结果: {:?}", rows);
 
         Ok(rows
             .into_iter()
@@ -119,7 +119,7 @@ impl DatabaseTrait for Mysql {
         let new_pool = Self::connect(&db_config, true).await?.pool;
 
         new_pool.execute(grammar.as_str()).await?;
-        new_pool.close();
+        new_pool.close().await;
         Ok(())
     }
     async fn close(&self) -> CustomResult<()> {

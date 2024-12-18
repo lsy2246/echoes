@@ -9,6 +9,7 @@ use std::{env, fs, path::PathBuf};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CustomClaims {
     pub name: String,
+    pub role: String,
 }
 
 pub enum SecretKey {

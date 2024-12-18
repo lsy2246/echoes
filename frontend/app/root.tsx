@@ -6,8 +6,7 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import { NotificationProvider } from "hooks/Notification";
-import { Theme } from "@radix-ui/themes";
-import { ThemeScript } from "hooks/themeMode";
+import { ThemeScript } from "hooks/ThemeMode";
 
 import "~/index.css";
 
@@ -17,6 +16,10 @@ export function Layout() {
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="Expires" content="0" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+        />
 
         <title>Echoes</title>
         <ThemeScript />
@@ -28,11 +31,9 @@ export function Layout() {
         suppressHydrationWarning={true}
         data-cz-shortcut-listen="false"
       >
-        <Theme grayColor="slate" radius="medium" scaling="100%">
-          <NotificationProvider>
+        <NotificationProvider>
             <Outlet />
           </NotificationProvider>
-        </Theme>
         <ScrollRestoration />
         <Scripts />
       </body>

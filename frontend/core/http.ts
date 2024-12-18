@@ -2,11 +2,12 @@ import { DEFAULT_CONFIG } from "~/env";
 export interface ErrorResponse {
   title: string;
   message: string;
+  detail?: string;
 }
 
 export class HttpClient {
   private static instance: HttpClient;
-  private timeout: number;
+  private readonly timeout: number;
 
   private constructor(timeout = 10000) {
     this.timeout = timeout;
@@ -34,41 +35,83 @@ export class HttpClient {
     return { ...options, headers };
   }
 
-  private async handleResponse(response: Response): Promise<any> {
+  private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       const contentType = response.headers.get("content-type");
-      let message;
+      let errorDetail = {
+        status: response.status,
+        statusText: response.statusText,
+        message: "",
+        raw: "",
+      };
 
       try {
         if (contentType?.includes("application/json")) {
           const error = await response.json();
-          message = error.message || "";
+          errorDetail.message = error.message || "";
+          errorDetail.raw = JSON.stringify(error, null, 2);
         } else {
           const textError = await response.text();
-          message = textError || "";
+          errorDetail.message = textError;
+          errorDetail.raw = textError;
         }
       } catch (e) {
-        console.error("解析响应错误:", e);
+        console.error("[Response Parse Error]:", e);
+        errorDetail.message = "响应解析失败";
+        errorDetail.raw = e instanceof Error ? e.message : String(e);
       }
 
       switch (response.status) {
+        case 400:
+          errorDetail.message = errorDetail.message || "请求参数错误";
+          break;
+        case 401:
+          errorDetail.message = "未授权访问";
+          break;
+        case 403:
+          errorDetail.message = "访问被禁止";
+          break;
         case 404:
-          message = "请求的资源不存在";
+          errorDetail.message = "请求的资源不存在";
+          break;
+        case 500:
+          errorDetail.message = "服务器内部错误";
+          break;
+        case 502:
+          errorDetail.message = "网关错误";
+          break;
+        case 503:
+          errorDetail.message = "服务暂时不可用";
+          break;
+        case 504:
+          errorDetail.message = "网关超时";
           break;
       }
 
       const errorResponse: ErrorResponse = {
-        title: `${response.status} ${response.statusText}`,
-        message: message,
+        title: `${errorDetail.status} ${errorDetail.statusText}`,
+        message: errorDetail.message,
+        detail: `请求URL: ${response.url}\n状态码: ${errorDetail.status}\n原始错误: ${errorDetail.raw}`,
       };
 
+      console.error("[HTTP Error]:", errorResponse);
       throw errorResponse;
     }
 
-    const contentType = response.headers.get("content-type");
-    return contentType?.includes("application/json")
-      ? response.json()
-      : response.text();
+    try {
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
+        return await response.json();
+      }
+      return (await response.text()) as T;
+    } catch (e) {
+      console.error("[Response Parse Error]:", e);
+      throw {
+        title: "响应解析错误",
+        message: "服务器返回的数据格式不正确",
+        detail: e instanceof Error ? e.message : String(e),
+      };
+    }
   }
 
   private async request<T>(
@@ -94,22 +137,23 @@ export class HttpClient {
       return await this.handleResponse(response);
     } catch (error: any) {
       if (error.name === "AbortError") {
-        const errorResponse: ErrorResponse = {
+        throw {
           title: "请求超时",
           message: "服务器响应时间过长，请稍后重试",
+          detail: `请求URL: ${url}${endpoint}\n超时时间: ${this.timeout}ms`,
         };
-        throw errorResponse;
       }
+
       if ((error as ErrorResponse).title && (error as ErrorResponse).message) {
         throw error;
       }
-      console.log(error);
 
-      const errorResponse: ErrorResponse = {
-        title: "未知错误",
+      console.error("[Request Error]:", error);
+      throw {
+        title: "请求失败",
         message: error.message || "发生未知错误",
+        detail: `请求URL: ${url}${endpoint}\n错误详情: ${error.stack || error}`,
       };
-      throw errorResponse;
     } finally {
       clearTimeout(timeoutId);
     }

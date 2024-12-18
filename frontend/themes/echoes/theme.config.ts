@@ -9,17 +9,33 @@ const themeConfig: ThemeConfig = {
   configuration: {
     nav: {
       title: "导航配置",
-      data: '<a href="h">你好</a> <a href="h">不好</a>',
+      data: '<a href="/">index</a><a href="/error">error</a><a href="/about">about</a><a href="/post">post</a><a href="/login">login</a><a href="/dashboard">dashboard</a>',
     },
   },
   layout: "layout.tsx",
   templates: new Map([
     [
-      "page",
+      "posts",
       {
-        path: "./templates/page",
+        path: "posts",
         name: "文章列表模板",
         description: "博客首页展示模板",
+      },
+    ],
+    [
+      "post",
+      {
+        path: "post",
+        name: "文章详情模板",
+        description: "文章详情展示模板",
+      },
+    ],
+    [
+      "about",
+      {
+        path: "about",
+        name: "关于页面模板",
+        description: "关于页面展示模板",
       },
     ],
   ]),

@@ -1,7 +1,7 @@
-use super::builder::{Condition, Identifier, Operator, SafeValue, ValidationLevel, WhereClause};
+use super::builder::{Identifier, Operator, SafeValue, ValidationLevel, WhereClause};
 use super::DatabaseType;
 use crate::common::error::{CustomErrorInto, CustomResult};
-use std::fmt::{format, Display};
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum FieldType {
@@ -59,7 +59,6 @@ pub struct Field {
     pub name: Identifier,
     pub field_type: FieldType,
     pub constraints: FieldConstraint,
-    pub validation_level: ValidationLevel,
 }
 
 #[derive(Debug, Clone)]
@@ -144,13 +143,11 @@ impl Field {
         name: &str,
         field_type: FieldType,
         constraints: FieldConstraint,
-        validation_level: ValidationLevel,
     ) -> CustomResult<Self> {
         Ok(Self {
             name: Identifier::new(name.to_string())?,
             field_type,
             constraints,
-            validation_level,
         })
     }
 
@@ -390,62 +387,6 @@ impl SchemaBuilder {
 pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomResult<String> {
     let db_prefix = db_prefix.to_string()?;
     let mut schema = SchemaBuilder::new();
-    let role_check = WhereClause::Or(vec![
-        WhereClause::Condition(Condition::new(
-            "role".to_string(),
-            Operator::Eq,
-            Some(SafeValue::Text(
-                "'contributor'".to_string(),
-                ValidationLevel::Raw,
-            )),
-        )?),
-        WhereClause::Condition(Condition::new(
-            "role".to_string(),
-            Operator::Eq,
-            Some(SafeValue::Text(
-                "'administrator'".to_string(),
-                ValidationLevel::Raw,
-            )),
-        )?),
-    ]);
-    let content_state_check = WhereClause::Or(vec![
-        WhereClause::Condition(Condition::new(
-            "status".to_string(),
-            Operator::Eq,
-            Some(SafeValue::Text(
-                "'published'".to_string(),
-                ValidationLevel::Raw,
-            )),
-        )?),
-        WhereClause::Condition(Condition::new(
-            "status".to_string(),
-            Operator::Eq,
-            Some(SafeValue::Text(
-                "'private'".to_string(),
-                ValidationLevel::Raw,
-            )),
-        )?),
-        WhereClause::Condition(Condition::new(
-            "status".to_string(),
-            Operator::Eq,
-            Some(SafeValue::Text(
-                "'hidden'".to_string(),
-                ValidationLevel::Raw,
-            )),
-        )?),
-    ]);
-    let target_type_check = WhereClause::Or(vec![
-        WhereClause::Condition(Condition::new(
-            "target_type".to_string(),
-            Operator::Eq,
-            Some(SafeValue::Text("'post'".to_string(), ValidationLevel::Raw)),
-        )?),
-        WhereClause::Condition(Condition::new(
-            "target_type".to_string(),
-            Operator::Eq,
-            Some(SafeValue::Text("'page'".to_string(), ValidationLevel::Raw)),
-        )?),
-    ]);
 
     // 用户表
     let mut users_table = Table::new(&format!("{}users", db_prefix))?;
@@ -454,31 +395,26 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
             "username",
             FieldType::VarChar(100),
             FieldConstraint::new().primary(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "avatar_url",
             FieldType::VarChar(255),
             FieldConstraint::new(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "email",
             FieldType::VarChar(255),
             FieldConstraint::new().unique().not_null(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "password_hash",
             FieldType::VarChar(255),
             FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "role",
             FieldType::VarChar(20),
-            FieldConstraint::new().not_null().check(role_check.clone()),
-            ValidationLevel::Strict,
+            FieldConstraint::new().not_null(),
         )?)
         .add_field(Field::new(
             "created_at",
@@ -487,7 +423,6 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
                 "CURRENT_TIMESTAMP".to_string(),
                 ValidationLevel::Strict,
             )),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "updated_at",
@@ -496,16 +431,6 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
                 "CURRENT_TIMESTAMP".to_string(),
                 ValidationLevel::Strict,
             )),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "last_login_at",
-            FieldType::Timestamp,
-            FieldConstraint::new().not_null().default(SafeValue::Text(
-                "CURRENT_TIMESTAMP".to_string(),
-                ValidationLevel::Strict,
-            )),
-            ValidationLevel::Strict,
         )?);
 
     schema.add_table(users_table)?;
@@ -518,45 +443,49 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
             "id",
             FieldType::Integer(true),
             FieldConstraint::new().primary(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "title",
             FieldType::VarChar(255),
             FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "content",
             FieldType::Text,
             FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
+        )?)
+        .add_field(Field::new(
+            "is_editor",
+            FieldType::Boolean,
+            FieldConstraint::new()
+                .not_null()
+                .default(SafeValue::Bool(false)),
+        )?)
+        .add_field(Field::new(
+            "draft_content",
+            FieldType::Text,
+            FieldConstraint::new(),
         )?)
         .add_field(Field::new(
             "template",
             FieldType::VarChar(50),
             FieldConstraint::new(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "status",
             FieldType::VarChar(20),
-            FieldConstraint::new()
-                .not_null()
-                .check(content_state_check.clone()),
-            ValidationLevel::Strict,
+            FieldConstraint::new().not_null(),
         )?);
 
     schema.add_table(pages_table)?;
 
-    // posts 表
+    // 文章表
     let mut posts_table = Table::new(&format!("{}posts", db_prefix))?;
     posts_table
         .add_field(Field::new(
             "id",
             FieldType::Integer(true),
             FieldConstraint::new().primary(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "author_name",
@@ -566,33 +495,26 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
                 .foreign_key(format!("{}users", db_prefix), "username".to_string())
                 .on_delete(ForeignKeyAction::Cascade)
                 .on_update(ForeignKeyAction::Cascade),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "cover_image",
             FieldType::VarChar(255),
             FieldConstraint::new(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "title",
             FieldType::VarChar(255),
             FieldConstraint::new(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "content",
             FieldType::Text,
             FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "status",
             FieldType::VarChar(20),
-            FieldConstraint::new()
-                .not_null()
-                .check(content_state_check.clone()),
-            ValidationLevel::Strict,
+            FieldConstraint::new().not_null(),
         )?)
         .add_field(Field::new(
             "is_editor",
@@ -600,13 +522,11 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
             FieldConstraint::new()
                 .not_null()
                 .default(SafeValue::Bool(false)),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "draft_content",
             FieldType::Text,
             FieldConstraint::new(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "created_at",
@@ -615,7 +535,6 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
                 "CURRENT_TIMESTAMP".to_string(),
                 ValidationLevel::Strict,
             )),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "updated_at",
@@ -624,13 +543,6 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
                 "CURRENT_TIMESTAMP".to_string(),
                 ValidationLevel::Strict,
             )),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "published_at",
-            FieldType::Timestamp,
-            FieldConstraint::new(),
-            ValidationLevel::Strict,
         )?);
 
     schema.add_table(posts_table)?;
@@ -642,7 +554,6 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
             "id",
             FieldType::Integer(true),
             FieldConstraint::new().primary(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "author_id",
@@ -652,43 +563,36 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
                 .foreign_key(format!("{}users", db_prefix), "username".to_string())
                 .on_delete(ForeignKeyAction::Cascade)
                 .on_update(ForeignKeyAction::Cascade),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "name",
             FieldType::VarChar(255),
             FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "size_bytes",
             FieldType::BigInt,
             FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "storage_path",
             FieldType::VarChar(255),
             FieldConstraint::new().not_null().unique(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "mime_type",
             FieldType::VarChar(50),
             FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "category",
             FieldType::VarChar(50),
             FieldConstraint::new(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "description",
             FieldType::VarChar(255),
             FieldConstraint::new(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "created_at",
@@ -697,172 +601,69 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
                 "CURRENT_TIMESTAMP".to_string(),
                 ValidationLevel::Strict,
             )),
-            ValidationLevel::Strict,
         )?);
 
     schema.add_table(resources_table)?;
 
-    // 配置表
-    let mut settings_table = Table::new(&format!("{}settings", db_prefix))?;
-    settings_table
-        .add_field(Field::new(
-            "name",
-            FieldType::VarChar(50),
-            FieldConstraint::new().primary(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "data",
-            FieldType::Text,
-            FieldConstraint::new(),
-            ValidationLevel::Strict,
-        )?);
-
-    schema.add_table(settings_table)?;
-
-    // 元数据表
-    let mut metadata_table = Table::new(&format!("{}metadata", db_prefix))?;
-    metadata_table
-        .add_field(Field::new(
-            "id",
-            FieldType::Integer(true),
-            FieldConstraint::new().primary(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "target_type",
-            FieldType::VarChar(20),
-            FieldConstraint::new()
-                .not_null()
-                .check(target_type_check.clone()),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "target_id",
-            FieldType::Integer(false),
-            FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "meta_key",
-            FieldType::VarChar(50),
-            FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "meta_value",
-            FieldType::Text,
-            FieldConstraint::new(),
-            ValidationLevel::Strict,
-        )?);
-
-    metadata_table.add_index(Index::new(
-        "fk_metadata_posts",
-        vec!["target_id".to_string()],
-        false,
-    )?);
-
-    metadata_table.add_index(Index::new(
-        "fk_metadata_pages",
-        vec!["target_id".to_string()],
-        false,
-    )?);
-
-    metadata_table.add_index(Index::new(
-        "idx_metadata_target",
-        vec!["target_type".to_string(), "target_id".to_string()],
-        false,
-    )?);
-
-    schema.add_table(metadata_table)?;
-
     // 自定义字段表
-    let mut custom_fields_table = Table::new(&format!("{}custom_fields", db_prefix))?;
-    custom_fields_table
+    let mut fields_table = Table::new(&format!("{}fields", db_prefix))?;
+    fields_table
         .add_field(Field::new(
             "id",
             FieldType::Integer(true),
             FieldConstraint::new().primary(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "target_type",
             FieldType::VarChar(20),
-            FieldConstraint::new()
-                .not_null()
-                .check(target_type_check.clone()),
-            ValidationLevel::Strict,
+            FieldConstraint::new().not_null(),
         )?)
         .add_field(Field::new(
             "target_id",
             FieldType::Integer(false),
             FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
+        )?)
+        .add_field(Field::new(
+            "field_type",
+            FieldType::VarChar(50),
+            FieldConstraint::new().not_null(),
         )?)
         .add_field(Field::new(
             "field_key",
             FieldType::VarChar(50),
             FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "field_value",
             FieldType::Text,
             FieldConstraint::new(),
-            ValidationLevel::Strict,
-        )?)
-        .add_field(Field::new(
-            "field_type",
-            FieldType::VarChar(20),
-            FieldConstraint::new().not_null(),
-            ValidationLevel::Strict,
         )?);
 
-    custom_fields_table.add_index(Index::new(
-        "idx_custom_fields_target",
+    fields_table.add_index(Index::new(
+        "idx_fields_target",
         vec!["target_type".to_string(), "target_id".to_string()],
         false,
     )?);
 
-    schema.add_table(custom_fields_table)?;
+    schema.add_table(fields_table)?;
 
-    // 在 generate_schema 函数中，删除原有的 tags_tables 和 categories_table
-    // 替换为新的 taxonomies 表
+    // 分类—标签 表
     let mut taxonomies_table = Table::new(&format!("{}taxonomies", db_prefix))?;
     taxonomies_table
         .add_field(Field::new(
             "name",
             FieldType::VarChar(50),
             FieldConstraint::new().primary(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "slug",
             FieldType::VarChar(50),
             FieldConstraint::new().not_null().unique(),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
             "type",
             FieldType::VarChar(20),
-            FieldConstraint::new()
-                .not_null()
-                .check(WhereClause::Or(vec![
-                    WhereClause::Condition(Condition::new(
-                        "type".to_string(),
-                        Operator::Eq,
-                        Some(SafeValue::Text("'tag'".to_string(), ValidationLevel::Raw)),
-                    )?),
-                    WhereClause::Condition(Condition::new(
-                        "type".to_string(),
-                        Operator::Eq,
-                        Some(SafeValue::Text(
-                            "'category'".to_string(),
-                            ValidationLevel::Raw,
-                        )),
-                    )?),
-                ])),
-            ValidationLevel::Strict,
+            FieldConstraint::new().not_null(),
         )?)
         .add_field(Field::new(
             "parent_name",
@@ -871,12 +672,11 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
                 .foreign_key(format!("{}taxonomies", db_prefix), "name".to_string())
                 .on_delete(ForeignKeyAction::SetNull)
                 .on_update(ForeignKeyAction::Cascade),
-            ValidationLevel::Strict,
         )?);
 
     schema.add_table(taxonomies_table)?;
 
-    // 替换为新的 post_taxonomies 表
+    // 分类—标签_文章 关系表
     let mut post_taxonomies_table = Table::new(&format!("{}post_taxonomies", db_prefix))?;
     post_taxonomies_table
         .add_field(Field::new(
@@ -887,22 +687,20 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
                 .foreign_key(format!("{}posts", db_prefix), "id".to_string())
                 .on_delete(ForeignKeyAction::Cascade)
                 .on_update(ForeignKeyAction::Cascade),
-            ValidationLevel::Strict,
         )?)
         .add_field(Field::new(
-            "taxonomy_id",
+            "taxonomy_name",
             FieldType::VarChar(50),
             FieldConstraint::new()
                 .not_null()
                 .foreign_key(format!("{}taxonomies", db_prefix), "name".to_string())
                 .on_delete(ForeignKeyAction::Cascade)
                 .on_update(ForeignKeyAction::Cascade),
-            ValidationLevel::Strict,
         )?);
 
     post_taxonomies_table.add_index(Index::new(
         "pk_post_taxonomies",
-        vec!["post_id".to_string(), "taxonomy_id".to_string()],
+        vec!["post_id".to_string(), "taxonomy_name".to_string()],
         true,
     )?);
 
