@@ -134,7 +134,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
                   ✕
                 </Button>
                 <Flex direction="column" gap="1.5" className="pr-6">
-                  <Flex align="center" gap="2">
+                  <Flex className="items-center space-x-3">
                     <span className="flex items-center justify-center">
                       {notificationConfigs[notification.type].icon}
                     </span>
@@ -142,7 +142,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
                       <Text
                         weight="bold"
                         size="2"
-                        className="text-white leading-tight"
+                        className="text-white leading-tight truncate max-w-[250px]"
                       >
                         {notification.title}
                       </Text>

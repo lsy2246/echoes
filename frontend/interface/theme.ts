@@ -7,11 +7,15 @@ export interface ThemeConfig {
     version: string;
     description?: string;
     author?: string;
-    templates: Map<string, PathDescription>;
+    templates: {
+        [key: string]: PathDescription;
+    };
     layout?: string;
     configuration: Configuration;
     loading?: string;
     error?: string;
     manage?: string;
-    routes: Map<string, string>;
+    routes: {
+        [path: string]: string;
+    };
 }

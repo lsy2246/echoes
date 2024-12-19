@@ -46,18 +46,10 @@ export default defineConfig(
             v3_singleFetch: true,
             v3_lazyRouteDiscovery: true,
           },
-          routes: async (defineRoutes) => {
-            // 每次路由配置时重新读取环境变量
-            const latestConfig = await getLatestEnv();
-
+          routes: (defineRoutes) => {
             return defineRoutes((route) => {
-              if (Number(latestConfig.VITE_INIT_STATUS) < 3) {
-                route("/", "init.tsx", { id: "index-route" });
-                route("*", "init.tsx", { id: "catch-all-route" });
-              } else {
-                route("/", "routes.tsx", { id: "index-route" });
-                route("*", "routes.tsx", { id: "catch-all-route" });
-              }
+              route("/", "routes.tsx",{id:"index-route"});
+              route("*", "routes.tsx",{id:"catch-all-route"});
             });
           },
         }),

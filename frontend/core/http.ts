@@ -2,7 +2,12 @@ import { DEFAULT_CONFIG } from "~/env";
 export interface ErrorResponse {
   title: string;
   message: string;
-  detail?: string;
+  detail: {
+    url: string;
+    status: number;
+    statusText: string;
+    raw: string;
+  };
 }
 
 export class HttpClient {
@@ -27,9 +32,11 @@ export class HttpClient {
       headers.set("Content-Type", "application/json");
     }
 
-    const token = localStorage.getItem("token");
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
+    if (typeof window !== 'undefined' && !headers.has("Authorization")) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
     }
 
     return { ...options, headers };
@@ -52,7 +59,19 @@ export class HttpClient {
           errorDetail.raw = JSON.stringify(error, null, 2);
         } else {
           const textError = await response.text();
-          errorDetail.message = textError;
+          if (textError.includes("<!DOCTYPE html>")) {
+            const titleMatch = textError.match(/<title>(.*?)<\/title>/);
+            const bodyMatch = textError.match(/<p>(.*?)<\/p>/);
+            
+            errorDetail.message = bodyMatch?.[1] || "";
+            if (titleMatch?.[1]) {
+              const titleText = titleMatch[1];
+              const statusCodeRemoved = titleText.replace(/^\d+:?\s*/, '');
+              errorDetail.statusText = statusCodeRemoved.trim();
+            }
+          } else {
+            errorDetail.message = textError;
+          }
           errorDetail.raw = textError;
         }
       } catch (e) {
@@ -61,37 +80,47 @@ export class HttpClient {
         errorDetail.raw = e instanceof Error ? e.message : String(e);
       }
 
-      switch (response.status) {
-        case 400:
-          errorDetail.message = errorDetail.message || "请求参数错误";
-          break;
-        case 401:
-          errorDetail.message = "未授权访问";
-          break;
-        case 403:
-          errorDetail.message = "访问被禁止";
-          break;
-        case 404:
-          errorDetail.message = "请求的资源不存在";
-          break;
-        case 500:
-          errorDetail.message = "服务器内部错误";
-          break;
-        case 502:
-          errorDetail.message = "网关错误";
-          break;
-        case 503:
-          errorDetail.message = "服务暂时不可用";
-          break;
-        case 504:
-          errorDetail.message = "网关超时";
-          break;
+      if (!errorDetail.message) {
+        switch (response.status) {
+          case 400:
+            errorDetail.message = "请求参数错误";
+            break;
+          case 401:
+            errorDetail.message = "未授权访问";
+            break;
+          case 403:
+            errorDetail.message = "访问被禁止";
+            break;
+          case 404:
+            errorDetail.message = "请求的资源不存在";
+            break;
+          case 422:
+            errorDetail.message = "请求格式正确，但是由于含有语义错误，无法响应";
+            break;
+          case 500:
+            errorDetail.message = "服务器内部错误";
+            break;
+          case 502:
+            errorDetail.message = "网关错误";
+            break;
+          case 503:
+            errorDetail.message = "服务暂时不可用";
+            break;
+          case 504:
+            errorDetail.message = "网关超时";
+            break;
+        }
       }
 
       const errorResponse: ErrorResponse = {
         title: `${errorDetail.status} ${errorDetail.statusText}`,
         message: errorDetail.message,
-        detail: `请求URL: ${response.url}\n状态码: ${errorDetail.status}\n原始错误: ${errorDetail.raw}`,
+        detail: {
+          url: response.url,
+          status: errorDetail.status,
+          statusText: errorDetail.statusText,
+          raw: errorDetail.raw
+        }
       };
 
       console.error("[HTTP Error]:", errorResponse);

@@ -73,8 +73,13 @@ export default new Layout(({ children, args }) => {
   }, [handleScroll]);
 
   const navString =
-    typeof args === "object" && args && "nav" in args
-      ? (args.nav as string)
+    typeof args === "object" && 
+    args && 
+    "nav" in args && 
+    typeof args.nav === "object" && 
+    args.nav && 
+    "content" in args.nav
+      ? String(args.nav.content)
       : "";
 
   // 添加回到顶部的处理函数

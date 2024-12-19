@@ -1,95 +1,39 @@
-// 定义数据库表的字段接口
-
-export interface User {
-  username: string;
-  avatarUrl?: string;
-  email: string;
-  passwordHash: string;
-  role: string;
-  createdAt: Date;
-  updatedAt: Date;
-  lastLoginAt: Date;
+export enum FieldType {
+  meta = "meta",
+  data = "data",
 }
 
-export interface Page {
-  id: number;
-  title: string;
-  content: string;
-  template?: string;
-  status: string;
+export interface Field {
+  field_key: string;
+  field_type: FieldType;
+  field_value: any;
 }
 
-export interface Post {
-  id: number;
-  authorName: string;
-  coverImage?: string;
-  title?: string;
-  content: string;
-  status: string;
-  isEditor: boolean;
-  draftContent?: string;
-  createdAt: Date;
-  updatedAt: Date;
-  publishedAt?: Date;
+export function FindField(fields: Array<Field>, field_key: string, field_type: FieldType) {
+  return fields.find(field => field.field_key === field_key && field.field_type === field_type);
 }
 
-export interface Resource {
-  id: number;
-  authorId: string;
-  name: string;
-  sizeBytes: number;
-  storagePath: string;
-  mimeType: string;
-  category?: string;
-  description?: string;
-  createdAt: Date;
+export function deserializeFields(rawFields: any[]): Field[] {
+  return rawFields.map(field => {
+    let parsedValue = field.field_value;
+    
+    // 如果是字符串，尝试解析
+    if (typeof field.field_value === 'string') {
+      try {
+        // 先尝试解析为 JSON
+        parsedValue = JSON.parse(field.field_value);
+      } catch {
+        // 如果解析失败，保持原始字符串
+        parsedValue = field.field_value;
+      }
+    }
+    
+    return {
+      field_key: field.field_key,
+      field_type: field.field_type as FieldType,
+      field_value: parsedValue
+    };
+  });
 }
 
-export interface Setting {
-  name: string;
-  data?: string;
-}
 
-export interface Metadata {
-  id: number;
-  targetType: "post" | "page";
-  targetId: number;
-  metaKey: string;
-  metaValue?: string;
-}
-
-export interface CustomField {
-  id: number;
-  targetType: "post" | "page";
-  targetId: number;
-  fieldKey: string;
-  fieldValue?: string;
-  fieldType: string;
-}
-
-export interface Taxonomy {
-  name: string;
-  slug: string;
-  type: "tag" | "category";
-  parentId?: string;
-}
-
-export interface PostTaxonomy {
-  postId: number;
-  taxonomyId: string;
-}
-
-// 用于前端展示的扩展接口
-export interface PostDisplay extends Post {
-  taxonomies?: {
-    categories: Taxonomy[];
-    tags: Taxonomy[];
-  };
-  metadata?: Metadata[];
-  customFields?: CustomField[];
-}
-
-export interface PageDisplay extends Page {
-  metadata?: Metadata[];
-  customFields?: CustomField[];
-}

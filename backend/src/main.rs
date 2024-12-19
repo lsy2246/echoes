@@ -6,7 +6,7 @@ mod storage;
 use crate::common::config;
 use common::error::{CustomErrorInto, CustomResult};
 use rocket::http::Method;
-use rocket::Shutdown;
+use rocket::{Shutdown, routes};
 use rocket_cors::{AllowedHeaders, AllowedOrigins, Cors, CorsOptions};
 use std::sync::Arc;
 use storage::sql;
@@ -100,13 +100,16 @@ async fn main() -> CustomResult<()> {
         .manage(state.clone())
         .attach(cors());
 
+    rocket_builder = rocket_builder.mount("/", routes![api::setup::get_step]);
+
     if !config.init.sql {
-        rocket_builder = rocket_builder.mount("/", rocket::routes![api::setup::setup_sql]);
+        rocket_builder = rocket_builder.mount("/", routes![api::setup::setup_sql]);
     } else if !config.init.administrator {
-        rocket_builder = rocket_builder.mount("/", rocket::routes![api::setup::setup_account]);
+        rocket_builder = rocket_builder.mount("/", routes![api::setup::setup_account]);
     } else {
         state.sql_link(&config.sql_config).await?;
         rocket_builder = rocket_builder.mount("/auth/token", api::jwt_routes());
+        rocket_builder = rocket_builder.mount("/field", api::fields_routes());
     }
 
     let rocket = rocket_builder.ignite().await?;

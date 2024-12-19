@@ -15,6 +15,7 @@ import {
 } from "@radix-ui/themes";
 import { toast } from "hooks/Notification";
 import { Echoes } from "hooks/Echoes";
+import { ModuleManager } from "core/moulde";
 
 interface SetupContextType {
   currentStep: number;
@@ -97,6 +98,45 @@ const Introduction: React.FC<StepProps> = ({ onNext }) => (
   </StepContainer>
 );
 
+// 新增工具函数
+const updateEnvConfig = async (newValues: Record<string, any>) => {
+  const http = HttpClient.getInstance();
+  // 获取所有 VITE_ 开头的环境变量
+  let oldEnv = import.meta.env ?? DEFAULT_CONFIG;
+  const viteEnv = Object.entries(oldEnv).reduce(
+    (acc, [key, value]) => {
+      if (key.startsWith("VITE_")) {
+        acc[key] = value;
+      }
+      return acc;
+    },
+    {} as Record<string, any>,
+  );
+
+  const newEnv = {
+    ...viteEnv,
+    ...newValues,
+  };
+
+  await http.dev("/env", {
+    method: "POST",
+    body: JSON.stringify(newEnv),
+  });
+
+  Object.assign(import.meta.env, newEnv);
+};
+
+// 新增表单数据收集函数
+const getFormData = (fields: string[]) => {
+  return fields.reduce((acc, field) => {
+    const input = document.querySelector(`[name="${field}"]`) as HTMLInputElement;
+    if (input) {
+      acc[field] = input.value.trim();
+    }
+    return acc;
+  }, {} as Record<string, string>);
+};
+
 const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
   const [dbType, setDbType] = useState("postgresql");
   const [loading, setLoading] = useState(false);
@@ -167,66 +207,32 @@ const DatabaseConfig: React.FC<StepProps> = ({ onNext }) => {
 
     setLoading(true);
     try {
+      const formFields = getFormData([
+        "db_host",
+        "db_prefix",
+        "db_port",
+        "db_user",
+        "db_password",
+        "db_name",
+      ]);
+
       const formData = {
         db_type: dbType,
-        host:
-          (
-            document.querySelector('[name="db_host"]') as HTMLInputElement
-          )?.value?.trim() ?? "",
-        db_prefix:
-          (
-            document.querySelector('[name="db_prefix"]') as HTMLInputElement
-          )?.value?.trim() ?? "",
-        port: Number(
-          (
-            document.querySelector('[name="db_port"]') as HTMLInputElement
-          )?.value?.trim() ?? 0,
-        ),
-        user:
-          (
-            document.querySelector('[name="db_user"]') as HTMLInputElement
-          )?.value?.trim() ?? "",
-        password:
-          (
-            document.querySelector('[name="db_password"]') as HTMLInputElement
-          )?.value?.trim() ?? "",
-        db_name:
-          (
-            document.querySelector('[name="db_name"]') as HTMLInputElement
-          )?.value?.trim() ?? "",
+        host: formFields?.db_host ?? "localhost",
+        db_prefix: formFields?.db_prefix ?? "echoec_",
+        port:Number(formFields?.db_port?? 0),
+        user: formFields?.db_user ?? "",
+        password: formFields?.db_password ?? "",
+        db_name: formFields?.db_name ?? "",
       };
 
       await http.post("/sql", formData);
 
-      let oldEnv = import.meta.env ?? DEFAULT_CONFIG;
-      const viteEnv = Object.entries(oldEnv).reduce(
-        (acc, [key, value]) => {
-          if (key.startsWith("VITE_")) {
-            acc[key] = value;
-          }
-          return acc;
-        },
-        {} as Record<string, any>,
-      );
-
-      const newEnv = {
-        ...viteEnv,
-        VITE_INIT_STATUS: "2",
-      };
-
-      await http.dev("/env", {
-        method: "POST",
-        body: JSON.stringify(newEnv),
-      });
-
-      Object.assign(import.meta.env, newEnv);
-
       toast.success("数据库配置成功！");
-
       setTimeout(() => onNext(), 1000);
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message, error.title);
+      toast.error(error.title, error.message);
     } finally {
       setLoading(false);
     }
@@ -389,56 +395,40 @@ const AdminConfig: React.FC<StepProps> = ({ onNext }) => {
   const handleNext = async () => {
     setLoading(true);
     try {
-      const formData = {
-        username: (
-          document.querySelector('[name="admin_username"]') as HTMLInputElement
-        )?.value,
-        password: (
-          document.querySelector('[name="admin_password"]') as HTMLInputElement
-        )?.value,
-        email: (
-          document.querySelector('[name="admin_email"]') as HTMLInputElement
-        )?.value,
+      const formData = getFormData([
+        'admin_username',
+        'admin_password',
+        'admin_email',
+      ]);
+
+      // 添加非空验证
+      if (!formData.admin_username || !formData.admin_password || !formData.admin_email) {
+        toast.error('请填写所有必填字段');
+        return;
+      }
+
+      // 调整数据格式以匹配后端期望的格式
+      const requestData = {
+        username: formData.admin_username,
+        password: formData.admin_password,
+        email: formData.admin_email,
       };
 
-      const response = (await http.post(
-        "/administrator",
-        formData,
-      )) as InstallReplyData;
-      const data = response;
+      const response = (await http.post("/administrator", requestData)) as InstallReplyData;
+      const { token, username, password } = response;
 
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("token", token);
 
-      let oldEnv = import.meta.env ?? DEFAULT_CONFIG;
-      const viteEnv = Object.entries(oldEnv).reduce(
-        (acc, [key, value]) => {
-          if (key.startsWith("VITE_")) {
-            acc[key] = value;
-          }
-          return acc;
-        },
-        {} as Record<string, any>,
-      );
-
-      const newEnv = {
-        ...viteEnv,
-        VITE_INIT_STATUS: "3",
-        VITE_API_USERNAME: data.username,
-        VITE_API_PASSWORD: data.password,
-      };
-
-      await http.dev("/env", {
-        method: "POST",
-        body: JSON.stringify(newEnv),
+      await updateEnvConfig({
+        VITE_API_USERNAME: username,
+        VITE_API_PASSWORD: password,
       });
-
-      Object.assign(import.meta.env, newEnv);
 
       toast.success("管理员账号创建成功！");
       onNext();
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message, error.title);
+      toast.error(error.title, error.message);
     } finally {
       setLoading(false);
     }
@@ -484,28 +474,35 @@ const SetupComplete: React.FC = () => {
 };
 
 export default function SetupPage() {
+  const [moduleManager, setModuleManager] = useState<ModuleManager | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
-  const [isClient, setIsClient] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 标记客户端渲染完成
-    setIsClient(true);
+    const initManager = async () => {
+      try {
+        const manager = await ModuleManager.getInstance();
+        setModuleManager(manager);
+        // 确保初始步骤至少从1开始
+        setCurrentStep(Math.max(manager.getStep() + 1, 1));
+      } catch (error) {
+        console.error('Init manager error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    // 获取初始化状态
-    const initStatus = Number(import.meta.env.VITE_INIT_STATUS ?? 0);
-
-    // 如果已完成初始化，直接刷新页面
-    if (initStatus >= 3) {
-      window.location.reload();
-      return;
-    }
-
-    // 否则设置当前步骤
-    setCurrentStep(initStatus + 1);
+    initManager();
   }, []);
 
-  // 在服务端渲染时或客户端首次渲染时，返回加载状态
-  if (!isClient) {
+  const handleStepChange = async (step: number) => {
+    if (moduleManager) {
+      await moduleManager.setStep(step - 1);
+      setCurrentStep(step);
+    }
+  };
+
+  if (isLoading) {
     return (
       <Theme
         grayColor="gray"
@@ -548,17 +545,18 @@ export default function SetupPage() {
 
         <Flex direction="column" className="min-h-screen w-full pb-4">
           <Container className="w-full">
-            <SetupContext.Provider value={{ currentStep, setCurrentStep }}>
+            <SetupContext.Provider value={{ 
+              currentStep, 
+              setCurrentStep: handleStepChange 
+            }}>
               {currentStep === 1 && (
-                <Introduction onNext={() => setCurrentStep(currentStep + 1)} />
+                <Introduction onNext={() => handleStepChange(2)} />
               )}
               {currentStep === 2 && (
-                <DatabaseConfig
-                  onNext={() => setCurrentStep(currentStep + 1)}
-                />
+                <DatabaseConfig onNext={() => handleStepChange(3)} />
               )}
               {currentStep === 3 && (
-                <AdminConfig onNext={() => setCurrentStep(currentStep + 1)} />
+                <AdminConfig onNext={() => handleStepChange(4)} />
               )}
               {currentStep === 4 && <SetupComplete />}
             </SetupContext.Provider>

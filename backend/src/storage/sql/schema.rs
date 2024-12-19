@@ -66,6 +66,7 @@ pub struct Table {
     pub name: Identifier,
     pub fields: Vec<Field>,
     pub indexes: Vec<Index>,
+    pub primary_keys: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -251,16 +252,20 @@ impl Field {
         if self.constraints.is_unique {
             sql.push_str(" UNIQUE");
         }
-        if self.constraints.is_primary {
-            match (db_type, &self.field_type) {
-                (DatabaseType::SQLite, FieldType::Integer(true)) => {
+        if self.constraints.is_primary && db_type == DatabaseType::SQLite {
+            match &self.field_type {
+                FieldType::Integer(true) => {
                     sql.push_str(" PRIMARY KEY AUTOINCREMENT");
                 }
+                _ => {}
+            }
+        } else if self.constraints.is_primary {
+            match (db_type, &self.field_type) {
                 (DatabaseType::MySQL, FieldType::Integer(true)) => {
-                    sql.push_str(" PRIMARY KEY");
+                    sql.push_str(" PRIMARY KEY AUTO_INCREMENT");
                 }
                 (DatabaseType::PostgreSQL, FieldType::Integer(true)) => {
-                    sql.push_str(" PRIMARY KEY");
+                    sql.push_str(" PRIMARY KEY GENERATED ALWAYS AS IDENTITY");
                 }
                 _ => sql.push_str(" PRIMARY KEY"),
             }
@@ -294,10 +299,14 @@ impl Table {
             name: Identifier::new(name.to_string())?,
             fields: Vec::new(),
             indexes: Vec::new(),
+            primary_keys: Vec::new(),
         })
     }
 
     pub fn add_field(&mut self, field: Field) -> &mut Self {
+        if field.constraints.is_primary {
+            self.primary_keys.push(field.name.as_str().to_string());
+        }
         self.fields.push(field);
         self
     }
@@ -308,15 +317,49 @@ impl Table {
     }
 
     pub fn to_sql(&self, db_type: DatabaseType) -> CustomResult<String> {
-        let fields_sql: CustomResult<Vec<String>> =
+        let mut fields_sql: CustomResult<Vec<String>> =
             self.fields.iter().map(|f| f.to_sql(db_type)).collect();
         let fields_sql = fields_sql?;
 
-        let mut sql = format!(
-            "CREATE TABLE {} (\n    {}\n);",
-            self.name.as_str(),
-            fields_sql.join(",\n    ")
-        );
+        let mut sql = String::new();
+        
+        match db_type {
+            DatabaseType::SQLite => {
+                if self.primary_keys.len() > 1 {
+                    sql = format!(
+                        "CREATE TABLE {} (\n    {},\n    CONSTRAINT pk_{} PRIMARY KEY ({}))",
+                        self.name.as_str(),
+                        fields_sql.join(",\n    "),
+                        self.name.as_str(),
+                        self.primary_keys.join(", ")
+                    );
+                } else {
+                    sql = format!(
+                        "CREATE TABLE {} (\n    {}\n)",
+                        self.name.as_str(),
+                        fields_sql.join(",\n    ")
+                    );
+                }
+            }
+            _ => {
+                if self.primary_keys.len() > 1 {
+                    sql = format!(
+                        "CREATE TABLE {} (\n    {},\n    PRIMARY KEY ({}))",
+                        self.name.as_str(),
+                        fields_sql.join(",\n    "),
+                        self.primary_keys.join(", ")
+                    );
+                } else {
+                    sql = format!(
+                        "CREATE TABLE {} (\n    {}\n)",
+                        self.name.as_str(),
+                        fields_sql.join(",\n    ")
+                    );
+                }
+            }
+        }
+
+        sql.push(';');
 
         // 添加索引
         for index in &self.indexes {
@@ -609,29 +652,24 @@ pub fn generate_schema(db_type: DatabaseType, db_prefix: SafeValue) -> CustomRes
     let mut fields_table = Table::new(&format!("{}fields", db_prefix))?;
     fields_table
         .add_field(Field::new(
-            "id",
-            FieldType::Integer(true),
-            FieldConstraint::new().primary(),
-        )?)
-        .add_field(Field::new(
             "target_type",
             FieldType::VarChar(20),
-            FieldConstraint::new().not_null(),
+            FieldConstraint::new().not_null().primary(),
         )?)
         .add_field(Field::new(
             "target_id",
             FieldType::Integer(false),
-            FieldConstraint::new().not_null(),
+            FieldConstraint::new().not_null().primary(),
         )?)
         .add_field(Field::new(
             "field_type",
             FieldType::VarChar(50),
-            FieldConstraint::new().not_null(),
+            FieldConstraint::new().not_null().primary(),
         )?)
         .add_field(Field::new(
             "field_key",
             FieldType::VarChar(50),
-            FieldConstraint::new().not_null(),
+            FieldConstraint::new().not_null().primary(),
         )?)
         .add_field(Field::new(
             "field_value",

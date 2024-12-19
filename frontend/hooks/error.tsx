@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Template } from "interface/template";
 
-export default new Template({}, ({ args }) => {
+export default new Template( ({ }) => {
   const [text, setText] = useState("");
   const fullText = "404 - 页面不见了 :(";
   const typingSpeed = 100;

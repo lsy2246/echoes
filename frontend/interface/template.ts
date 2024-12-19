@@ -1,24 +1,25 @@
 import { HttpClient } from "core/http";
 import { Serializable } from "interface/serializableType";
-import React from "react";
+import React, { memo } from "react";
 
 export class Template {
   private readonly http: HttpClient;
+  private readonly MemoizedElement: React.MemoExoticComponent<
+    (props: { http: HttpClient; args: Serializable }) => React.ReactNode
+  >;
 
   constructor(
-    public element: (props: {
-      http: HttpClient;
-      args: Serializable;
-    }) => React.ReactNode,
+    element: (props: { http: HttpClient; args: Serializable }) => React.ReactNode,
     services?: {
       http?: HttpClient;
-    },
+    }
   ) {
     this.http = services?.http || HttpClient.getInstance();
+    this.MemoizedElement = memo(element);
   }
 
   render(args: Serializable) {
-    return this.element({
+    return React.createElement(this.MemoizedElement, {
       http: this.http,
       args,
     });

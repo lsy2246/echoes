@@ -3,7 +3,7 @@ use crate::security;
 use crate::storage::sql::builder;
 use crate::AppState;
 use chrono::Duration;
-use rocket::{http::Status, post, response::status, serde::json::Json, State};
+use rocket::{http::Status, post,get, response::status, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use crate::api::Role;
@@ -53,8 +53,6 @@ pub async fn token_system(
             ),
         ]));
 
-    println!("db: {:?}", sql.get_type());
-
     let values = sql
         .get_db()
         .execute_query(&builder)
@@ -77,6 +75,19 @@ pub async fn token_system(
             role: Role::Administrator.to_string(),
         },
         Duration::minutes(1),
+    )
+    .into_app_result()?)
+}
+
+
+#[get("/test")]
+pub async fn test_token(state: &State<Arc<AppState>>) -> AppResult<String> {
+    Ok(security::jwt::generate_jwt(
+        security::jwt::CustomClaims {
+            name: "system".into(),
+            role: Role::Administrator.to_string(),
+        },
+        Duration::days(999),
     )
     .into_app_result()?)
 }

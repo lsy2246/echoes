@@ -13,34 +13,28 @@ const themeConfig: ThemeConfig = {
     },
   },
   layout: "layout.tsx",
-  templates: new Map([
-    [
-      "posts",
-      {
-        path: "posts",
-        name: "文章列表模板",
-        description: "博客首页展示模板",
-      },
-    ],
-    [
-      "post",
-      {
-        path: "post",
-        name: "文章详情模板",
-        description: "文章详情展示模板",
-      },
-    ],
-    [
-      "about",
-      {
-        path: "about",
-        name: "关于页面模板",
-        description: "关于页面展示模板",
-      },
-    ],
-  ]),
-
-  routes: new Map<string, string>([]),
+  templates: {
+    posts: {
+      path: "posts",
+      name: "文章列表模板",
+      description: "博客首页展示模板",
+    },
+    post: {
+      path: "post",
+      name: "文章详情模板",
+      description: "文章详情展示模板",
+    },
+    about: {
+      path: "about",
+      name: "关于页面模板",
+      description: "关于页面展示模板",
+    },
+  },
+  routes: {
+    "/": "posts.tsx",
+    "/about": "about.tsx",
+    "/post": "post.tsx"
+  }
 };
 
 export default themeConfig;

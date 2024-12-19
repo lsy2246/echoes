@@ -50,9 +50,9 @@ impl<'r> FromRequest<'r> for SystemToken {
 
 
 pub fn jwt_routes() -> Vec<rocket::Route> {
-    routes![auth::token::token_system]
+    routes![auth::token::token_system,auth::token::test_token]
 }
 
 pub fn fields_routes() -> Vec<rocket::Route> {
-    routes![]
+    routes![fields::get_field_handler,fields::insert_field_handler,fields::delete_field_handler,fields::delete_all_fields_handler,fields::update_field_handler]
 }

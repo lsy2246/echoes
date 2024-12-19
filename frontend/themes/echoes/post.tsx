@@ -20,8 +20,8 @@ import {
   ScrollArea,
 } from "@radix-ui/themes";
 import { CalendarIcon, CodeIcon } from "@radix-ui/react-icons";
-import type { PostDisplay } from "interface/fields";
-import { getColorScheme } from "themes/echoes/utils/colorScheme";
+import type { PostDisplay } from "interface/api";
+import { getColorScheme } from "hooks/colorScheme";
 import MarkdownIt from "markdown-it";
 import remarkGfm from "remark-gfm";
 import { toast } from "hooks/Notification";
@@ -377,7 +377,6 @@ function greet(user: User): string {
 > 💡 **提示**：部分高级排版功能可能需要特定的 Markdown 编辑器或渲染支持，请确认是否支持这些功能。
 `,
   authorName: "Markdown 专家",
-  publishedAt: new Date("2024-03-15"),
   coverImage:
     "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=1200&h=600",
   status: "published",
@@ -398,22 +397,6 @@ function greet(user: User): string {
       { name: "写作", slug: "writing", type: "tag" },
     ],
   },
-  metadata: [
-    {
-      id: 1,
-      targetType: "post",
-      targetId: 1,
-      metaKey: "description",
-      metaValue: "从基础语法到高级排版，全面了解 Markdown 的各种用法和技巧。",
-    },
-    {
-      id: 2,
-      targetType: "post",
-      targetId: 1,
-      metaKey: "keywords",
-      metaValue: "Markdown,基础语法,高级排版,布局设计",
-    },
-  ],
 };
 
 // 添加复制能的接口
@@ -1191,7 +1174,7 @@ export default new Template(({}) => {
                 <Flex align="center" gap="2">
                   <CalendarIcon className="w-3.5 h-3.5" />
                   <Text size="2">
-                    {mockPost.publishedAt?.toLocaleDateString("zh-CN", {
+                    {mockPost.createdAt?.toLocaleDateString("zh-CN", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",

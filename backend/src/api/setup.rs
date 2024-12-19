@@ -8,10 +8,34 @@ use crate::security;
 use crate::storage::sql;
 use crate::AppState;
 use chrono::Duration;
-use rocket::{http::Status, post, response::status, serde::json::Json, State};
+use rocket::{http::Status,get, post, response::status, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
+use std::sync::OnceLock;
+
+
+static STEP: OnceLock<u8> = OnceLock::new();
+
+
+#[get("/step")]
+pub async fn get_step() -> String {
+    STEP.get_or_init(|| {
+        let config = config::Config::read().unwrap_or_else(|e| {
+            eprintln!("配置读取失败: {}", e);
+            config::Config::default()
+        });
+        
+        if !config.init.sql {
+            1
+        } else if !config.init.administrator {
+            2
+        } else {
+            3
+        }
+    }).to_string()
+}
+
 
 #[post("/sql", format = "application/json", data = "<sql_config>")]
 pub async fn setup_sql(
@@ -112,8 +136,8 @@ pub async fn setup_account(
         TargetType::System,
         0,
         FieldType::Meta,
-        "keywords".to_string(),
-        "echoes,blog,个人博客".to_string(),
+        "keywords",
+        "echoes,blog,个人博客",
     )
     .await
     .into_app_result()?;
@@ -123,8 +147,8 @@ pub async fn setup_account(
         TargetType::System,
         0,
         FieldType::Data,
-        "current_theme".to_string(),
-        "echoes".to_string(),
+        "current_theme",
+        "echoes",
     )
     .await
     .into_app_result()?;

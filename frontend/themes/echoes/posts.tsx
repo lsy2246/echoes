@@ -13,11 +13,11 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@radix-ui/react-icons";
-import { PostDisplay } from "interface/fields";
+import { PostDisplay } from "interface/api";
 import { useMemo } from "react";
 
 import { ImageLoader } from "hooks/ParticleImage";
-import { getColorScheme, hashString } from "themes/echoes/utils/colorScheme";
+import { getColorScheme, hashString } from "hooks/colorScheme";
 
 // 修改模拟文章列表数据
 const mockArticles: PostDisplay[] = [
@@ -26,7 +26,6 @@ const mockArticles: PostDisplay[] = [
     title: "构建现代化的前端开发工作流",
     content: "在现代前端开发中，一个高效的工作流程对于提高开发效率至关重要...",
     authorName: "张三",
-    publishedAt: new Date("2024-03-15"),
     coverImage: "https://www.helloimg.com/i/2024/12/11/6759312352499.png",
     status: "published",
     isEditor: false,
@@ -46,7 +45,6 @@ const mockArticles: PostDisplay[] = [
     content:
       "React 18 带来了许多令人兴奋的新特性，包括并发渲染、自动批处理更新...",
     authorName: "李四",
-    publishedAt: new Date("2024-03-14"),
     coverImage: "",
     status: "published",
     isEditor: false,
@@ -66,7 +64,6 @@ const mockArticles: PostDisplay[] = [
     content:
       "在这篇文章中，我们将探讨一些提高 JavaScript 性能的技巧和最佳实践...",
     authorName: "王五",
-    publishedAt: new Date("2024-03-13"),
     coverImage: "ssssxx",
     status: "published",
     isEditor: false,
@@ -91,7 +88,6 @@ const mockArticles: PostDisplay[] = [
     title: "移动端适配最佳实践",
     content: "移动端开发中的各种适配问题及解决方案...",
     authorName: "田六",
-    publishedAt: new Date("2024-03-13"),
     coverImage:
       "https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?w=500&auto=format",
     status: "published",
@@ -114,7 +110,6 @@ const mockArticles: PostDisplay[] = [
     content:
       "本文将深入探讨现代全栈开发的各个方面，包括前端框架选择、后端架构设计、数据库优化、微服务部署以及云原生实践...",
     authorName: "赵七",
-    publishedAt: new Date("2024-03-12"),
     coverImage:
       "https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?w=500&auto=format",
     status: "published",
@@ -147,7 +142,6 @@ const mockArticles: PostDisplay[] = [
     content:
       "探索 TypeScript 的高级类型系统、装饰器、类型编程等特性，以及在大型项目中的最佳实践...",
     authorName: "孙八",
-    publishedAt: new Date("2024-03-11"),
     coverImage:
       "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=500&auto=format",
     status: "published",
@@ -173,7 +167,6 @@ const mockArticles: PostDisplay[] = [
     content:
       "全面解析 Web 性能优化策略，包括资源加载优化、渲染性能优化、网络优化等多个...",
     authorName: "周九",
-    publishedAt: new Date("2024-03-10"),
     coverImage:
       "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format",
     status: "published",
@@ -203,7 +196,6 @@ const mockArticles: PostDisplay[] = [
     content:
       "详细介绍微前端的架构设计、实现方案、应用集成以及实际项目中的经验总结...",
     authorName: "吴十",
-    publishedAt: new Date("2024-03-09"),
     coverImage:
       "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=500&auto=format",
     status: "published",
@@ -229,7 +221,6 @@ const mockArticles: PostDisplay[] = [
     content:
       "探索如何将人工智能技术融入前端开发流程，包括智能代码补全、自动化测试、UI 生成、性能优化建议等实践应用...",
     authorName: "陈十一",
-    publishedAt: new Date("2024-03-08"),
     coverImage:
       "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=500&auto=format",
     status: "published",
@@ -357,7 +348,7 @@ export default new Template(({}) => {
                   >
                     <CalendarIcon className="w-4 h-4" />
                     <Text size="2">
-                      {article.publishedAt?.toLocaleDateString("zh-CN", {
+                      {article.createdAt.toLocaleDateString("zh-CN", {
                         year: "numeric",
                         month: "long",
                         day: "numeric",
